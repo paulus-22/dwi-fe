@@ -35,6 +35,9 @@ export default async function EventDashboard({ params }: PageProps<"/admin/event
                 </Link>
               </>
             ) : null}
+            <Link href={`/admin/events/${id}/guests`} className={navLink}>
+              Tamu/Peserta
+            </Link>
             <Link href={`/admin/events/${id}/scanner`} className={navLink}>
               Perangkat scanner
             </Link>
