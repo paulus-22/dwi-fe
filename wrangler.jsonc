@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Cloudflare Worker serving the Next.js app (built by OpenNext).
+  "name": "dwi-web",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    // Self-reference, required by OpenNext; must match "name" above.
+    { "binding": "WORKER_SELF_REFERENCE", "service": "dwi-web" }
+  ],
+  "vars": {
+    // Override per environment in the Cloudflare dashboard.
+    "API_URL": "https://api.example.com"
+  },
+  "observability": { "enabled": true }
+  // No R2 incremental cache yet: every dashboard page is dynamic. Add it
+  // (see node_modules/@opennextjs/cloudflare/templates) with the invitation port.
+}

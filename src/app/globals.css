@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+/*
+ * "The Moments by Bizzmo" brand palette — ported from
+ * digital-wedding-invitation-p's spike/astryx-dashboard branch (same tokens,
+ * same contrast fix). `--color-gold` is NOT the literal brand gold
+ * (#C99843): every component here pairs it with white text at rest
+ * (`bg-gold text-white`), and white-on-#C99843 is only 2.6:1, under WCAG
+ * AA's 4.5:1. `--color-gold` is a darkened shade of the same hue that
+ * clears 4.96:1 with white. The literal brand gold lives in
+ * `--color-gold-line` (borders/lines, which don't carry text).
+ */
+@theme {
+  --color-surface: #faf6ef;
+  --color-panel: #fbf5ee;
+  --color-panel-border: #e6d8bd;
+  --color-panel-hover: #f6efe3;
+  --color-admin-ink: #4c4a1a;
+  --color-admin-muted: #706e48;
+  --color-admin-faint: #97967a;
+
+  --color-gold: #8d6a2f;
+  --color-gold-strong: #6f5425;
+  --color-gold-soft: #e9ddc6;
+  --color-gold-line: #d4c095;
+
+  --color-ok: #3f7a4f;
+  --color-ok-soft: #e4f0e6;
+  --color-danger: #a75f62;
+  --color-danger-soft: #f6e6e6;
+
+  --font-display: var(--font-cormorant), "Cormorant Upright", serif;
+  --font-ui: var(--font-jost), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-control: 6px;
+  --radius-card: 10px;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: var(--font-ui);
+    color: var(--color-admin-ink);
+    background: var(--color-surface);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  select:not(:disabled),
+  summary {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+}

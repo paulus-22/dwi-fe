@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+next-env.d.ts
+*.tsbuildinfo
+.env
+.env*.local
+.vercel
+.open-next
+.wrangler
+apps/scanner/node_modules
+apps/scanner/dist
+package-lock.json
+.dev.vars
