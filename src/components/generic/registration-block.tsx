@@ -208,7 +208,7 @@ function GuestRegistration({
   const [name, setName] = useState(guest?.householdName ?? "");
   const [values, setValues] = useState<Record<string, Value>>({});
   const [error, setError] = useState<string | null>(null);
-  const [state, setState] = useState<"idle" | "sending" | "done">("idle");
+  const [state, setState] = useState<"idle" | "sending" | "done">(guest.rsvp?.attending ? "done" : "idle");
 
   if (fields.length === 0) return <p className="text-[var(--g-muted)]">Formulir pendaftaran belum tersedia.</p>;
 
@@ -240,6 +240,9 @@ function GuestRegistration({
       <div className={`space-y-3 ${shape === "soft" ? "text-center" : ""}`}>
         {shape === "soft" ? <Check /> : null}
         <FormNotice>Terima kasih! Pendaftaran Anda sudah kami terima.</FormNotice>
+        <a href={`/v/${encodeURIComponent(slug)}?to=${encodeURIComponent(guest.token)}`} className="gt-btn !w-auto px-6">
+          Lihat tiket &amp; QR
+        </a>
       </div>
     );
 

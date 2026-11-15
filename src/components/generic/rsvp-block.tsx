@@ -93,6 +93,11 @@ export function RsvpBlock({
           </span>
         ) : null}
         <FormNotice>{attending ? `Terima kasih! Kehadiran ${count} orang tercatat.` : "Terima kasih atas konfirmasinya."}</FormNotice>
+        {attending ? (
+          <a href={`/v/${encodeURIComponent(slug)}?to=${encodeURIComponent(guest.token)}`} className="gt-btn !w-auto px-6">
+            Lihat tiket &amp; QR
+          </a>
+        ) : null}
         <button type="button" className="gt-ghost" onClick={() => setState("idle")}>
           Ubah jawaban
         </button>
