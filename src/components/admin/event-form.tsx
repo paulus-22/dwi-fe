@@ -90,11 +90,11 @@ function Pick({
   );
 }
 
-/** Two-option theme chooser for GENERIC events: radio cards with a swatch + corner-shape hint. */
+/** Theme chooser for GENERIC events: radio cards with a swatch + corner-shape hint. */
 function GenericThemePick({ defaults }: { defaults?: string }) {
   const current = resolveGenericTheme(defaults).key;
   return (
-    <fieldset className="grid gap-3 sm:col-span-2 sm:grid-cols-2">
+    <fieldset className="grid gap-3 sm:col-span-2 sm:grid-cols-3">
       <legend className="sr-only">Tema halaman</legend>
       {GENERIC_THEME_LIST.map((t) => (
         <label
@@ -104,13 +104,13 @@ function GenericThemePick({ defaults }: { defaults?: string }) {
           <input type="radio" name="theme" value={t.key} defaultChecked={t.key === current} className="mt-1 accent-gold" />
           <span className="min-w-0">
             <span className="mb-2 flex gap-1.5" aria-hidden="true">
-              {[t.navy, t.gold, t.cream].map((c) => (
+              {(t.key === "editorial" ? [t.navy, "#ffffff", "#aab3be"] : [t.navy, t.gold, t.cream]).map((c) => (
                 <span
                   key={c}
                   className="h-7 w-9 border border-black/10"
                   style={{
                     background: c,
-                    borderRadius: t.shape === "soft" ? 999 : 2,
+                    borderRadius: t.shape === "soft" ? 999 : t.shape === "editorial" ? 0 : 2,
                   }}
                 />
               ))}

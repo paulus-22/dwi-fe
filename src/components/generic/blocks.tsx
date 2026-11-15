@@ -39,9 +39,71 @@ export type BlockContext = {
   ticketTypes: PublicTicketType[];
   /** The hero button's target: the page's first RSVP/registration block, if any. */
   cta: { href: string; label: string } | null;
+  /** editorial only: block id -> "02 / 05" section marker (see `editorialMarks`). */
+  marks?: Record<string, string>;
 };
 
 type Tone = "paper" | "alt" | "navy";
+type Shape = GenericTheme["shape"];
+
+const EDITORIAL_HERO = "/generic-themes/editorial-hero.webp";
+const EDITORIAL_VENUE = "/generic-themes/editorial-venue.webp";
+
+/** Only the editorial theme numbers its sections, so these must mirror what each block actually renders. */
+function rendersAnything(b: PageBlock): boolean {
+  const c = asConfig(b.config);
+  switch (b.blockType) {
+    case "COVER":
+    case "COUNTDOWN":
+    case "SCHEDULE":
+    case "MAP":
+    case "RSVP_FORM":
+    case "REGISTRATION_FORM":
+      return true;
+    case "GALLERY":
+      return (Array.isArray(c.images) ? c.images : []).some((i) => safeUrl(typeof i === "string" ? i : asConfig(i).url));
+    case "CUSTOM_HTML":
+      return typeof c.html === "string" && c.html.trim() !== "";
+    case "SPONSOR":
+      return list(c.sponsors).some((s) => str(s.name) || safeUrl(s.logoUrl));
+    case "CONTACT":
+      return list(c.contacts).some((p) => str(p.name));
+    default:
+      return false;
+  }
+}
+
+/** "01 / 05"-style markers for the editorial theme, keyed by block id. */
+export function editorialMarks(blocks: PageBlock[]): Record<string, string> {
+  const shown = blocks.filter(rendersAnything);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return Object.fromEntries(shown.map((b, i) => [b.id, `${pad(i + 1)} / ${pad(shown.length)}`]));
+}
+
+/** Short sticky-nav label per block type; `null` = not a nav destination. */
+export function editorialNavLabel(b: PageBlock): string | null {
+  const title = str(asConfig(b.config).title);
+  switch (b.blockType) {
+    case "SCHEDULE":
+      return "Jadwal";
+    case "MAP":
+      return "Lokasi";
+    case "GALLERY":
+      return "Galeri";
+    case "RSVP_FORM":
+      return "RSVP";
+    case "REGISTRATION_FORM":
+      return "Daftar";
+    case "SPONSOR":
+      return "Sponsor";
+    case "CONTACT":
+      return "Kontak";
+    case "CUSTOM_HTML":
+      return title ?? null;
+    default:
+      return null; // COVER is the top of the page; COUNTDOWN is a strip, not a section
+  }
+}
 
 const TONE: Record<Tone, string> = {
   paper: "bg-[var(--g-paper)] text-[var(--g-ink)]",
@@ -56,14 +118,41 @@ function Section({
   id,
   tone = "paper",
   shape,
+  mark,
+  narrow,
 }: {
   title?: string;
   kicker?: string;
   children: ReactNode;
   id?: string;
   tone?: Tone;
-  shape: "sharp" | "soft";
+  shape: Shape;
+  /** editorial: "02 / 05" marker. */
+  mark?: string;
+  /** editorial: cap the content width (forms). */
+  narrow?: boolean;
 }) {
+  if (shape === "editorial") {
+    return (
+      <section id={id} className={tone === "alt" ? "bg-[var(--g-cream)] text-[var(--g-ink)]" : "bg-[var(--g-paper)] text-[var(--g-ink)]"}>
+        <div className="mx-auto max-w-[1080px] px-6 py-16 sm:px-12 sm:py-24">
+          {mark || kicker ? (
+            <p className="gt-mono text-[var(--g-muted)]">
+              {mark ? <span className="font-bold text-[var(--g-navy)]">{mark}</span> : null}
+              {mark && kicker ? "　—　" : null}
+              {kicker}
+            </p>
+          ) : null}
+          {title ? (
+            <h2 className="mt-4 mb-10 text-[clamp(32px,5vw,52px)] leading-[1.05] font-bold tracking-[-0.03em] text-[var(--g-navy)]">
+              {title}
+            </h2>
+          ) : null}
+          <div className={narrow ? "max-w-[620px]" : undefined}>{children}</div>
+        </div>
+      </section>
+    );
+  }
   const soft = shape === "soft";
   return (
     <section id={id} className={`${TONE[tone]} ${soft ? "px-[25px] py-[31px]" : "px-[27px] py-[54px]"}`}>
@@ -91,27 +180,28 @@ export function GenericBlock({ block, ctx }: { block: PageBlock; ctx: BlockConte
   const c = asConfig(block.config);
   const { event, theme } = ctx;
   const shape = theme.shape;
-  const sec = { shape, kicker: str(c.kicker) } as const;
+  const mark = ctx.marks?.[block.id];
+  const sec = { shape, kicker: str(c.kicker), mark } as const;
   switch (block.blockType) {
     case "COVER":
-      return <CoverBlock c={c} ctx={ctx} />;
+      return <CoverBlock c={c} ctx={ctx} mark={mark} />;
     case "COUNTDOWN":
-      return <CountdownBlock c={c} ctx={ctx} />;
+      return <CountdownBlock c={c} ctx={ctx} mark={mark} />;
     case "SCHEDULE":
-      return <ScheduleBlock c={c} ctx={ctx} />;
+      return <ScheduleBlock c={c} ctx={ctx} mark={mark} />;
     case "MAP":
-      return <MapBlock c={c} shape={shape} />;
+      return <MapBlock c={c} shape={shape} mark={mark} />;
     case "GALLERY":
-      return <GalleryBlock c={c} shape={shape} />;
+      return <GalleryBlock c={c} shape={shape} mark={mark} />;
     case "RSVP_FORM":
       return (
-        <Section {...sec} id="rsvp" title={str(c.title) ?? "RSVP"} tone={shape === "soft" ? "alt" : "paper"}>
+        <Section {...sec} id="rsvp" narrow title={str(c.title) ?? "RSVP"} tone={shape === "sharp" ? "paper" : "alt"}>
           <RsvpBlock slug={event.slug} guest={ctx.guest} description={str(c.description)} shape={shape} />
         </Section>
       );
     case "REGISTRATION_FORM":
       return (
-        <Section {...sec} id="pendaftaran" title={str(c.title) ?? "Pendaftaran"} tone={shape === "soft" ? "alt" : "paper"}>
+        <Section {...sec} id="pendaftaran" narrow title={str(c.title) ?? "Pendaftaran"} tone={shape === "sharp" ? "paper" : "alt"}>
           <RegistrationBlock
             slug={event.slug}
             guest={ctx.guest}
@@ -124,11 +214,11 @@ export function GenericBlock({ block, ctx }: { block: PageBlock; ctx: BlockConte
         </Section>
       );
     case "CUSTOM_HTML":
-      return <CustomHtmlBlock c={c} shape={shape} />;
+      return <CustomHtmlBlock c={c} shape={shape} mark={mark} />;
     case "SPONSOR":
-      return <SponsorBlock c={c} shape={shape} />;
+      return <SponsorBlock c={c} shape={shape} mark={mark} />;
     case "CONTACT":
-      return <ContactBlock c={c} shape={shape} />;
+      return <ContactBlock c={c} shape={shape} mark={mark} />;
     default:
       return null;
   }
@@ -144,7 +234,7 @@ function longDate(d: Date, timeZone: string) {
   }).format(d);
 }
 
-function CoverBlock({ c, ctx }: { c: Config; ctx: BlockContext }) {
+function CoverBlock({ c, ctx, mark }: { c: Config; ctx: BlockContext; mark?: string }) {
   const { event, theme, guest, cta } = ctx;
   const image = safeUrl(c.imageUrl);
   const title = str(c.title) ?? event.title;
@@ -155,6 +245,53 @@ function CoverBlock({ c, ctx }: { c: Config; ctx: BlockContext }) {
     // eslint-disable-next-line @next/next/no-img-element -- organizer-supplied URL, any host
     <img src={image} alt="" className="absolute inset-0 -z-10 size-full object-cover opacity-35" />
   ) : null;
+
+  if (theme.shape === "editorial") {
+    // Admin's imageUrl wins; otherwise the bundled conference photo. The gradient is fixed.
+    const photo = image ?? EDITORIAL_HERO;
+    return (
+      <>
+        <header id="atas" className="relative isolate flex min-h-[600px] items-end overflow-hidden bg-[var(--g-navy)] text-white sm:min-h-[700px]">
+          {/* eslint-disable-next-line @next/next/no-img-element -- organizer-supplied URL, any host */}
+          <img src={photo} alt="" fetchPriority="high" className="absolute inset-0 -z-20 size-full object-cover" />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 -z-10"
+            style={{ background: "linear-gradient(90deg, rgba(17,34,53,.94) 0%, rgba(17,34,53,.72) 39%, rgba(17,34,53,.13) 100%)" }}
+          />
+          {/* On a phone the text spans the whole photo, so darken the right-hand side too. */}
+          <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[#112235]/50 sm:hidden" />
+          <div className="mx-auto w-full max-w-[1080px] px-6 pt-28 pb-14 sm:px-12 sm:pb-20">
+            <p className="gt-mono text-white/75">
+              {mark ? <span className="font-bold text-white">{mark}</span> : null}
+              {mark ? "　—　" : null}
+              {date}
+            </p>
+            <h1 className="mt-5 max-w-[760px] text-[clamp(40px,7.5vw,84px)] leading-[0.98] font-bold tracking-[-0.04em]">{title}</h1>
+            {subtitle ? <p className="mt-6 max-w-[520px] text-lg leading-snug text-white/90">{subtitle}</p> : null}
+            {description ? <p className="mt-4 max-w-[520px] text-sm leading-relaxed whitespace-pre-line text-white/70">{description}</p> : null}
+            {cta ? (
+              <a href={cta.href} data-on="photo" className="gt-cta mt-10 w-full max-w-[300px]">
+                {cta.label}
+                <span aria-hidden="true">→</span>
+              </a>
+            ) : null}
+          </div>
+        </header>
+        {guest ? (
+          <section className="border-b border-[var(--g-line)] bg-[var(--g-cream)]">
+           <div className="mx-auto max-w-[1080px] px-6 py-8 sm:px-12">
+            <p className="gt-mono text-[var(--g-muted)]">Undangan pribadi Anda</p>
+            <h2 className="mt-3 text-[clamp(24px,3.5vw,34px)] font-bold tracking-[-0.02em] text-[var(--g-navy)]">Yth. {guest.householdName}</h2>
+            <p className="mt-2 max-w-[560px] text-sm leading-relaxed text-[var(--g-muted)]">
+              Anda diundang secara khusus untuk menghadiri {title}. Kami menantikan kehadiran Anda.
+            </p>
+           </div>
+          </section>
+        ) : null}
+      </>
+    );
+  }
 
   if (theme.shape === "soft") {
     return (
@@ -239,12 +376,26 @@ function CoverBlock({ c, ctx }: { c: Config; ctx: BlockContext }) {
   );
 }
 
-function CountdownBlock({ c, ctx }: { c: Config; ctx: BlockContext }) {
+function CountdownBlock({ c, ctx, mark }: { c: Config; ctx: BlockContext; mark?: string }) {
   const { event, theme, dict } = ctx;
   const custom = str(c.targetDate);
   const target = custom && !Number.isNaN(Date.parse(custom)) ? new Date(custom) : event.headlineDate;
   const clock = <GenericCountdown targetIso={target.toISOString()} dict={dict} shape={theme.shape} />;
 
+  if (theme.shape === "editorial") {
+    return (
+      <section className="bg-[var(--g-paper)]">
+       <div className="mx-auto max-w-[1080px] px-6 py-12 sm:px-12 sm:py-16">
+        <p className="gt-mono mb-6 text-[var(--g-muted)]">
+          {mark ? <span className="font-bold text-[var(--g-navy)]">{mark}</span> : null}
+          {mark ? "　—　" : null}
+          {str(c.title) ?? "Menuju hari acara"}
+        </p>
+        {clock}
+       </div>
+      </section>
+    );
+  }
   if (theme.shape === "soft") {
     return (
       <section className="bg-[var(--g-paper)] px-[25px] pt-[25px] pb-[31px]">
@@ -263,10 +414,33 @@ function CountdownBlock({ c, ctx }: { c: Config; ctx: BlockContext }) {
   );
 }
 
-function ScheduleBlock({ c, ctx }: { c: Config; ctx: BlockContext }) {
+function ScheduleBlock({ c, ctx, mark }: { c: Config; ctx: BlockContext; mark?: string }) {
   const shape = ctx.theme.shape;
   const items = list(c.items).filter((i) => str(i.title));
   const soft = shape === "soft";
+  if (shape === "editorial") {
+    return (
+      <Section shape={shape} mark={mark} kicker={str(c.kicker)} title={str(c.title) ?? "Jadwal"}>
+        {items.length === 0 ? (
+          <p className="text-[var(--g-muted)]">Jadwal akan segera diumumkan.</p>
+        ) : (
+          <ol className="border-l-2 border-[var(--g-navy)]">
+            {items.map((i, n) => (
+              <li key={n} className="grid gap-1 py-5 pl-6 sm:grid-cols-[170px_1fr] sm:gap-8 sm:pl-10">
+                <span className="text-xl font-bold text-[var(--g-navy)] tabular-nums sm:text-2xl">{str(i.time) ?? ""}</span>
+                <span>
+                  <span className="block text-lg font-semibold text-[var(--g-navy)]">{str(i.title)}</span>
+                  {str(i.description) ? (
+                    <span className="mt-1.5 block max-w-[560px] text-sm leading-relaxed text-[var(--g-muted)]">{str(i.description)}</span>
+                  ) : null}
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </Section>
+    );
+  }
   return (
     <Section shape={shape} kicker={str(c.kicker)} tone={soft ? "paper" : "navy"} title={str(c.title) ?? "Jadwal"}>
       {items.length === 0 ? (
@@ -302,14 +476,58 @@ function ScheduleBlock({ c, ctx }: { c: Config; ctx: BlockContext }) {
   );
 }
 
-type Shape = "sharp" | "soft";
-
-function MapBlock({ c, shape }: { c: Config; shape: Shape }) {
+function MapBlock({ c, shape, mark }: { c: Config; shape: Shape; mark?: string }) {
   // Same rule as the wedding ceremonies: only a Google "embed" src can be framed.
   const embed = parseMapsEmbed(str(c.embedUrl));
   const embedUrl = embed.ok ? embed.url : null;
   const mapsUrl = safeUrl(c.mapsUrl);
   const address = str(c.address);
+
+  if (shape === "editorial") {
+    // Venue photo (admin's `imageUrl` wins) under a left-to-right navy gradient; address beside the map.
+    const photo = safeUrl(c.imageUrl) ?? EDITORIAL_VENUE;
+    const details = str(c.description);
+    return (
+      <section className="relative isolate overflow-hidden bg-[var(--g-navy)] text-white">
+        {/* eslint-disable-next-line @next/next/no-img-element -- organizer-supplied URL, any host */}
+        <img src={photo} alt="" loading="lazy" className="absolute inset-0 -z-20 size-full object-cover" />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 -z-10"
+          style={{ background: "linear-gradient(90deg, rgba(17,34,53,.95) 0%, rgba(17,34,53,.8) 45%, rgba(17,34,53,.4) 100%)" }}
+        />
+        <div className="mx-auto grid max-w-[1080px] gap-10 px-6 py-16 sm:px-12 sm:py-24 lg:grid-cols-2 lg:items-end">
+          <div>
+            <p className="gt-mono text-white/70">
+              {mark ? <span className="font-bold text-white">{mark}</span> : null}
+              {mark && str(c.kicker) ? "　—　" : null}
+              {str(c.kicker)}
+            </p>
+            <h2 className="mt-4 mb-8 text-[clamp(32px,5vw,52px)] leading-[1.05] font-bold tracking-[-0.03em]">{str(c.title) ?? "Lokasi"}</h2>
+            {address ? <p className="max-w-[420px] border-l-2 border-white/60 pl-5 text-lg leading-relaxed whitespace-pre-line">{address}</p> : null}
+            {details ? <p className="mt-6 max-w-[420px] text-sm leading-relaxed whitespace-pre-line text-white/75">{details}</p> : null}
+            {mapsUrl ? (
+              <a href={mapsUrl} target="_blank" rel="noreferrer noopener" data-on="photo" className="gt-cta mt-8 w-full max-w-[280px]">
+                Buka di Google Maps
+                <span aria-hidden="true">→</span>
+              </a>
+            ) : null}
+            {!address && !embedUrl && !mapsUrl ? <p className="text-white/75">Lokasi akan segera diumumkan.</p> : null}
+          </div>
+          {embedUrl ? (
+            <iframe
+              src={embedUrl}
+              title="Peta lokasi"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="aspect-[4/3] w-full border-0 bg-white"
+            />
+          ) : null}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <Section shape={shape} kicker={str(c.kicker)} title={str(c.title) ?? "Lokasi"}>
       <Card className="space-y-3">
@@ -339,7 +557,7 @@ function MapBlock({ c, shape }: { c: Config; shape: Shape }) {
   );
 }
 
-function GalleryBlock({ c, shape }: { c: Config; shape: Shape }) {
+function GalleryBlock({ c, shape, mark }: { c: Config; shape: Shape; mark?: string }) {
   const images = (Array.isArray(c.images) ? c.images : [])
     .map((i) =>
       typeof i === "string"
@@ -349,7 +567,7 @@ function GalleryBlock({ c, shape }: { c: Config; shape: Shape }) {
     .filter((i): i is { url: string; caption: string | undefined } => Boolean(i.url));
   if (images.length === 0) return null;
   return (
-    <Section shape={shape} kicker={str(c.kicker)} title={str(c.title) ?? "Galeri"}>
+    <Section shape={shape} mark={mark} kicker={str(c.kicker)} title={str(c.title) ?? "Galeri"}>
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {images.map((i, n) => (
           <li key={n}>
@@ -380,13 +598,13 @@ function GalleryBlock({ c, shape }: { c: Config; shape: Shape }) {
  * images and links still work. Cost: fixed height (`config.height`, px,
  * default 400) and links open in a new tab.
  */
-function CustomHtmlBlock({ c, shape }: { c: Config; shape: Shape }) {
+function CustomHtmlBlock({ c, shape, mark }: { c: Config; shape: Shape; mark?: string }) {
   const html = typeof c.html === "string" ? c.html : "";
   if (!html.trim()) return null;
   const height = typeof c.height === "number" && c.height >= 80 && c.height <= 2000 ? c.height : 400;
   const doc = `<!doctype html><meta charset="utf-8"><base target="_blank"><style>body{margin:0;padding:12px;font-family:system-ui,sans-serif;color:#222}</style>${html}`;
   return (
-    <Section shape={shape} kicker={str(c.kicker)} title={str(c.title)}>
+    <Section shape={shape} mark={mark} kicker={str(c.kicker)} title={str(c.title)}>
       <iframe
         title={str(c.title) ?? "Konten"}
         srcDoc={doc}
@@ -399,11 +617,11 @@ function CustomHtmlBlock({ c, shape }: { c: Config; shape: Shape }) {
   );
 }
 
-function SponsorBlock({ c, shape }: { c: Config; shape: Shape }) {
+function SponsorBlock({ c, shape, mark }: { c: Config; shape: Shape; mark?: string }) {
   const sponsors = list(c.sponsors).filter((s) => str(s.name) || safeUrl(s.logoUrl));
   if (sponsors.length === 0) return null;
   return (
-    <Section shape={shape} kicker={str(c.kicker)} title={str(c.title) ?? "Sponsor"}>
+    <Section shape={shape} mark={mark} kicker={str(c.kicker)} title={str(c.title) ?? "Sponsor"}>
       <ul className="flex flex-wrap items-center justify-center gap-6">
         {sponsors.map((s, n) => {
           const logo = safeUrl(s.logoUrl);
@@ -432,11 +650,11 @@ function SponsorBlock({ c, shape }: { c: Config; shape: Shape }) {
   );
 }
 
-function ContactBlock({ c, shape }: { c: Config; shape: Shape }) {
+function ContactBlock({ c, shape, mark }: { c: Config; shape: Shape; mark?: string }) {
   const contacts = list(c.contacts).filter((p) => str(p.name));
   if (contacts.length === 0) return null;
   return (
-    <Section shape={shape} kicker={str(c.kicker)} title={str(c.title) ?? "Kontak"}>
+    <Section shape={shape} mark={mark} kicker={str(c.kicker)} title={str(c.title) ?? "Kontak"}>
       <ul className="grid gap-3 sm:grid-cols-2">
         {contacts.map((p, n) => {
           const phone = str(p.phone);

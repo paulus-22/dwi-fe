@@ -186,6 +186,7 @@ function SelfRegistration({
       <button type="submit" disabled={state === "sending"} className="gt-btn">
         {state === "sending" ? "Mengirim…" : "Daftar"}
         {shape === "soft" && state !== "sending" ? "　›" : null}
+        {shape === "editorial" && state !== "sending" ? <span aria-hidden="true">→</span> : null}
       </button>
     </form>
   );
@@ -256,6 +257,7 @@ function GuestRegistration({
       <button type="submit" disabled={state === "sending"} className="gt-btn">
         {state === "sending" ? "Mengirim…" : "Daftar"}
         {shape === "soft" && state !== "sending" ? "　›" : null}
+        {shape === "editorial" && state !== "sending" ? <span aria-hidden="true">→</span> : null}
       </button>
     </form>
   );

@@ -19,7 +19,7 @@ export type BlockGuest = {
 export const fieldCls = "gt-field";
 export const labelCls = "gt-label";
 
-export type Shape = "sharp" | "soft";
+export type Shape = "sharp" | "soft" | "editorial";
 
 export function FormNotice({ tone = "info", children }: { tone?: "info" | "error"; children: React.ReactNode }) {
   return (
@@ -151,6 +151,7 @@ export function RsvpBlock({
       <button type="submit" disabled={state === "sending"} className="gt-btn">
         {state === "sending" ? "Mengirim…" : "Kirim"}
         {shape === "soft" && state !== "sending" ? "　›" : null}
+        {shape === "editorial" && state !== "sending" ? <span aria-hidden="true">→</span> : null}
       </button>
     </form>
   );

@@ -4,10 +4,11 @@
  *
  * Config shapes (all keys optional unless noted; `title` is the section heading):
  *
- *   COVER              { title, subtitle, description, imageUrl }   (falls back to the event's own)
+ *   COVER              { title, subtitle, description, imageUrl }   (falls back to the event's own; editorial: bundled hero photo)
  *   COUNTDOWN          { title, targetDate (ISO) }                  (falls back to headlineDate)
  *   SCHEDULE           { title, items: [{ time, title, description }] }
  *   MAP                { title, address, embedUrl, mapsUrl }        (embedUrl: Google "Sematkan peta" src or iframe)
+ *                      editorial theme also reads { imageUrl (default: bundled venue photo), description (practical details) }
  *   GALLERY            { title, images: [url | { url, caption }] }
  *   RSVP_FORM          { title, description }
  *   REGISTRATION_FORM  { title, description }

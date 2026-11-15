@@ -9,14 +9,17 @@ import type { CSSProperties } from "react";
  * colours — only on layout where the two designs genuinely differ.
  */
 
-export type GenericThemeKey = "corporate-classic" | "corporate-soft";
+export type GenericThemeKey = "corporate-classic" | "corporate-soft" | "editorial";
 
 export type GenericTheme = {
   key: GenericThemeKey;
   label: string;
   description: string;
-  /** sharp = hairline/2px corners; soft = rounded cards, pill buttons. */
-  shape: "sharp" | "soft";
+  /**
+   * sharp = hairline/2px corners; soft = rounded cards, pill buttons;
+   * editorial = flat square sans-serif "conference" layout with a sticky nav.
+   */
+  shape: "sharp" | "soft" | "editorial";
   /** Dark brand colour: hero, dark sections, primary buttons. */
   navy: string;
   /** Lighter navy for gradients. */
@@ -72,6 +75,24 @@ export const GENERIC_THEMES: Record<GenericThemeKey, GenericTheme> = {
     muted: "#59616d",
     column: 480,
     radius: { control: "10px", card: "16px", pill: "999px" },
+  },
+  editorial: {
+    key: "editorial",
+    label: "Editorial",
+    description: "Konferensi modern: navbar menempel, penomoran bagian, tombol datar.",
+    shape: "editorial",
+    navy: "#112235",
+    navy2: "#1d3652",
+    // No gold in this palette: the accent slots carry a cool steel blue instead.
+    gold: "#9db7d3",
+    goldInk: "#2f5f93",
+    paper: "#ffffff",
+    cream: "#f2f4f6",
+    line: "#dde2e8",
+    ink: "#112235",
+    muted: "#5d6977",
+    column: 1080,
+    radius: { control: "0px", card: "0px", pill: "0px" },
   },
 };
 
