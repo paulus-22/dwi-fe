@@ -34,6 +34,35 @@
 
   --radius-control: 6px;
   --radius-card: 10px;
+
+  /* ---- Invitation (ported from the old app; a theme overrides these on the
+     page wrapper, the dashboard keeps the defaults) ---- */
+  --color-paper: #ffffff;
+  --color-olive-deep: #353a20;
+  --color-olive-mid: #56584b;
+  --color-cream: #f5f0e8;
+  --color-sage: #8fa072;
+  --color-ink: #353a20;
+  --color-names-ink: #353a20;
+  --color-ink-soft: #786b5d;
+  --color-ink-cream: #f5f0e8;
+  --color-peach: #e9af8a;
+  --color-peach-ink: #876550;
+  --color-peach-deep: #b9764a;
+  --color-peach-line: #edcbb2;
+  --color-peach-soft: #f7e3d4;
+  --color-peach-text: #4a2e1d;
+  --color-champagne: #e5c9b3;
+  --color-rose: #a75f62;
+  --color-line: #ddd8cc;
+  --color-line-dark: #47472f;
+
+  --font-names: var(--font-cormorant), "Cormorant Upright", serif;
+  --names-scale: 1;
+  --names-leading: 1.04;
+  --font-body: var(--font-instrument), "Instrument Serif", serif;
+  --radius-pill: 999px;
+  --radius-frame: 4px;
 }
 
 @layer base {
@@ -56,5 +85,278 @@
 
   button:disabled {
     cursor: not-allowed;
+  }
+
+  .safe-area {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+@layer utilities {
+  /* Wide-tracked small caps — the only uppercase in the design. */
+  .kicker {
+    font-family: var(--font-ui);
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+  }
+
+  /* Headings carry a default bold weight; the display face ships 300/400 only,
+     so pin them rather than let the browser synthesise a faux bold. */
+  .font-display {
+    font-weight: 400;
+  }
+
+  /* Oversized display type, tightened because the reference sets it large. */
+  .display {
+    font-family: var(--font-display);
+    font-weight: 300;
+    line-height: 1.04;
+    letter-spacing: -0.01em;
+  }
+
+  /*
+   * The couple's names. Separate from `.display` so a theme can set them in a
+   * script without dragging dates and section headings along; the script faces
+   * carry their own generous sidebearings, so the tracking is not tightened.
+   */
+  .names {
+    font-family: var(--font-names);
+    /*
+     * The size comes in as `--names-size` from the call site, not as a
+     * `text-[…]` class. `1em` here is the *parent's* size, and this rule beat
+     * the class on the same element, so every name rendered at 16px × scale
+     * (18.9px) whatever the design asked for. A variable lets the theme's
+     * scale multiply the intended size instead.
+     *
+     * Scripts have a far smaller x-height than a serif and deeper descenders,
+     * so a theme that sets one bumps the point size and the leading.
+     */
+    font-size: calc(var(--names-size, 1em) * var(--names-scale, 1));
+    line-height: var(--names-leading, 1.04);
+    /* Heavier than `.display`'s 300: the names are the one place on the page
+       that should never read as faint. A script ships in one weight only, so a
+       theme thickens it with a hairline stroke instead of a faux bold. */
+    font-weight: 400;
+    -webkit-text-stroke: var(--names-stroke, 0px) currentColor;
+  }
+}
+
+/*
+ * Paper tooth behind a band. Rasterised fractal noise in neutral grey, tiled;
+ * the band sets the opacity. Overlay keeps it from greying the colour beneath,
+ * so the same texture works on the cream bands and on the dark ones.
+ */
+.paper-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 1.4 -0.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+  mix-blend-mode: overlay;
+}
+
+/*
+ * Lace-edged details card, after the insert in a printed suite.
+ *
+ * The scallops are a mask, not an image, so they stay round at any card size:
+ * a grid of circles tiled over the whole card (`round` fits a whole number of
+ * them to each side) unioned with a solid rectangle inset by one radius. Only
+ * the outermost circles show past the rectangle, and those are the scallops.
+ * Between the edge and the field sits a band of lace mesh, then a row of
+ * eyelets and a gold rule, all from theme tokens.
+ */
+.lace-card {
+  --scallop: 8px;
+  padding: 22px;
+  background-color: var(--color-petal);
+  background-image: radial-gradient(circle, var(--color-petal-edge) 0.9px, transparent 1.4px);
+  background-size: 6px 6px;
+  -webkit-mask-image: linear-gradient(#000 0 0), radial-gradient(circle closest-side, #000 96%, transparent);
+  mask-image: linear-gradient(#000 0 0), radial-gradient(circle closest-side, #000 96%, transparent);
+  -webkit-mask-size:
+    calc(100% - 2 * var(--scallop)) calc(100% - 2 * var(--scallop)),
+    calc(2 * var(--scallop)) calc(2 * var(--scallop));
+  mask-size:
+    calc(100% - 2 * var(--scallop)) calc(100% - 2 * var(--scallop)),
+    calc(2 * var(--scallop)) calc(2 * var(--scallop));
+  -webkit-mask-position: center, 0 0;
+  mask-position: center, 0 0;
+  -webkit-mask-repeat: no-repeat, round;
+  mask-repeat: no-repeat, round;
+}
+
+.lace-card-field {
+  background-color: var(--color-petal);
+  border: 1px solid color-mix(in srgb, var(--color-champagne) 70%, transparent);
+  /* The eyelets: a dotted ring just outside the gold rule, in the mesh band. */
+  outline: 2px dotted color-mix(in srgb, var(--color-champagne) 55%, transparent);
+  outline-offset: 6px;
+}
+
+/* The envelope gate locks scrolling until the invitation is opened. */
+.scroll-locked {
+  overflow: hidden;
+  touch-action: none;
+}
+
+/* Indeterminate progress: a bar that sweeps rather than pretending to measure
+   something it cannot know the duration of. */
+@keyframes pending-sweep {
+  0% {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  50% {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  51% {
+    transform: scaleX(1);
+    transform-origin: right;
+  }
+  100% {
+    transform: scaleX(0);
+    transform-origin: right;
+  }
+}
+
+/*
+ * Cover entrances, shared by every cover style. They used to live inside the
+ * envelope cover's own <style> tag, so the arch and card covers named them but
+ * never got them — those only animated if the envelope had rendered first.
+ */
+@keyframes cover-card-rise {
+  from {
+    transform: translateY(46px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes cover-fade-in {
+  from {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* The invitation settles into place as the envelope finishes receding. */
+@keyframes invitation-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+ * Botanicals drift instead of sitting still. The range is deliberately tiny —
+ * the spec's rule is that decoration must never pull attention off the couple.
+ */
+@keyframes botanical-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(1.2deg);
+  }
+}
+.float-slow {
+  animation: botanical-float 6s ease-in-out infinite;
+}
+.float-slower {
+  animation: botanical-float 8.5s ease-in-out infinite;
+}
+
+/*
+ * Scroll reveals. Elements start displaced and settle when the observer adds
+ * [data-revealed]; the stagger comes from an inline transition-delay.
+ */
+[data-reveal] {
+  opacity: 0;
+  transition-property: opacity, transform, clip-path;
+  transition-duration: 700ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+[data-reveal="fade"] {
+  transition-duration: 900ms;
+}
+[data-reveal="fade-up"] {
+  transform: translate3d(0, 28px, 0);
+}
+[data-reveal="fade-down"] {
+  transform: translate3d(0, -24px, 0);
+}
+[data-reveal="fade-left"] {
+  transform: translate3d(28px, 0, 0);
+}
+[data-reveal="fade-right"] {
+  transform: translate3d(-28px, 0, 0);
+}
+[data-reveal="zoom-in"] {
+  transform: scale(0.92);
+}
+[data-reveal="zoom-out"] {
+  transform: scale(1.06);
+}
+/*
+ * Editorial page-turn: the element wipes in from the left.
+ *
+ * The clip sits on the children, not on the observed element. IntersectionObserver
+ * takes clip-path into account, so `inset(0 100% 0 0)` on the observed element
+ * gives it a 0x0 intersection rect — it never reports as intersecting, never
+ * gets [data-revealed], and stays clipped forever. Opacity is safe there;
+ * observers ignore it.
+ */
+[data-reveal="wipe"] > * {
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 1000ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+[data-reveal="wipe"][data-revealed] > * {
+  clip-path: inset(0 0 0 0);
+}
+/* A rule that draws itself. */
+[data-reveal="grow-y"] {
+  transform: scaleY(0);
+  transform-origin: top;
+  transition-duration: 1200ms;
+}
+[data-reveal][data-revealed] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Never leave content invisible when transitions are switched off. */
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+  }
+
+  .float-slow,
+  .float-slower,
+  [class*="invitation-enter"] {
+    animation: none !important;
   }
 }

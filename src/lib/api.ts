@@ -172,3 +172,22 @@ export const eventKind = (e: EventItem): EventKind => e.kind ?? "WEDDING";
 /** Display name: the couple line for weddings, the title for generic events. */
 export const eventName = (e: EventItem) =>
   eventKind(e) === "GENERIC" ? e.title || e.slug : e.coupleLine;
+
+// ------------------------------------------------------- public (no auth)
+
+/**
+ * Unauthenticated call to `/v1/public/...` — the guest-facing pages. Never
+ * sends the admin session cookie and never redirects: a 404 is an
+ * `ApiError(404)` for the caller to turn into `notFound()`.
+ */
+export async function publicApi<T>(path: string): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, { cache: "no-store" });
+  } catch {
+    throw new ApiError(503, "unreachable", "Server tidak dapat dihubungi. Coba lagi sebentar.");
+  }
+  if (res.ok) return (await res.json()) as T;
+  const payload = (await res.json().catch(() => null)) as { error?: { code: string; message: string } } | null;
+  throw new ApiError(res.status, payload?.error?.code ?? "unknown", payload?.error?.message ?? `Permintaan gagal (${res.status}).`);
+}
