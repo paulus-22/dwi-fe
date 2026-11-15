@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { CopyLinkButton } from "@/components/copy-link-button";
 import { Card, PageTitle } from "@/components/ui";
 import { api, eventKind, eventName, ROLE_LABELS, type EventItem, type EventKind } from "@/lib/api";
 
@@ -56,11 +57,11 @@ export default async function EventsPage({ searchParams }: PageProps<"/admin">) 
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((e) => (
-            <li key={e.id}>
-              <Link
-                href={`/admin/events/${e.id}`}
-                className="block h-full rounded-[var(--radius-card)] border border-panel-border bg-panel p-5 transition-colors hover:border-gold-line hover:bg-panel-hover"
-              >
+            <li
+              key={e.id}
+              className="rounded-[var(--radius-card)] border border-panel-border bg-panel transition-colors hover:border-gold-line hover:bg-panel-hover"
+            >
+              <Link href={`/admin/events/${e.id}`} className="block p-5 pb-3">
                 <p className="text-xs tracking-wide text-admin-muted uppercase">
                   {STATUS[e.status]} · {ROLE_LABELS[e.role]}
                 </p>
@@ -71,6 +72,9 @@ export default async function EventsPage({ searchParams }: PageProps<"/admin">) 
                 <p className="mt-2 text-sm text-admin-muted">{e.dateLabel}</p>
                 {e.venue ? <p className="text-sm text-admin-muted">{e.venue}</p> : null}
               </Link>
+              <div className="px-5 pb-4">
+                <CopyLinkButton path={`/e/${e.slug}`} />
+              </div>
             </li>
           ))}
         </ul>
