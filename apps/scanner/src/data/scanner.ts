@@ -61,7 +61,7 @@ export async function pairFromCsv(
   const previous = await store.getPairing();
   if (previous && previous.event.id !== event.id) {
     throw new Error(
-      `Perangkat ini masih terhubung ke ${previous.event.coupleLine}. Reset dulu di Lainnya sebelum ganti acara.`,
+      `Perangkat ini masih terhubung ke ${previous.event.displayName}. Reset dulu di Lainnya sebelum ganti acara.`,
     );
   }
   await store.replaceGuests(guests);

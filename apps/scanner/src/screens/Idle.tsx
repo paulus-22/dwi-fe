@@ -101,14 +101,18 @@ export function IdleSlideshow({ onWake, watching }: { onWake(): void; watching: 
         }`}
       >
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(233,175,138,0.12),transparent_65%)]" />
-        <p className="kicker relative text-peach">The wedding of</p>
+        <p className="kicker relative text-peach">{event?.kind === "WEDDING" ? "The wedding of" : "Acara"}</p>
         <h1 className="relative mt-4 font-display text-[clamp(52px,13vw,120px)] font-light leading-[0.95] text-cream">
-          {event?.coupleLine.split("&").map((name, i, all) => (
-            <span key={name} className="block">
-              {name.trim()}
-              {i < all.length - 1 ? <span className="block py-2 text-[0.45em] text-gold">&amp;</span> : null}
-            </span>
-          ))}
+          {event?.kind === "WEDDING" && event.coupleLine ? (
+            event.coupleLine.split("&").map((name, i, all) => (
+              <span key={name} className="block">
+                {name.trim()}
+                {i < all.length - 1 ? <span className="block py-2 text-[0.45em] text-gold">&amp;</span> : null}
+              </span>
+            ))
+          ) : (
+            <span className="block">{event?.displayName}</span>
+          )}
         </h1>
         {event?.dateLabel ? <p className="kicker relative mt-8 text-gold">{event.dateLabel}</p> : null}
         {event?.venue ? <p className="relative mt-2 text-[length:calc(15px*var(--fs))] text-cream-dim">{event.venue}</p> : null}

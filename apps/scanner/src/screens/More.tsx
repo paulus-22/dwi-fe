@@ -100,7 +100,7 @@ export function MoreScreen() {
           <p className="kicker text-mute">Perangkat</p>
           <p className="mt-2 text-[length:calc(17px*var(--fs))] text-cream">{pairing?.deviceName}</p>
           <p className="text-[length:calc(14px*var(--fs))] text-cream-dim">
-            {pairing?.event.coupleLine}
+            {pairing?.event.displayName}
             {pairing?.event.dateLabel ? ` · ${pairing.event.dateLabel}` : ""}
           </p>
           <p className="mt-1 text-[length:calc(13px*var(--fs))] text-mute">

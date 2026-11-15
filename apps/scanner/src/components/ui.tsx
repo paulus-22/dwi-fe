@@ -55,7 +55,7 @@ export function Header({ title, right }: { title?: ReactNode; right?: ReactNode 
       <div className="min-w-0">
         <p className="kicker truncate text-peach">{pairing?.deviceName ?? "Scanner"}</p>
         <h1 className="truncate font-display text-[length:calc(28px*var(--fs))] leading-tight text-cream">
-          {title ?? pairing?.event.coupleLine}
+          {title ?? pairing?.event.displayName}
         </h1>
       </div>
       {right ?? <SyncPill />}

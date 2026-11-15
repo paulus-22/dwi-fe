@@ -43,8 +43,8 @@ export function WallScreen() {
     <div className="relative flex h-full flex-col overflow-hidden bg-night" onDoubleClick={() => go("gallery")}>
       <div className="flex items-end justify-between px-10 pb-4 pt-8">
         <div>
-          <p className="kicker text-peach">The wedding of</p>
-          <h1 className="font-display text-[clamp(40px,6vw,88px)] leading-none text-cream">{pairing?.event.coupleLine}</h1>
+          <p className="kicker text-peach">{pairing?.event.kind === "WEDDING" ? "The wedding of" : "Acara"}</p>
+          <h1 className="font-display text-[clamp(40px,6vw,88px)] leading-none text-cream">{pairing?.event.displayName}</h1>
         </div>
         <div className="text-right">
           <p className="font-display text-[clamp(40px,5vw,72px)] leading-none text-gold">{people}</p>

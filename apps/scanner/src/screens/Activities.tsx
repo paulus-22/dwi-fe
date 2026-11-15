@@ -136,20 +136,24 @@ function SelfieStep({ step, checkIn, guest, onDone, onSkip }: StepProps) {
         {/* The couple stand on their own: each name on its own line, set larger
             than the lead-in, with the ampersand as a small gold ornament. */}
         <h2 className="mt-2 font-display text-[length:calc(46px*var(--fs))] font-light leading-[1.05] text-cream">
-          {pairing!.event.coupleLine.split("&").map((name, i, all) => (
-            <span key={`${name}-${i}`} className="block">
-              {name.trim()}
-              {i < all.length - 1 ? (
-                <span className="block py-1 text-[length:calc(24px*var(--fs))] italic text-gold">&amp;</span>
-              ) : null}
-            </span>
-          ))}
+          {pairing!.event.kind === "WEDDING" && pairing!.event.coupleLine ? (
+            pairing!.event.coupleLine.split("&").map((name, i, all) => (
+              <span key={`${name}-${i}`} className="block">
+                {name.trim()}
+                {i < all.length - 1 ? (
+                  <span className="block py-1 text-[length:calc(24px*var(--fs))] italic text-gold">&amp;</span>
+                ) : null}
+              </span>
+            ))
+          ) : (
+            <span className="block">{pairing!.event.displayName}</span>
+          )}
         </h2>
         <p className="mt-4 max-w-[32ch] text-[length:calc(16px*var(--fs))] leading-relaxed text-cream-dim">
           {selfie
             ? "Serahkan perangkat ke tamu untuk selfie."
             : "Arahkan kamera belakang ke tamu untuk memotret."}{" "}
-          Foto akan dibingkai dengan nama mempelai dan tampil di layar galeri.
+          Foto akan dibingkai dengan nama acara dan tampil di layar galeri.
         </p>
         <div className="mt-10 grid w-full max-w-sm gap-3">
           <Button onClick={() => setStage("live")}>
@@ -193,7 +197,7 @@ function SelfieStep({ step, checkIn, guest, onDone, onSkip }: StepProps) {
           </div>
         ) : null}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-night/90 to-transparent px-6 pb-5 pt-16 text-center">
-          <p className="font-display text-[length:calc(30px*var(--fs))] text-cream">{pairing!.event.coupleLine}</p>
+          <p className="font-display text-[length:calc(30px*var(--fs))] text-cream">{pairing!.event.displayName}</p>
           <p className="kicker mt-1 text-gold">{pairing!.event.dateLabel}</p>
         </div>
         {count !== null && count > 0 ? (
@@ -217,7 +221,7 @@ function SelfieStep({ step, checkIn, guest, onDone, onSkip }: StepProps) {
       />
 
       <p className="mt-3 px-8 text-center text-[length:calc(12px*var(--fs))] leading-snug text-mute">
-        Dengan berfoto, tamu setuju fotonya dibagikan kepada mempelai dan ditampilkan di layar acara.
+        Dengan berfoto, tamu setuju fotonya dibagikan kepada penyelenggara dan ditampilkan di layar acara.
       </p>
       <div className="safe-bottom flex items-center justify-between px-8 pt-3">
         {!step.required ? (
@@ -290,7 +294,7 @@ function GuestbookStep({ step, checkIn, guest, onDone, onSkip }: StepProps) {
   return (
     <div className="flex h-full flex-col overflow-y-auto px-6 pb-6">
       <p className="kicker mt-2 text-peach">{step.label}</p>
-      <h2 className="mt-1 font-display text-[length:calc(34px*var(--fs))] leading-tight">Ucapan untuk mempelai</h2>
+      <h2 className="mt-1 font-display text-[length:calc(34px*var(--fs))] leading-tight">Ucapan untuk acara</h2>
       <p className="mt-1 text-[length:calc(15px*var(--fs))] text-cream-dim">{guest.householdName}</p>
 
       <textarea

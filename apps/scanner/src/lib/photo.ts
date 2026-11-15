@@ -91,7 +91,7 @@ export async function framePhoto(
   ctx.textAlign = "center";
   ctx.fillStyle = "#353a20";
   ctx.font = '92px "Cormorant Upright", Georgia, serif';
-  ctx.fillText(event.coupleLine, cx, 1378);
+  ctx.fillText(event.displayName, cx, 1378);
 
   ctx.fillStyle = "#876550";
   ctx.font = '30px "Jost", system-ui, sans-serif';

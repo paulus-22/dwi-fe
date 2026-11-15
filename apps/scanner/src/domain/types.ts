@@ -9,9 +9,14 @@ import type { CategoryCode } from "./codes";
 export type EventInfo = {
   id: string;
   slug: string;
-  coupleLine: string; // "Alex & Ajeng"
-  brideShortName: string;
-  groomShortName: string;
+  kind: "WEDDING" | "GENERIC";
+  /** Couple line for weddings, title for generic events — always safe to show. */
+  displayName: string;
+  coupleLine?: string; // "Alex & Ajeng" — WEDDING only
+  brideShortName?: string;
+  groomShortName?: string;
+  title?: string; // GENERIC only
+  subtitle?: string;
   dateLabel: string; // "Sabtu, 15 Mei 2027"
   venue: string;
   hashtag: string | null;

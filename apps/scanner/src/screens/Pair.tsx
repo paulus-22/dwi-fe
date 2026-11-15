@@ -314,7 +314,7 @@ function CsvPairing({ door, onPaired }: { door: string; onPaired(p: Pairing): vo
 
       {file ? (
         <div className="space-y-3">
-          {field("coupleLine", "Nama mempelai (untuk bingkai foto)", "Tari & Saefulloh")}
+          {field("coupleLine", "Nama mempelai / acara (untuk bingkai foto)", "Tari & Saefulloh")}
           {field("dateLabel", "Tanggal", "Sabtu, 12 Desember 2026")}
           {field("venue", "Tempat", "Nama gedung")}
           {field("hashtag", "Hashtag", "#TariSaefulloh")}
