@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Card, PageTitle, Stat, formatTime } from "@/components/ui";
 import { api, canManage, eventKind, eventName, type Attendance, type EventItem } from "@/lib/api";
 
+import { DeleteEventButton } from "./edit/delete-button";
 import { LiveFeed } from "./live-feed";
 
 const navLink =
@@ -34,6 +35,14 @@ export default async function EventDashboard({ params }: PageProps<"/admin/event
             <Link href={`/admin/events/${id}/scanner`} className={navLink}>
               Perangkat scanner
             </Link>
+            {event.role === "OWNER" ? (
+              <>
+                <Link href={`/admin/events/${id}/edit`} className={navLink}>
+                  Edit acara
+                </Link>
+                <DeleteEventButton id={id} kind={eventKind(event)} />
+              </>
+            ) : null}
           </div>
         ) : null}
       </PageTitle>

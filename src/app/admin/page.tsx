@@ -22,14 +22,12 @@ export default async function EventsPage({ searchParams }: PageProps<"/admin">) 
   return (
     <>
       <PageTitle kicker="Dashboard" title={product.label}>
-        {product.kind === "GENERIC" ? (
-          <Link
-            href="/admin/events/new"
+        <Link
+            href={`/admin/events/new?produk=${product.param}`}
             className="inline-flex h-10 items-center justify-center gap-2 rounded-[var(--radius-control)] bg-admin-ink px-4 text-sm font-medium text-white transition-colors hover:bg-black"
           >
             + Acara baru
-          </Link>
-        ) : null}
+        </Link>
       </PageTitle>
 
       <nav aria-label="Produk" className="mb-6 flex gap-1 border-b border-panel-border">
