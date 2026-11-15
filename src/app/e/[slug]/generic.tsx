@@ -4,6 +4,7 @@ import { ApiError, publicApi } from "@/lib/api";
 import type { FormField } from "@/lib/builder";
 import { resolveGuest, type PublicGenericEvent } from "@/lib/event";
 import { isPreviewMode } from "@/lib/preview";
+import type { PublicTicketType } from "@/lib/tickets";
 
 /** Public page for GENERIC events: the organizer's page blocks, in order. */
 export async function GenericInvitation({
@@ -30,7 +31,19 @@ export async function GenericInvitation({
     }
   }
 
-  const ctx: BlockContext = { event, dict: getDictionary("id"), guest, formFields };
+  // Ticket types switch on self-registration; only needed without a personal link.
+  let ticketTypes: PublicTicketType[] = [];
+  if (!guest && !isPreviewMode() && blocks.some((b) => b.blockType === "REGISTRATION_FORM")) {
+    try {
+      ({ ticketTypes } = await publicApi<{ ticketTypes: PublicTicketType[] }>(
+        `/v1/public/events/${encodeURIComponent(event.slug)}/ticket-types`,
+      ));
+    } catch (e) {
+      if (!(e instanceof ApiError)) throw e;
+    }
+  }
+
+  const ctx: BlockContext = { event, dict: getDictionary("id"), guest, formFields, ticketTypes };
 
   return (
     <main className="min-h-dvh bg-surface pb-16">

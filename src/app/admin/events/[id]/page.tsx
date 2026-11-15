@@ -30,6 +30,9 @@ export default async function EventDashboard({ params }: PageProps<"/admin/event
                 <Link href={`/admin/events/${id}/blocks`} className={navLink}>
                   Blok halaman
                 </Link>
+                <Link href={`/admin/events/${id}/tickets`} className={navLink}>
+                  Jenis tiket
+                </Link>
               </>
             ) : null}
             <Link href={`/admin/events/${id}/scanner`} className={navLink}>

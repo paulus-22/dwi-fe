@@ -33,3 +33,31 @@ export async function submitRsvp(slug: string, token: string, payload: RsvpPaylo
   const body = (await res?.json().catch(() => null)) as { error?: { message?: string } } | null;
   return body?.error?.message ?? "";
 }
+
+export type RegisterPayload = {
+  ticketTypeId: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  responses: RsvpResponseValue[];
+};
+
+export type RegisterResult =
+  | { ok: true; token: string; qrPayload: string }
+  | { ok: false; code: string; message: string };
+
+/** POSTs a self-registration. Resolves to the issued token, or the API's error code + message. */
+export async function register(slug: string, payload: RegisterPayload): Promise<RegisterResult> {
+  const res = await fetch(pub(`/${encodeURIComponent(slug)}/register`), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload),
+  }).catch(() => null);
+  if (!res) return { ok: false, code: "network", message: "" };
+  if (res.ok) {
+    const body = (await res.json().catch(() => null)) as { token?: string; qrPayload?: string } | null;
+    if (body?.token) return { ok: true, token: body.token, qrPayload: body.qrPayload ?? "" };
+  }
+  const body = (await res.json().catch(() => null)) as { error?: { code?: string; message?: string } } | null;
+  return { ok: false, code: body?.error?.code ?? "unknown", message: body?.error?.message ?? "" };
+}

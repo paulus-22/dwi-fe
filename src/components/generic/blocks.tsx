@@ -6,6 +6,7 @@ import type { Dictionary } from "@/i18n/dictionaries";
 import type { PublicGenericEvent } from "@/lib/event";
 import { parseMapsEmbed } from "@/lib/maps";
 import type { FormField, PageBlock } from "@/lib/builder";
+import type { PublicTicketType } from "@/lib/tickets";
 
 import { asConfig, list, safeUrl, str, type Config } from "./config";
 import { RegistrationBlock } from "./registration-block";
@@ -21,6 +22,8 @@ export type BlockContext = {
   dict: Dictionary;
   guest: { token: string; householdName: string; plusGuestAllowance: number; rsvp: { attending: boolean; guestCount: number; message: string | null } | null } | null;
   formFields: FormField[];
+  /** Still-claimable ticket types; non-empty enables open/allowlist self-registration. */
+  ticketTypes: PublicTicketType[];
 };
 
 function Section({ title, children, id }: { title?: string; children: ReactNode; id?: string }) {
@@ -55,7 +58,14 @@ export function GenericBlock({ block, ctx }: { block: PageBlock; ctx: BlockConte
     case "REGISTRATION_FORM":
       return (
         <Section id="pendaftaran" title={str(c.title) ?? "Pendaftaran"}>
-          <RegistrationBlock slug={event.slug} guest={ctx.guest} fields={ctx.formFields} description={str(c.description)} />
+          <RegistrationBlock
+            slug={event.slug}
+            guest={ctx.guest}
+            fields={ctx.formFields}
+            ticketTypes={ctx.ticketTypes}
+            registrationMode={event.registrationMode}
+            description={str(c.description)}
+          />
         </Section>
       );
     case "CUSTOM_HTML":

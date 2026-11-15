@@ -4,7 +4,8 @@ import { useState } from "react";
 
 import { Button, Notice } from "@/components/ui";
 import { hasOptions, type FormField } from "@/lib/builder";
-import { submitRsvp, type RsvpResponseValue } from "@/lib/public-client";
+import { register, submitRsvp, type RsvpResponseValue } from "@/lib/public-client";
+import type { PublicTicketType } from "@/lib/tickets";
 
 import { fieldCls, NeedsInvitation, type BlockGuest } from "./rsvp-block";
 
@@ -19,10 +20,170 @@ export function RegistrationBlock({
   slug,
   guest,
   fields,
+  ticketTypes = [],
+  registrationMode,
   description,
 }: {
   slug: string;
   guest: BlockGuest | null;
+  fields: FormField[];
+  ticketTypes?: PublicTicketType[];
+  registrationMode?: "CLOSED" | "OPEN" | "ALLOWLIST";
+  description?: string;
+}) {
+  if (guest) return <GuestRegistration slug={slug} guest={guest} fields={fields} description={description} />;
+  // No personal link: self-register if there are ticket types, else invite-only as before.
+  if (ticketTypes.length === 0) return <NeedsInvitation />;
+  return (
+    <SelfRegistration
+      slug={slug}
+      fields={fields}
+      ticketTypes={ticketTypes}
+      allowlist={registrationMode === "ALLOWLIST"}
+      description={description}
+    />
+  );
+}
+
+/** Validates the dynamic fields into API `responses`, or returns an error message. */
+function collectResponses(fields: FormField[], values: Record<string, Value>): RsvpResponseValue[] | string {
+  const responses: RsvpResponseValue[] = [];
+  for (const f of fields) {
+    const v = values[f.fieldKey];
+    const empty = v === undefined || v === "" || (Array.isArray(v) && v.length === 0);
+    if (empty) {
+      if (f.required) return `"${f.labelId}" wajib diisi.`;
+      continue;
+    }
+    responses.push({ fieldKey: f.fieldKey, value: f.fieldType === "NUMBER" ? Number(v) : v });
+  }
+  return responses;
+}
+
+const REGISTER_ERRORS: Record<string, string> = {
+  sold_out: "Maaf, tiket jenis ini sudah habis. Silakan pilih jenis tiket lain.",
+  not_allowlisted:
+    "Nomor HP / email ini tidak terdaftar di daftar peserta, atau sudah pernah dipakai untuk mendaftar. Hubungi penyelenggara jika Anda merasa ini keliru.",
+};
+
+function SelfRegistration({
+  slug,
+  fields,
+  ticketTypes,
+  allowlist,
+  description,
+}: {
+  slug: string;
+  fields: FormField[];
+  ticketTypes: PublicTicketType[];
+  allowlist: boolean;
+  description?: string;
+}) {
+  const [ticketTypeId, setTicketTypeId] = useState(ticketTypes.length === 1 ? ticketTypes[0].id : "");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [values, setValues] = useState<Record<string, Value>>({});
+  const [error, setError] = useState<string | null>(null);
+  const [state, setState] = useState<"idle" | "sending">("idle");
+  const [token, setToken] = useState<string | null>(null);
+
+  if (token) {
+    return (
+      <div className="space-y-3">
+        <Notice>Pendaftaran berhasil! Tiket dan kode QR Anda sudah siap.</Notice>
+        <a
+          href={`/v/${encodeURIComponent(slug)}?to=${encodeURIComponent(token)}`}
+          className="inline-flex h-10 items-center rounded-[var(--radius-control)] bg-gold px-4 text-sm font-medium text-white"
+        >
+          Lihat tiket &amp; QR
+        </a>
+        <p className="text-sm text-admin-muted">Simpan tautan tersebut. Konfirmasi juga dikirim lewat WhatsApp jika nomor diisi.</p>
+      </div>
+    );
+  }
+
+  const set = (key: string, v: Value) => setValues((cur) => ({ ...cur, [key]: v }));
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!ticketTypeId) return setError("Pilih jenis tiket.");
+    if (!name.trim()) return setError("Nama wajib diisi.");
+    if (allowlist && !phone.trim() && !email.trim()) return setError("Isi nomor HP atau email yang terdaftar.");
+    const responses = collectResponses(fields, values);
+    if (typeof responses === "string") return setError(responses);
+    setError(null);
+    setState("sending");
+    const res = await register(slug, {
+      ticketTypeId,
+      name: name.trim(),
+      ...(phone.trim() ? { phone: phone.trim() } : {}),
+      ...(email.trim() ? { email: email.trim() } : {}),
+      responses,
+    });
+    setState("idle");
+    if (res.ok) return setToken(res.token);
+    setError(REGISTER_ERRORS[res.code] ?? (res.message || "Gagal mendaftar. Coba lagi sebentar."));
+  }
+
+  return (
+    <form onSubmit={submit} noValidate className="space-y-4">
+      {description ? <p className="text-admin-muted">{description}</p> : null}
+      {error ? <Notice tone="error">{error}</Notice> : null}
+      <fieldset className="space-y-2">
+        <legend className="text-sm text-admin-muted">
+          Jenis tiket<span className="text-danger"> *</span>
+        </legend>
+        {ticketTypes.map((t) => (
+          <label key={t.id} className="flex items-start gap-2">
+            <input
+              type="radio"
+              name="ticketType"
+              checked={ticketTypeId === t.id}
+              onChange={() => setTicketTypeId(t.id)}
+              className="mt-1 accent-gold"
+            />
+            <span>
+              <span className="font-medium">{t.name}</span>
+              {t.description ? <span className="block text-sm text-admin-muted">{t.description}</span> : null}
+            </span>
+          </label>
+        ))}
+      </fieldset>
+      <label className="block space-y-1.5">
+        <span className="text-sm text-admin-muted">
+          Nama<span className="text-danger"> *</span>
+        </span>
+        <input value={name} onChange={(e) => setName(e.target.value)} maxLength={120} className={fieldCls} />
+      </label>
+      <label className="block space-y-1.5">
+        <span className="text-sm text-admin-muted">
+          Nomor HP{allowlist ? <span className="text-danger"> * (atau email)</span> : " (opsional)"}
+        </span>
+        <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={fieldCls} />
+      </label>
+      <label className="block space-y-1.5">
+        <span className="text-sm text-admin-muted">Email{allowlist ? "" : " (opsional)"}</span>
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={fieldCls} />
+      </label>
+      {fields.map((f) => (
+        <FieldInput key={f.id} field={f} value={values[f.fieldKey]} onChange={(v) => set(f.fieldKey, v)} />
+      ))}
+      <Button type="submit" disabled={state === "sending"}>
+        {state === "sending" ? "Mengirim…" : "Daftar"}
+      </Button>
+    </form>
+  );
+}
+
+function GuestRegistration({
+  slug,
+  guest,
+  fields,
+  description,
+}: {
+  slug: string;
+  guest: BlockGuest;
   fields: FormField[];
   description?: string;
 }) {
@@ -31,25 +192,15 @@ export function RegistrationBlock({
   const [error, setError] = useState<string | null>(null);
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
 
-  if (!guest) return <NeedsInvitation />;
   if (fields.length === 0) return <p className="text-admin-muted">Formulir pendaftaran belum tersedia.</p>;
 
   const set = (key: string, v: Value) => setValues((cur) => ({ ...cur, [key]: v }));
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!guest) return;
     if (!name.trim()) return setError("Nama wajib diisi.");
-    const responses: RsvpResponseValue[] = [];
-    for (const f of fields) {
-      const v = values[f.fieldKey];
-      const empty = v === undefined || v === "" || (Array.isArray(v) && v.length === 0);
-      if (empty) {
-        if (f.required) return setError(`"${f.labelId}" wajib diisi.`);
-        continue;
-      }
-      responses.push({ fieldKey: f.fieldKey, value: f.fieldType === "NUMBER" ? Number(v) : v });
-    }
+    const responses = collectResponses(fields, values);
+    if (typeof responses === "string") return setError(responses);
     setError(null);
     setState("sending");
     const failure = await submitRsvp(slug, guest.token, {
