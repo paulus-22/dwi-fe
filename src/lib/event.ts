@@ -112,6 +112,8 @@ export type PublicGenericEvent = {
   headlineDate: Date;
   timezone: string;
   pageBlocks: PageBlock[];
+  /** `corporate-classic` | `corporate-soft`; absent on older APIs (→ classic). */
+  theme?: string;
   /** Absent on APIs that predate self-registration — treat as CLOSED. */
   registrationMode?: "CLOSED" | "OPEN" | "ALLOWLIST";
 };

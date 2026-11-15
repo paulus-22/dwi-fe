@@ -360,3 +360,128 @@
     animation: none !important;
   }
 }
+
+/* ---- GENERIC event themes -------------------------------------------------
+   Everything below is scoped to `.gt-*` classes that only the generic blocks
+   use; colours/radii come from the `--g-*` vars set by `genericThemeStyle`.
+   `[data-gtheme]` carries the shape language where the two designs differ. */
+.gt-serif {
+  font-family: Georgia, "Times New Roman", serif;
+}
+.gt-kicker {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--g-gold-ink);
+}
+.gt-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--g-muted);
+}
+[data-gtheme="corporate-classic"] .gt-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.gt-field {
+  width: 100%;
+  border: 1px solid #deded9;
+  border-radius: var(--g-r-ctl);
+  background: #fbfbf9;
+  padding: 13px 12px;
+  font-size: 14px;
+  color: var(--g-ink);
+  outline: none;
+}
+[data-gtheme="corporate-soft"] .gt-field {
+  border-color: #c9cbd0;
+  background: #fff;
+  padding: 14px;
+}
+.gt-field:focus {
+  border-color: var(--g-gold-ink);
+}
+[data-gtheme="corporate-soft"] .gt-field:focus {
+  box-shadow: 0 0 0 3px #c99b4b22;
+}
+.gt-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  border: 0;
+  border-radius: var(--g-r-pill);
+  background: var(--g-navy);
+  color: #fff;
+  padding: 16px 15px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition: opacity 0.15s;
+}
+.gt-btn:disabled {
+  opacity: 0.5;
+}
+[data-gtheme="corporate-soft"] .gt-btn,
+.gt-cta {
+  background: linear-gradient(110deg, #f3dfb4, #c89542);
+  color: #111a28;
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 14px;
+  box-shadow: 0 5px 15px #0002;
+}
+.gt-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--g-r-pill);
+  padding: 15px 25px;
+  font-weight: 700;
+  text-decoration: none;
+}
+[data-gtheme="corporate-classic"] .gt-cta {
+  background: var(--g-gold);
+  box-shadow: none;
+  color: #172235;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.gt-notice {
+  border-radius: var(--g-r-ctl);
+  padding: 11px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  background: #edf7ef;
+  color: #24623a;
+}
+.gt-notice[data-tone="error"] {
+  background: #fff0ee;
+  color: #9b352d;
+}
+.gt-choice {
+  flex: 1;
+  border: 1px solid #d5c7ad;
+  border-radius: var(--g-r-ctl);
+  background: #fff;
+  padding: 12px 8px;
+  font-size: 14px;
+  color: #293246;
+}
+.gt-choice[aria-pressed="true"] {
+  background: var(--g-navy2);
+  border-color: var(--g-navy2);
+  color: #fff;
+}
+.gt-ghost {
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  color: var(--g-gold-ink);
+}

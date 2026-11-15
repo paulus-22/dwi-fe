@@ -78,7 +78,7 @@ export function buildEventBody(
   if (kind === "GENERIC") {
     const title = str(form, "title");
     if (!title) return { error: "Judul acara wajib diisi." };
-    return { body: { kind, ...common, title, subtitle: opt(form, "subtitle"), description: opt(form, "description") } };
+    return { body: { kind, ...common, title, subtitle: opt(form, "subtitle"), description: opt(form, "description"), theme: opt(form, "theme") } };
   }
 
   const names = ["brideShortName", "brideFullName", "groomShortName", "groomFullName"];

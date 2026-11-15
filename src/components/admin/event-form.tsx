@@ -6,6 +6,7 @@ import { Button, Card, Notice } from "@/components/ui";
 import type { EventKind } from "@/lib/api";
 import type { ActionState } from "@/lib/builder";
 import type { EventDefaults } from "@/lib/event-form";
+import { GENERIC_THEME_LIST, resolveGenericTheme } from "@/lib/generic-themes";
 import { DEFAULT_THEME, THEME_LIST } from "@/lib/themes";
 
 const field =
@@ -39,7 +40,19 @@ function Input({
   );
 }
 
-function Area({ text, name, defaults, rows = 2, hint }: { text: string; name: string; defaults?: string | null; rows?: number; hint?: string }) {
+function Area({
+  text,
+  name,
+  defaults,
+  rows = 2,
+  hint,
+}: {
+  text: string;
+  name: string;
+  defaults?: string | null;
+  rows?: number;
+  hint?: string;
+}) {
   return (
     <label className={label}>
       <span className={cap}>{text}</span>
@@ -49,7 +62,19 @@ function Area({ text, name, defaults, rows = 2, hint }: { text: string; name: st
   );
 }
 
-function Pick({ text, name, defaults, options, hint }: { text: string; name: string; defaults: string; options: [string, string][]; hint?: string }) {
+function Pick({
+  text,
+  name,
+  defaults,
+  options,
+  hint,
+}: {
+  text: string;
+  name: string;
+  defaults: string;
+  options: [string, string][];
+  hint?: string;
+}) {
   return (
     <label className={label}>
       <span className={cap}>{text}</span>
@@ -62,6 +87,40 @@ function Pick({ text, name, defaults, options, hint }: { text: string; name: str
       </select>
       {hint ? <span className="block text-xs text-admin-muted">{hint}</span> : null}
     </label>
+  );
+}
+
+/** Two-option theme chooser for GENERIC events: radio cards with a swatch + corner-shape hint. */
+function GenericThemePick({ defaults }: { defaults?: string }) {
+  const current = resolveGenericTheme(defaults).key;
+  return (
+    <fieldset className="grid gap-3 sm:col-span-2 sm:grid-cols-2">
+      <legend className="sr-only">Tema halaman</legend>
+      {GENERIC_THEME_LIST.map((t) => (
+        <label
+          key={t.key}
+          className="flex cursor-pointer items-start gap-3 rounded-[var(--radius-card)] border border-panel-border bg-white p-3 has-[:checked]:border-gold has-[:checked]:ring-2 has-[:checked]:ring-gold/30"
+        >
+          <input type="radio" name="theme" value={t.key} defaultChecked={t.key === current} className="mt-1 accent-gold" />
+          <span className="min-w-0">
+            <span className="mb-2 flex gap-1.5" aria-hidden="true">
+              {[t.navy, t.gold, t.cream].map((c) => (
+                <span
+                  key={c}
+                  className="h-7 w-9 border border-black/10"
+                  style={{
+                    background: c,
+                    borderRadius: t.shape === "soft" ? 999 : 2,
+                  }}
+                />
+              ))}
+            </span>
+            <span className="block font-medium">{t.label}</span>
+            <span className="block text-sm text-admin-muted">{t.description}</span>
+          </span>
+        </label>
+      ))}
+    </fieldset>
   );
 }
 
@@ -141,18 +200,23 @@ export function EventForm({
       {state?.ok ? <Notice>Tersimpan.</Notice> : null}
 
       {generic ? (
-        <Section title="Acara">
-          <div className="sm:col-span-2">
-            <Input text="Judul acara" name="title" required defaults={d.title} placeholder="Konferensi Tahunan 2026" />
-          </div>
-          <div className="sm:col-span-2">
-            <Input text="Subjudul (opsional)" name="subtitle" defaults={d.subtitle} placeholder="Jakarta Convention Center" />
-          </div>
-          <div className="sm:col-span-2">
-            <Area text="Deskripsi (opsional)" name="description" rows={3} defaults={d.description} />
-          </div>
-          {basics}
-        </Section>
+        <>
+          <Section title="Acara">
+            <div className="sm:col-span-2">
+              <Input text="Judul acara" name="title" required defaults={d.title} placeholder="Konferensi Tahunan 2026" />
+            </div>
+            <div className="sm:col-span-2">
+              <Input text="Subjudul (opsional)" name="subtitle" defaults={d.subtitle} placeholder="Jakarta Convention Center" />
+            </div>
+            <div className="sm:col-span-2">
+              <Area text="Deskripsi (opsional)" name="description" rows={3} defaults={d.description} />
+            </div>
+            {basics}
+          </Section>
+          <Section title="Tema" description="Tampilan halaman publik acara. Warna dan bentuk sudut mengikuti pilihan ini.">
+            <GenericThemePick defaults={d.theme} />
+          </Section>
+        </>
       ) : (
         <>
           <Section title="Dasar">
@@ -193,12 +257,7 @@ export function EventForm({
 
           <Section title="Tema" description="Warna undangan, kartu masuk, dan ilustrasi bunga mengikuti pilihan ini.">
             <div className="sm:col-span-2">
-              <Pick
-                text="Tema"
-                name="theme"
-                defaults={d.theme ?? DEFAULT_THEME}
-                options={THEME_LIST.map((t) => [t.key, t.label])}
-              />
+              <Pick text="Tema" name="theme" defaults={d.theme ?? DEFAULT_THEME} options={THEME_LIST.map((t) => [t.key, t.label])} />
             </div>
           </Section>
 
@@ -226,7 +285,12 @@ export function EventForm({
             description="Isi jalur berkas (mis. /photos/slug/couple.webp) atau URL lengkap. URL eksternal ditampilkan apa adanya."
           >
             <Input text="Foto mempelai (hero)" name="coverPhotoUrl" defaults={d.coverPhotoUrl} placeholder="/photos/slug/couple.webp" />
-            <Input text="Foto latar sampul" name="coverBackgroundUrl" defaults={d.coverBackgroundUrl} placeholder="/photos/slug/background.webp" />
+            <Input
+              text="Foto latar sampul"
+              name="coverBackgroundUrl"
+              defaults={d.coverBackgroundUrl}
+              placeholder="/photos/slug/background.webp"
+            />
             <Input text="Foto penutup" name="closingPhotoUrl" defaults={d.closingPhotoUrl} placeholder="/photos/slug/closing.webp" />
             <Input text="Acuan busana" name="dressCodeImageUrl" defaults={d.dressCodeImageUrl} placeholder="/photos/slug/dresscode.webp" />
             <div className="sm:col-span-2">

@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 
 import { CopyLinkButton } from "@/components/copy-link-button";
 import { Button, Card, Notice } from "@/components/ui";
-import { guestLink, type GuestItem } from "@/lib/guests";
+import { guestLink, voucherLink, type GuestItem } from "@/lib/guests";
 
 import { inputCls, submitKeepingInput } from "../builder-ui";
 import { createGuest, type CreateGuestState } from "./actions";
@@ -51,7 +51,12 @@ export function GuestManager({
                       {g.category} · <span className={s.cls}>{s.label}</span> · {g.admits} orang
                       {g.checkedInAt ? " · sudah check-in" : ""}
                     </p>
-                    <CopyLinkButton path={guestLink(slug, g.code)} />
+                    <CopyLinkButton path={guestLink(slug, g.code)} label="Tautan undangan" />
+                    {g.attending ? (
+                      <p className="mt-0.5 text-xs">
+                        <CopyLinkButton path={voucherLink(slug, g.code)} label="Tautan QR tiket" />
+                      </p>
+                    ) : null}
                   </div>
                 </li>
               );
@@ -79,7 +84,7 @@ function AddForm({ eventId, slug, noun }: { eventId: string; slug: string; noun:
           <span className="block">
             {state.guest.name} ditambahkan. Tautan pribadi (klik untuk menyalin):
           </span>
-          <CopyLinkButton path={guestLink(slug, state.guest.code)} />
+          <CopyLinkButton path={guestLink(slug, state.guest.code)} label="Tautan undangan" />
         </Notice>
       ) : null}
       <div className="grid gap-3 sm:grid-cols-2">

@@ -13,3 +13,6 @@ export type GuestItem = {
 };
 
 export const guestLink = (slug: string, code: string) => `/e/${slug}?to=${encodeURIComponent(code)}`;
+
+/** The e-voucher/QR pass — only shows a real QR once the guest has RSVP'd attending. */
+export const voucherLink = (slug: string, code: string) => `/v/${slug}?to=${encodeURIComponent(code)}`;

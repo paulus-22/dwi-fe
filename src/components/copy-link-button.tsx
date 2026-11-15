@@ -7,7 +7,7 @@ import { useState } from "react";
  * browser's own origin — admin and public pages share a domain, so no env
  * var is needed) plus a one-click copy button.
  */
-export function CopyLinkButton({ path }: { path: string }) {
+export function CopyLinkButton({ path, label }: { path: string; label?: string }) {
   const [copied, setCopied] = useState(false);
 
   return (
@@ -25,7 +25,7 @@ export function CopyLinkButton({ path }: { path: string }) {
       className="mt-1 block max-w-full truncate rounded px-1 -mx-1 text-left text-xs text-admin-muted underline underline-offset-2 hover:text-admin-ink"
       title="Salin tautan"
     >
-      {copied ? "Tautan disalin!" : path}
+      {copied ? "Tautan disalin!" : label ?? path}
     </button>
   );
 }

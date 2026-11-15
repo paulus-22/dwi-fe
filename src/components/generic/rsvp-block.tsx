@@ -2,25 +2,53 @@
 
 import { useState } from "react";
 
-import { Button, Notice } from "@/components/ui";
 import { submitRsvp } from "@/lib/public-client";
 
 export type BlockGuest = {
   token: string;
   householdName: string;
   plusGuestAllowance: number;
-  rsvp: { attending: boolean; guestCount: number; message: string | null } | null;
+  rsvp: {
+    attending: boolean;
+    guestCount: number;
+    message: string | null;
+  } | null;
 };
 
-export const fieldCls =
-  "w-full rounded-[var(--radius-control)] border border-panel-border bg-white px-3 py-2 outline-none focus:border-gold";
+/** Themed form primitives (styled by the `.gt-*` rules + `--g-*` vars in globals.css). */
+export const fieldCls = "gt-field";
+export const labelCls = "gt-label";
+
+export type Shape = "sharp" | "soft";
+
+export function FormNotice({ tone = "info", children }: { tone?: "info" | "error"; children: React.ReactNode }) {
+  return (
+    <p role={tone === "error" ? "alert" : "status"} data-tone={tone} className="gt-notice">
+      {children}
+    </p>
+  );
+}
 
 /** Shown by both forms when the visitor opened the page without a personal link. */
 export function NeedsInvitation() {
-  return <Notice>Buka tautan undangan pribadi Anda (yang memuat <code>?to=…</code>) untuk mengisi formulir ini.</Notice>;
+  return (
+    <FormNotice>
+      Buka tautan undangan pribadi Anda (yang memuat <code>?to=…</code>) untuk mengisi formulir ini.
+    </FormNotice>
+  );
 }
 
-export function RsvpBlock({ slug, guest, description }: { slug: string; guest: BlockGuest | null; description?: string }) {
+export function RsvpBlock({
+  slug,
+  guest,
+  description,
+  shape = "sharp",
+}: {
+  slug: string;
+  guest: BlockGuest | null;
+  description?: string;
+  shape?: Shape;
+}) {
   const [name, setName] = useState(guest?.householdName ?? "");
   const [attending, setAttending] = useState<boolean | null>(guest?.rsvp?.attending ?? null);
   const [count, setCount] = useState(guest?.rsvp?.guestCount || 1);
@@ -55,51 +83,75 @@ export function RsvpBlock({ slug, guest, description }: { slug: string; guest: B
 
   if (state === "done")
     return (
-      <div className="space-y-3">
-        <Notice>
-          {attending ? `Terima kasih! Kehadiran ${count} orang tercatat.` : "Terima kasih atas konfirmasinya."}
-        </Notice>
-        <Button variant="ghost" onClick={() => setState("idle")}>
+      <div className={`space-y-3 ${shape === "soft" ? "text-center" : ""}`}>
+        {shape === "soft" ? (
+          <span
+            aria-hidden="true"
+            className="mx-auto grid size-[60px] place-items-center rounded-full bg-[#f1dfbb] text-[29px] text-[#76511d]"
+          >
+            ✓
+          </span>
+        ) : null}
+        <FormNotice>{attending ? `Terima kasih! Kehadiran ${count} orang tercatat.` : "Terima kasih atas konfirmasinya."}</FormNotice>
+        <button type="button" className="gt-ghost" onClick={() => setState("idle")}>
           Ubah jawaban
-        </Button>
+        </button>
       </div>
     );
 
   return (
     <form onSubmit={submit} noValidate className="space-y-4">
-      {description ? <p className="text-admin-muted">{description}</p> : null}
-      {error ? <Notice tone="error">{error}</Notice> : null}
-      <label className="block space-y-1.5">
-        <span className="text-sm text-admin-muted">Nama</span>
+      {description ? <p className="text-sm leading-relaxed text-[var(--g-muted)]">{description}</p> : null}
+      {error ? <FormNotice tone="error">{error}</FormNotice> : null}
+      <label className="block">
+        <span className={labelCls}>Nama</span>
         <input value={name} onChange={(e) => setName(e.target.value)} maxLength={120} className={fieldCls} />
       </label>
-      <fieldset className="space-y-1.5">
-        <legend className="text-sm text-admin-muted">Kehadiran</legend>
-        <div className="flex gap-3">
-          {[
-            [true, "Hadir"],
-            [false, "Tidak hadir"],
-          ].map(([v, label]) => (
-            <label key={String(v)} className="flex items-center gap-2">
-              <input type="radio" name="attending" checked={attending === v} onChange={() => setAttending(v as boolean)} className="accent-gold" />
-              {label as string}
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      {shape === "soft" ? (
+        // Segmented choice (corporate-soft); same state + validation as the select below.
+        <fieldset>
+          <legend className={labelCls}>Kehadiran</legend>
+          <div className="flex gap-2.5">
+            {(
+              [
+                [true, "✓　Hadir"],
+                [false, "Tidak hadir"],
+              ] as const
+            ).map(([v, label]) => (
+              <button key={String(v)} type="button" className="gt-choice" aria-pressed={attending === v} onClick={() => setAttending(v)}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      ) : (
+        <label className="block">
+          <span className={labelCls}>Kehadiran</span>
+          <select
+            value={attending === null ? "" : attending ? "yes" : "no"}
+            onChange={(e) => setAttending(e.target.value === "" ? null : e.target.value === "yes")}
+            className={fieldCls}
+          >
+            <option value="">Pilih jawaban Anda</option>
+            <option value="yes">Ya, saya hadir</option>
+            <option value="no">Tidak dapat hadir</option>
+          </select>
+        </label>
+      )}
       {attending ? (
-        <label className="block space-y-1.5">
-          <span className="text-sm text-admin-muted">Jumlah tamu (maks. {max})</span>
+        <label className="block">
+          <span className={labelCls}>Jumlah tamu (maks. {max})</span>
           <input type="number" min={1} max={max} value={count} onChange={(e) => setCount(Number(e.target.value))} className={fieldCls} />
         </label>
       ) : null}
-      <label className="block space-y-1.5">
-        <span className="text-sm text-admin-muted">Pesan (opsional)</span>
+      <label className="block">
+        <span className={labelCls}>Pesan (opsional)</span>
         <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={3} maxLength={600} className={fieldCls} />
       </label>
-      <Button type="submit" disabled={state === "sending"}>
+      <button type="submit" disabled={state === "sending"} className="gt-btn">
         {state === "sending" ? "Mengirim…" : "Kirim"}
-      </Button>
+        {shape === "soft" && state !== "sending" ? "　›" : null}
+      </button>
     </form>
   );
 }

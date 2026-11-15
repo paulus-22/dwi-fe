@@ -2,12 +2,11 @@
 
 import { useState } from "react";
 
-import { Button, Notice } from "@/components/ui";
 import { hasOptions, type FormField } from "@/lib/builder";
 import { register, submitRsvp, type RsvpResponseValue } from "@/lib/public-client";
 import type { PublicTicketType } from "@/lib/tickets";
 
-import { fieldCls, NeedsInvitation, type BlockGuest } from "./rsvp-block";
+import { fieldCls, FormNotice, labelCls, NeedsInvitation, type BlockGuest, type Shape } from "./rsvp-block";
 
 type Value = string | string[];
 
@@ -23,6 +22,7 @@ export function RegistrationBlock({
   ticketTypes = [],
   registrationMode,
   description,
+  shape = "sharp",
 }: {
   slug: string;
   guest: BlockGuest | null;
@@ -30,8 +30,9 @@ export function RegistrationBlock({
   ticketTypes?: PublicTicketType[];
   registrationMode?: "CLOSED" | "OPEN" | "ALLOWLIST";
   description?: string;
+  shape?: Shape;
 }) {
-  if (guest) return <GuestRegistration slug={slug} guest={guest} fields={fields} description={description} />;
+  if (guest) return <GuestRegistration slug={slug} guest={guest} fields={fields} description={description} shape={shape} />;
   // No personal link: self-register if there are ticket types, else invite-only as before.
   if (ticketTypes.length === 0) return <NeedsInvitation />;
   return (
@@ -41,7 +42,16 @@ export function RegistrationBlock({
       ticketTypes={ticketTypes}
       allowlist={registrationMode === "ALLOWLIST"}
       description={description}
+      shape={shape}
     />
+  );
+}
+
+function Check() {
+  return (
+    <span aria-hidden="true" className="mx-auto grid size-[60px] place-items-center rounded-full bg-[#f1dfbb] text-[29px] text-[#76511d]">
+      ✓
+    </span>
   );
 }
 
@@ -55,7 +65,10 @@ function collectResponses(fields: FormField[], values: Record<string, Value>): R
       if (f.required) return `"${f.labelId}" wajib diisi.`;
       continue;
     }
-    responses.push({ fieldKey: f.fieldKey, value: f.fieldType === "NUMBER" ? Number(v) : v });
+    responses.push({
+      fieldKey: f.fieldKey,
+      value: f.fieldType === "NUMBER" ? Number(v) : v,
+    });
   }
   return responses;
 }
@@ -72,12 +85,14 @@ function SelfRegistration({
   ticketTypes,
   allowlist,
   description,
+  shape,
 }: {
   slug: string;
   fields: FormField[];
   ticketTypes: PublicTicketType[];
   allowlist: boolean;
   description?: string;
+  shape: Shape;
 }) {
   const [ticketTypeId, setTicketTypeId] = useState(ticketTypes.length === 1 ? ticketTypes[0].id : "");
   const [name, setName] = useState("");
@@ -90,15 +105,13 @@ function SelfRegistration({
 
   if (token) {
     return (
-      <div className="space-y-3">
-        <Notice>Pendaftaran berhasil! Tiket dan kode QR Anda sudah siap.</Notice>
-        <a
-          href={`/v/${encodeURIComponent(slug)}?to=${encodeURIComponent(token)}`}
-          className="inline-flex h-10 items-center rounded-[var(--radius-control)] bg-gold px-4 text-sm font-medium text-white"
-        >
+      <div className={`space-y-3 ${shape === "soft" ? "text-center" : ""}`}>
+        {shape === "soft" ? <Check /> : null}
+        <FormNotice>Pendaftaran berhasil! Tiket dan kode QR Anda sudah siap.</FormNotice>
+        <a href={`/v/${encodeURIComponent(slug)}?to=${encodeURIComponent(token)}`} className="gt-btn !w-auto px-6">
           Lihat tiket &amp; QR
         </a>
-        <p className="text-sm text-admin-muted">Simpan tautan tersebut. Konfirmasi juga dikirim lewat WhatsApp jika nomor diisi.</p>
+        <p className="text-sm text-[var(--g-muted)]">Simpan tautan tersebut. Konfirmasi juga dikirim lewat WhatsApp jika nomor diisi.</p>
       </div>
     );
   }
@@ -128,10 +141,10 @@ function SelfRegistration({
 
   return (
     <form onSubmit={submit} noValidate className="space-y-4">
-      {description ? <p className="text-admin-muted">{description}</p> : null}
-      {error ? <Notice tone="error">{error}</Notice> : null}
+      {description ? <p className="text-sm leading-relaxed text-[var(--g-muted)]">{description}</p> : null}
+      {error ? <FormNotice tone="error">{error}</FormNotice> : null}
       <fieldset className="space-y-2">
-        <legend className="text-sm text-admin-muted">
+        <legend className={labelCls}>
           Jenis tiket<span className="text-danger"> *</span>
         </legend>
         {ticketTypes.map((t) => (
@@ -141,37 +154,39 @@ function SelfRegistration({
               name="ticketType"
               checked={ticketTypeId === t.id}
               onChange={() => setTicketTypeId(t.id)}
-              className="mt-1 accent-gold"
+              className="mt-1 accent-[var(--g-gold-ink)]"
             />
             <span>
               <span className="font-medium">{t.name}</span>
-              {t.description ? <span className="block text-sm text-admin-muted">{t.description}</span> : null}
+              {t.description ? <span className="block text-sm text-[var(--g-muted)]">{t.description}</span> : null}
             </span>
           </label>
         ))}
       </fieldset>
-      <label className="block space-y-1.5">
-        <span className="text-sm text-admin-muted">
+      <label className="block">
+        <span className={labelCls}>
           Nama<span className="text-danger"> *</span>
         </span>
         <input value={name} onChange={(e) => setName(e.target.value)} maxLength={120} className={fieldCls} />
       </label>
-      <label className="block space-y-1.5">
-        <span className="text-sm text-admin-muted">
-          Nomor HP{allowlist ? <span className="text-danger"> * (atau email)</span> : " (opsional)"}
+      <label className="block">
+        <span className={labelCls}>
+          Nomor HP
+          {allowlist ? <span className="text-danger"> * (atau email)</span> : " (opsional)"}
         </span>
         <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={fieldCls} />
       </label>
-      <label className="block space-y-1.5">
-        <span className="text-sm text-admin-muted">Email{allowlist ? "" : " (opsional)"}</span>
+      <label className="block">
+        <span className={labelCls}>Email{allowlist ? "" : " (opsional)"}</span>
         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={fieldCls} />
       </label>
       {fields.map((f) => (
         <FieldInput key={f.id} field={f} value={values[f.fieldKey]} onChange={(v) => set(f.fieldKey, v)} />
       ))}
-      <Button type="submit" disabled={state === "sending"}>
+      <button type="submit" disabled={state === "sending"} className="gt-btn">
         {state === "sending" ? "Mengirim…" : "Daftar"}
-      </Button>
+        {shape === "soft" && state !== "sending" ? "　›" : null}
+      </button>
     </form>
   );
 }
@@ -181,18 +196,20 @@ function GuestRegistration({
   guest,
   fields,
   description,
+  shape,
 }: {
   slug: string;
   guest: BlockGuest;
   fields: FormField[];
   description?: string;
+  shape: Shape;
 }) {
   const [name, setName] = useState(guest?.householdName ?? "");
   const [values, setValues] = useState<Record<string, Value>>({});
   const [error, setError] = useState<string | null>(null);
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
 
-  if (fields.length === 0) return <p className="text-admin-muted">Formulir pendaftaran belum tersedia.</p>;
+  if (fields.length === 0) return <p className="text-[var(--g-muted)]">Formulir pendaftaran belum tersedia.</p>;
 
   const set = (key: string, v: Value) => setValues((cur) => ({ ...cur, [key]: v }));
 
@@ -217,29 +234,36 @@ function GuestRegistration({
     setState("done");
   }
 
-  if (state === "done") return <Notice>Terima kasih! Pendaftaran Anda sudah kami terima.</Notice>;
+  if (state === "done")
+    return (
+      <div className={`space-y-3 ${shape === "soft" ? "text-center" : ""}`}>
+        {shape === "soft" ? <Check /> : null}
+        <FormNotice>Terima kasih! Pendaftaran Anda sudah kami terima.</FormNotice>
+      </div>
+    );
 
   return (
     <form onSubmit={submit} noValidate className="space-y-4">
-      {description ? <p className="text-admin-muted">{description}</p> : null}
-      {error ? <Notice tone="error">{error}</Notice> : null}
-      <label className="block space-y-1.5">
-        <span className="text-sm text-admin-muted">Nama</span>
+      {description ? <p className="text-sm leading-relaxed text-[var(--g-muted)]">{description}</p> : null}
+      {error ? <FormNotice tone="error">{error}</FormNotice> : null}
+      <label className="block">
+        <span className={labelCls}>Nama</span>
         <input value={name} onChange={(e) => setName(e.target.value)} maxLength={120} className={fieldCls} />
       </label>
       {fields.map((f) => (
         <FieldInput key={f.id} field={f} value={values[f.fieldKey]} onChange={(v) => set(f.fieldKey, v)} />
       ))}
-      <Button type="submit" disabled={state === "sending"}>
+      <button type="submit" disabled={state === "sending"} className="gt-btn">
         {state === "sending" ? "Mengirim…" : "Daftar"}
-      </Button>
+        {shape === "soft" && state !== "sending" ? "　›" : null}
+      </button>
     </form>
   );
 }
 
 function FieldInput({ field: f, value, onChange }: { field: FormField; value: Value | undefined; onChange: (v: Value) => void }) {
   const label = (
-    <span className="text-sm text-admin-muted">
+    <span className={labelCls}>
       {f.labelId}
       {f.required ? <span className="text-danger"> *</span> : null}
     </span>
@@ -250,28 +274,28 @@ function FieldInput({ field: f, value, onChange }: { field: FormField; value: Va
   switch (f.fieldType) {
     case "TEXTAREA":
       return (
-        <label className="block space-y-1.5">
+        <label className="block">
           {label}
           <textarea value={str} onChange={(e) => onChange(e.target.value)} rows={3} className={fieldCls} />
         </label>
       );
     case "NUMBER":
       return (
-        <label className="block space-y-1.5">
+        <label className="block">
           {label}
           <input type="number" value={str} onChange={(e) => onChange(e.target.value)} className={fieldCls} />
         </label>
       );
     case "DATE":
       return (
-        <label className="block space-y-1.5">
+        <label className="block">
           {label}
           <input type="date" value={str} onChange={(e) => onChange(e.target.value)} className={fieldCls} />
         </label>
       );
     case "SELECT":
       return (
-        <label className="block space-y-1.5">
+        <label className="block">
           {label}
           <select value={str} onChange={(e) => onChange(e.target.value)} className={fieldCls}>
             <option value="">— Pilih —</option>
@@ -289,7 +313,13 @@ function FieldInput({ field: f, value, onChange }: { field: FormField; value: Va
           <legend>{label}</legend>
           {options.map((o) => (
             <label key={o.value} className="flex items-center gap-2">
-              <input type="radio" name={f.fieldKey} checked={str === o.value} onChange={() => onChange(o.value)} className="accent-gold" />
+              <input
+                type="radio"
+                name={f.fieldKey}
+                checked={str === o.value}
+                onChange={() => onChange(o.value)}
+                className="accent-[var(--g-gold-ink)]"
+              />
               {o.labelId}
             </label>
           ))}
@@ -306,7 +336,7 @@ function FieldInput({ field: f, value, onChange }: { field: FormField; value: Va
                 type="checkbox"
                 checked={picked.includes(o.value)}
                 onChange={(e) => onChange(e.target.checked ? [...picked, o.value] : picked.filter((x) => x !== o.value))}
-                className="size-4 accent-gold"
+                className="size-4 accent-[var(--g-gold-ink)]"
               />
               {o.labelId}
             </label>
@@ -316,7 +346,7 @@ function FieldInput({ field: f, value, onChange }: { field: FormField; value: Va
     }
     default:
       return (
-        <label className="block space-y-1.5">
+        <label className="block">
           {label}
           <input value={str} onChange={(e) => onChange(e.target.value)} className={fieldCls} />
         </label>
