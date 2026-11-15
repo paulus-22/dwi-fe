@@ -659,11 +659,13 @@ function ContactBlock({ c, shape, mark }: { c: Config; shape: Shape; mark?: stri
         {contacts.map((p, n) => {
           const phone = str(p.phone);
           const email = str(p.email);
+          const bio = str(p.bio);
           return (
             <li key={n}>
               <Card>
                 <p className="font-medium">{str(p.name)}</p>
-                {str(p.role) ? <p className="text-sm text-[var(--g-muted)]">{str(p.role)}</p> : null}
+                {str(p.role) ? <p className="text-sm font-medium text-[var(--g-gold-ink)]">{str(p.role)}</p> : null}
+                {bio ? <p className="mt-1.5 text-sm text-[var(--g-muted)]">{bio}</p> : null}
                 {phone ? (
                   <p className="mt-2 text-sm">
                     <a href={`tel:${phone.replace(/[^+\d]/g, "")}`} className="text-[var(--g-gold-ink)] underline underline-offset-4">

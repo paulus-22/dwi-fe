@@ -14,7 +14,7 @@
  *   REGISTRATION_FORM  { title, description }
  *   CUSTOM_HTML        { title, html, height }                      (rendered sandboxed, see CustomHtmlBlock)
  *   SPONSOR            { title, sponsors: [{ name, logoUrl, url }] }
- *   CONTACT            { title, contacts: [{ name, role, phone, email }] }
+ *   CONTACT            { title, contacts: [{ name, role, bio, phone, email }] }
  */
 export type Config = Record<string, unknown>;
 
