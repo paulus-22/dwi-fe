@@ -470,6 +470,9 @@ export const THEMES: Record<ThemeKey, Theme> = {
 };
 
 export const DEFAULT_THEME: ThemeKey = "sage-peach";
+
+/** GENERIC events have no theme field; their e-voucher uses this fixed neutral one. */
+export const GENERIC_VOUCHER_THEME: ThemeKey = "slate-blush";
 export const THEME_LIST = Object.values(THEMES);
 
 export function isThemeKey(value: string | null | undefined): value is ThemeKey {

@@ -7,7 +7,7 @@ import QRCode from "qrcode";
 import { getDictionary, isLocale, format } from "@/i18n/dictionaries";
 import { coupleLine } from "@/lib/couple";
 import { findPublicEvent, resolveVoucher } from "@/lib/event";
-import { resolveTheme } from "@/lib/themes";
+import { GENERIC_VOUCHER_THEME, resolveTheme } from "@/lib/themes";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 
 const WIDTH = 800;
@@ -62,7 +62,7 @@ export async function GET(
   const langParam = url.searchParams.get("lang") ?? undefined;
 
   const event = await findPublicEvent(slug);
-  if (!event || event.kind !== "WEDDING") return new Response("Not found", { status: 404 });
+  if (!event) return new Response("Not found", { status: 404 });
 
   const voucher = await resolveVoucher(event.slug, token);
   if (voucher.status !== "issued") {
@@ -70,22 +70,30 @@ export async function GET(
     return new Response("No voucher issued", { status: 404 });
   }
 
-  const locale = isLocale(langParam)
-    ? langParam
-    : event.defaultLocale === "EN"
-      ? "en"
-      : "id";
+  const locale =
+    event.kind === "GENERIC"
+      ? "id"
+      : isLocale(langParam)
+        ? langParam
+        : event.defaultLocale === "EN"
+          ? "en"
+          : "id";
   const dict = getDictionary(locale);
 
-  const gate = event.ceremonies[event.ceremonies.length - 1] ?? null;
-  const couple = coupleLine(event);
+  const gate =
+    event.kind === "WEDDING" ? (event.ceremonies[event.ceremonies.length - 1] ?? null) : null;
+  const couple = event.kind === "GENERIC" ? event.title : coupleLine(event);
   const dateLine = formatEventDate(event.headlineDate, locale, event.timezone);
-  const venueLine = gate
-    ? `${gate.venueName} · ${formatEventTime(gate.startsAt, locale, event.timezone)}`
-    : null;
+  // Generic events have no venue; show the subtitle instead.
+  const venueLine =
+    event.kind === "GENERIC"
+      ? event.subtitle
+      : gate
+        ? `${gate.venueName} · ${formatEventTime(gate.startsAt, locale, event.timezone)}`
+        : null;
 
   // Same palette as the page, so a saved PNG matches the voucher it came from.
-  const theme = resolveTheme(event.theme);
+  const theme = resolveTheme(event.kind === "GENERIC" ? GENERIC_VOUCHER_THEME : event.theme);
   const INK = theme.tokens.ink;
   const INK_SOFT = theme.tokens["ink-soft"];
   const PEACH_INK = theme.tokens["peach-ink"];

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 
 import { LocaleSwitch } from "@/components/locale-switch";
 import { ornamentSet } from "@/components/motif";
@@ -11,7 +10,7 @@ import { resolveLocale } from "@/i18n/locale";
 import { coupleLine } from "@/lib/couple";
 import { findPublicEvent, getPublicEvent, resolveVoucher } from "@/lib/event";
 import { formatEventDate, formatEventTime } from "@/lib/format";
-import { resolveTheme, themeStyle } from "@/lib/themes";
+import { GENERIC_VOUCHER_THEME, resolveTheme, themeStyle } from "@/lib/themes";
 
 export async function generateMetadata({
   params,
@@ -22,9 +21,10 @@ export async function generateMetadata({
   const token = typeof query.to === "string" ? query.to : undefined;
 
   const event = await findPublicEvent(slug);
-  if (!event || event.kind !== "WEDDING") return { title: "E-voucher" };
+  if (!event) return { title: "E-voucher" };
 
-  const couple = coupleLine(event);
+  const isGeneric = event.kind === "GENERIC";
+  const couple = isGeneric ? event.title : coupleLine(event);
   const title = `E-voucher · ${couple}`;
 
   // The share preview is the voucher artwork itself, so a WhatsApp forward
@@ -35,7 +35,7 @@ export async function generateMetadata({
 
   return {
     title,
-    description: `Entry pass for the wedding of ${couple}`,
+    description: isGeneric ? `Entry pass for ${couple}` : `Entry pass for the wedding of ${couple}`,
     robots: { index: false, follow: false },
     openGraph: {
       title,
@@ -54,21 +54,21 @@ export default async function VoucherPage({
   const query = await searchParams;
 
   const event = await getPublicEvent(slug);
-  // E-vouchers are part of the wedding product; generic events have none.
-  if (event.kind !== "WEDDING") notFound();
+  const isGeneric = event.kind === "GENERIC";
 
+  // Generic events carry no locale settings: Indonesian, no switcher.
   const localeParam = typeof query.lang === "string" ? query.lang : undefined;
-  const locale = await resolveLocale(
-    localeParam,
-    event.defaultLocale === "EN" ? "en" : "id",
-    event.bilingual,
-  );
+  const locale = isGeneric
+    ? "id"
+    : await resolveLocale(localeParam, event.defaultLocale === "EN" ? "en" : "id", event.bilingual);
   const dict = getDictionary(locale);
 
   const token = typeof query.to === "string" ? query.to : undefined;
   const voucher = await resolveVoucher(event.slug, token);
 
-  const theme = resolveTheme(event.theme);
+  // Generic events have no theme of their own; they share one neutral palette.
+  const themeKey = event.kind === "GENERIC" ? GENERIC_VOUCHER_THEME : event.theme;
+  const theme = resolveTheme(themeKey);
   const ornaments = ornamentSet(theme.design.ornament);
 
   const invitationHref = token
@@ -77,16 +77,22 @@ export default async function VoucherPage({
 
   // The reception is the ceremony guests are checked in for; fall back to the
   // first listed if an event has only one.
-  const gate = event.ceremonies[event.ceremonies.length - 1] ?? null;
-  const couple = coupleLine(event);
+  // Generic events have no ceremonies or venue, so the muted third line is the
+  // subtitle (if any) rather than an invented place.
+  const gate =
+    event.kind === "WEDDING" ? (event.ceremonies[event.ceremonies.length - 1] ?? null) : null;
+  const couple = event.kind === "GENERIC" ? event.title : coupleLine(event);
   const dateLine = formatEventDate(event.headlineDate, locale, event.timezone);
-  const venueLine = gate
-    ? `${gate.venueName} · ${formatEventTime(gate.startsAt, locale, event.timezone)}`
-    : null;
+  const venueLine =
+    event.kind === "GENERIC"
+      ? event.subtitle
+      : gate
+        ? `${gate.venueName} · ${formatEventTime(gate.startsAt, locale, event.timezone)}`
+        : null;
 
   return (
     <main
-      style={themeStyle(event.theme)}
+      style={themeStyle(themeKey)}
       className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-olive-deep px-6 py-14"
     >
       <ornaments.Spray
@@ -162,7 +168,7 @@ export default async function VoucherPage({
         )}
       </div>
 
-      {event.bilingual ? (
+      {event.kind === "WEDDING" && event.bilingual ? (
         <div className="mt-10">
           <LocaleSwitch locale={locale} />
         </div>
