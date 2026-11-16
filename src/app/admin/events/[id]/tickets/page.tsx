@@ -41,7 +41,7 @@ export default async function TicketsPage({ params }: PageProps<"/admin/events/[
   return (
     <>
       <PageTitle kicker={eventName(event)} title="Jenis tiket">
-        <Link href={`/admin/events/${id}`} className="text-sm text-admin-muted hover:text-admin-ink">
+        <Link href={`/admin/events/${id}`} className="text-sm text-admin-muted transition-colors hover:text-admin-ink">
           ← Kembali ke dashboard
         </Link>
       </PageTitle>

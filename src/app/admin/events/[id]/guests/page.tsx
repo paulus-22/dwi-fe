@@ -26,7 +26,7 @@ export default async function GuestsPage({ params }: PageProps<"/admin/events/[i
   return (
     <>
       <PageTitle kicker={eventName(event)} title={generic ? "Peserta" : "Tamu"}>
-        <Link href={`/admin/events/${id}`} className="text-sm text-admin-muted hover:text-admin-ink">
+        <Link href={`/admin/events/${id}`} className="text-sm text-admin-muted transition-colors hover:text-admin-ink">
           ← Kembali ke dashboard
         </Link>
       </PageTitle>

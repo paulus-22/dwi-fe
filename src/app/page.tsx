@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LinkButton } from "@/components/ui";
 
 /**
  * Placeholder home. The public invitation pages (`/e/[slug]`, `/v/[slug]`)
@@ -7,15 +7,10 @@ import Link from "next/link";
  */
 export default function Home() {
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-4 p-6 text-center">
-      <p className="text-xs tracking-[0.18em] text-admin-muted uppercase">The Moments by Bizzmo</p>
-      <h1 className="font-display text-5xl">Dashboard acara</h1>
-      <Link
-        href="/admin"
-        className="inline-flex h-11 items-center rounded-[var(--radius-control)] bg-admin-ink px-5 text-sm font-medium text-white hover:bg-black"
-      >
-        Masuk ke dashboard
-      </Link>
+    <main className="admin-chrome flex min-h-dvh flex-col items-center justify-center gap-4 p-6 text-center">
+      <p className="text-xs font-medium tracking-wide text-admin-faint uppercase">The Moments by Bizzmo</p>
+      <h1 className="text-4xl font-semibold tracking-tight">Dashboard acara</h1>
+      <LinkButton href="/admin">Masuk ke dashboard</LinkButton>
     </main>
   );
 }

@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { CopyLinkButton } from "@/components/copy-link-button";
-import { Card, PageTitle } from "@/components/ui";
+import { Card, LinkButton, PageTitle } from "@/components/ui";
 import { api, eventKind, eventName, ROLE_LABELS, type EventItem, type EventKind } from "@/lib/api";
 
 export const metadata = { title: "Acara · The Moments by Bizzmo" };
@@ -23,12 +23,7 @@ export default async function EventsPage({ searchParams }: PageProps<"/admin">) 
   return (
     <>
       <PageTitle kicker="Dashboard" title={product.label}>
-        <Link
-            href={`/admin/events/new?produk=${product.param}`}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-[var(--radius-control)] bg-admin-ink px-4 text-sm font-medium text-white transition-colors hover:bg-black"
-          >
-            + Acara baru
-        </Link>
+        <LinkButton href={`/admin/events/new?produk=${product.param}`}>+ Acara baru</LinkButton>
       </PageTitle>
 
       <nav aria-label="Produk" className="mb-6 flex gap-1 border-b border-panel-border">
@@ -41,7 +36,7 @@ export default async function EventsPage({ searchParams }: PageProps<"/admin">) 
               href={`/admin?produk=${p.param}`}
               aria-current={active ? "page" : undefined}
               className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
-                active ? "border-gold text-admin-ink" : "border-transparent text-admin-muted hover:text-admin-ink"
+                active ? "border-accent text-admin-ink" : "border-transparent text-admin-muted hover:text-admin-ink"
               }`}
             >
               {p.label} <span className="text-admin-faint tabular-nums">({count})</span>
@@ -59,13 +54,13 @@ export default async function EventsPage({ searchParams }: PageProps<"/admin">) 
           {events.map((e) => (
             <li
               key={e.id}
-              className="rounded-[var(--radius-card)] border border-panel-border bg-panel transition-colors hover:border-gold-line hover:bg-panel-hover"
+              className="rounded-[var(--radius-card)] border border-panel-border bg-panel shadow-[0_1px_2px_rgb(16_24_40/0.04)] transition-all hover:border-[#cfd4dc] hover:shadow-[0_4px_12px_rgb(16_24_40/0.06)]"
             >
               <Link href={`/admin/events/${e.id}`} className="block p-5 pb-3">
-                <p className="text-xs tracking-wide text-admin-muted uppercase">
+                <p className="text-xs font-medium tracking-wide text-admin-faint uppercase">
                   {STATUS[e.status]} · {ROLE_LABELS[e.role]}
                 </p>
-                <h2 className="mt-1 font-display text-3xl leading-tight">{eventName(e)}</h2>
+                <h2 className="mt-1 text-lg leading-tight font-semibold tracking-tight">{eventName(e)}</h2>
                 {eventKind(e) === "GENERIC" && e.subtitle ? (
                   <p className="mt-1 text-sm">{e.subtitle}</p>
                 ) : null}

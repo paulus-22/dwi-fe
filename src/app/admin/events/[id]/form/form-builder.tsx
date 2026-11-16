@@ -102,7 +102,7 @@ function FieldEditor({ eventId, field, onDone }: { eventId: string; field?: Form
     setOptions((rows) => [...rows, { key: rows.reduce((m, r) => Math.max(m, r.key), -1) + 1, value: "", labelId: "", labelEn: "" }]);
 
   return (
-    <form onSubmit={(e) => submitKeepingInput(e, action)} className="mt-3 space-y-4 rounded-[var(--radius-control)] border border-gold-line bg-white/60 p-4">
+    <form onSubmit={(e) => submitKeepingInput(e, action)} className="mt-3 space-y-4 rounded-[var(--radius-control)] border border-accent-line bg-accent-soft/40 p-4">
       {state?.error ? <Notice tone="error">{state.error}</Notice> : null}
       {field ? <input type="hidden" name="sortOrder" value={field.sortOrder} /> : null}
       <input
@@ -142,7 +142,7 @@ function FieldEditor({ eventId, field, onDone }: { eventId: string; field?: Form
       </div>
 
       <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" name="required" defaultChecked={field?.required ?? false} className="size-4 accent-gold" />
+        <input type="checkbox" name="required" defaultChecked={field?.required ?? false} className="size-4 accent-accent" />
         Wajib diisi
       </label>
 
@@ -175,7 +175,7 @@ function FieldEditor({ eventId, field, onDone }: { eventId: string; field?: Form
               />
               <Button
                 type="button"
-                variant="ghost"
+                variant="secondary"
                 className="h-10 px-3"
                 onClick={() => setOptions((rows) => rows.filter((r) => r.key !== o.key))}
                 aria-label="Hapus pilihan"
@@ -184,7 +184,7 @@ function FieldEditor({ eventId, field, onDone }: { eventId: string; field?: Form
               </Button>
             </div>
           ))}
-          <Button type="button" variant="ghost" className={smallBtn} onClick={addOption}>
+          <Button type="button" variant="secondary" className={smallBtn} onClick={addOption}>
             + Tambah pilihan
           </Button>
         </fieldset>
@@ -194,7 +194,7 @@ function FieldEditor({ eventId, field, onDone }: { eventId: string; field?: Form
         <Button type="submit" disabled={pending}>
           {pending ? "Menyimpan…" : "Simpan"}
         </Button>
-        <Button type="button" variant="ghost" onClick={onDone} disabled={pending}>
+        <Button type="button" variant="secondary" onClick={onDone} disabled={pending}>
           Batal
         </Button>
       </div>

@@ -17,7 +17,7 @@ export default async function BlockBuilderPage({ params }: PageProps<"/admin/eve
   return (
     <>
       <PageTitle kicker={eventName(event)} title="Blok halaman">
-        <Link href={`/admin/events/${id}`} className="text-sm text-admin-muted hover:text-admin-ink">
+        <Link href={`/admin/events/${id}`} className="text-sm text-admin-muted transition-colors hover:text-admin-ink">
           ← Kembali ke dashboard
         </Link>
       </PageTitle>

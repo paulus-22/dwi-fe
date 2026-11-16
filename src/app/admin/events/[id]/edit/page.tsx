@@ -49,7 +49,7 @@ export default async function EditEventPage({ params }: PageProps<"/admin/events
   return (
     <>
       <PageTitle kicker="Edit acara" title={eventName(event)}>
-        <Link href={`/admin/events/${id}`} className="text-sm text-admin-muted hover:text-admin-ink">
+        <Link href={`/admin/events/${id}`} className="text-sm text-admin-muted transition-colors hover:text-admin-ink">
           ← Kembali ke acara
         </Link>
       </PageTitle>

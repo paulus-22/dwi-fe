@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { Button, Card, PageTitle, formatDateTime } from "@/components/ui";
+import { Button, Card, PageTitle, formatDateTime, inputCls } from "@/components/ui";
 import { api, eventName, type Device, type EventItem, type PairingCode } from "@/lib/api";
 
 import { createPairingCode, revokeDevice, revokePairingCode } from "./actions";
@@ -17,7 +17,7 @@ export default async function ScannerDevicesPage({ params }: PageProps<"/admin/e
   return (
     <>
       <PageTitle kicker={eventName(event)} title="Perangkat scanner">
-        <Link href={`/admin/events/${id}`} className="text-sm text-admin-muted hover:text-admin-ink">
+        <Link href={`/admin/events/${id}`} className="text-sm text-admin-muted transition-colors hover:text-admin-ink">
           ← Kembali ke dashboard
         </Link>
       </PageTitle>
@@ -34,7 +34,7 @@ export default async function ScannerDevicesPage({ params }: PageProps<"/admin/e
               name="label"
               placeholder="Catatan (mis. Hari H)"
               maxLength={60}
-              className="h-10 min-w-0 flex-1 rounded-[var(--radius-control)] border border-panel-border px-3 text-sm outline-none focus:border-gold"
+              className={`${inputCls} min-w-0 flex-1`}
             />
             <Button type="submit">Buat kode</Button>
           </form>
@@ -45,7 +45,7 @@ export default async function ScannerDevicesPage({ params }: PageProps<"/admin/e
               {codes.map((c) => (
                 <li
                   key={c.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-control)] border border-gold-line bg-gold-soft px-4 py-3"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-control)] border border-accent-line bg-accent-soft px-4 py-3"
                 >
                   <div>
                     <p className="font-mono text-2xl tracking-[0.12em] select-all">{c.code}</p>
@@ -88,7 +88,7 @@ export default async function ScannerDevicesPage({ params }: PageProps<"/admin/e
                   </div>
                   {d.revokedAt ? null : (
                     <form action={revokeDevice.bind(null, id, d.id)}>
-                      <Button type="submit" variant="ghost">
+                      <Button type="submit" variant="secondary">
                         Lepas
                       </Button>
                     </form>

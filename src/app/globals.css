@@ -1,39 +1,36 @@
 @import "tailwindcss";
 
 /*
- * "The Moments by Bizzmo" brand palette — ported from
- * digital-wedding-invitation-p's spike/astryx-dashboard branch (same tokens,
- * same contrast fix). `--color-gold` is NOT the literal brand gold
- * (#C99843): every component here pairs it with white text at rest
- * (`bg-gold text-white`), and white-on-#C99843 is only 2.6:1, under WCAG
- * AA's 4.5:1. `--color-gold` is a darkened shade of the same hue that
- * clears 4.96:1 with white. The literal brand gold lives in
- * `--color-gold-line` (borders/lines, which don't carry text).
+ * Admin chrome tokens: a neutral, light-mode B2B palette. The dashboard serves
+ * several products (weddings, generic events), so it carries no product brand.
+ * Cool grays + one indigo accent (primary actions, links, focus rings).
+ * Invitation/public themes use their own tokens further down.
  */
 @theme {
-  --color-surface: #faf6ef;
-  --color-panel: #fbf5ee;
-  --color-panel-border: #e6d8bd;
-  --color-panel-hover: #f6efe3;
-  --color-admin-ink: #4c4a1a;
-  --color-admin-muted: #706e48;
-  --color-admin-faint: #97967a;
+  --color-surface: #f6f7f9;
+  --color-panel: #ffffff;
+  --color-panel-border: #e3e6eb;
+  --color-panel-hover: #f3f4f6;
+  --color-admin-ink: #111827;
+  --color-admin-muted: #4b5563;
+  --color-admin-faint: #6b7280;
 
-  --color-gold: #8d6a2f;
-  --color-gold-strong: #6f5425;
-  --color-gold-soft: #e9ddc6;
-  --color-gold-line: #d4c095;
+  --color-accent: #4f46e5;
+  --color-accent-strong: #4338ca;
+  --color-accent-soft: #eef2ff;
+  --color-accent-line: #c7d2fe;
 
-  --color-ok: #3f7a4f;
-  --color-ok-soft: #e4f0e6;
-  --color-danger: #a75f62;
-  --color-danger-soft: #f6e6e6;
+  --color-ok: #15803d;
+  --color-ok-soft: #ecfdf3;
+  --color-danger: #b42318;
+  --color-danger-soft: #fef3f2;
 
   --font-display: var(--font-cormorant), "Cormorant Upright", serif;
   --font-ui: var(--font-jost), ui-sans-serif, system-ui, sans-serif;
+  --font-admin: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
-  --radius-control: 6px;
-  --radius-card: 10px;
+  --radius-control: 8px;
+  --radius-card: 12px;
 
   /* ---- Invitation (ported from the old app; a theme overrides these on the
      page wrapper, the dashboard keeps the defaults) ---- */
@@ -85,6 +82,17 @@
 
   button:disabled {
     cursor: not-allowed;
+  }
+
+  /* Admin / login chrome: system sans, tight headings, visible focus ring. */
+  .admin-chrome {
+    font-family: var(--font-admin);
+    color: var(--color-admin-ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  .admin-chrome :is(a, button, input, select, textarea, summary, [role="button"]):focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
   }
 
   .safe-area {
@@ -555,4 +563,116 @@
 }
 [data-gtheme="editorial"] .gt-ghost {
   color: var(--g-navy);
+}
+
+/* ---- GENERIC themes: interaction polish -------------------------------------
+   Transitions, hover/active/focus-visible and a submitting state. Colours only
+   come from the existing `--g-*` tokens, so each theme keeps its own look. */
+.gt-field,
+.gt-btn,
+.gt-cta,
+.gt-choice,
+.gt-ghost,
+[data-gtheme] a {
+  transition-property: color, background-color, border-color, box-shadow, filter, opacity, transform;
+  transition-duration: 160ms;
+  transition-timing-function: ease;
+}
+.gt-field:hover:not(:focus):not(:disabled) {
+  border-color: color-mix(in srgb, var(--g-gold-ink) 55%, #c9cbd0);
+}
+[data-gtheme="editorial"] .gt-field:hover:not(:focus):not(:disabled) {
+  border-color: var(--g-navy);
+}
+[data-gtheme="corporate-classic"] .gt-field:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--g-gold-ink) 22%, transparent);
+}
+
+/* Buttons and CTAs */
+.gt-btn:hover:not(:disabled) {
+  background-color: var(--g-navy2);
+}
+[data-gtheme="corporate-soft"] .gt-btn:hover:not(:disabled),
+.gt-cta:hover {
+  filter: brightness(1.06);
+}
+[data-gtheme="corporate-soft"] .gt-btn:hover:not(:disabled) {
+  background-color: transparent;
+}
+[data-gtheme="editorial"] .gt-btn:hover:not(:disabled),
+[data-gtheme="editorial"] .gt-cta:hover {
+  filter: none;
+}
+.gt-btn:active:not(:disabled),
+.gt-cta:active,
+.gt-choice:active {
+  transform: translateY(1px);
+}
+
+/* Submitting: dimmed, non-interactive, gently pulsing. */
+.gt-btn:disabled {
+  opacity: 0.55;
+  cursor: progress;
+  animation: gt-pulse 1.4s ease-in-out infinite;
+}
+@keyframes gt-pulse {
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* Choice buttons */
+.gt-choice:hover:not([aria-pressed="true"]) {
+  border-color: var(--g-gold-ink);
+  background: color-mix(in srgb, var(--g-cream) 70%, #fff);
+}
+[data-gtheme="editorial"] .gt-choice:hover:not([aria-pressed="true"]) {
+  border-color: var(--g-navy);
+}
+.gt-choice[aria-pressed="true"]:hover {
+  filter: brightness(1.12);
+}
+
+/* Text-style links */
+.gt-ghost:hover {
+  text-decoration-thickness: 2px;
+  filter: brightness(0.85);
+}
+[data-gtheme] a:not(.gt-cta):not(.gt-btn):hover {
+  opacity: 0.8;
+}
+
+/* Keyboard focus: a ring in each theme's own accent. */
+.gt-btn:focus-visible,
+.gt-cta:focus-visible,
+.gt-choice:focus-visible,
+.gt-ghost:focus-visible,
+[data-gtheme] a:focus-visible {
+  outline: 2px solid var(--g-gold-ink);
+  outline-offset: 3px;
+}
+[data-gtheme="corporate-classic"] .gt-cta:focus-visible,
+[data-gtheme="corporate-soft"] .gt-cta:focus-visible,
+.gt-cta[data-on="photo"]:focus-visible {
+  outline-color: var(--g-gold);
+}
+[data-gtheme="editorial"] .gt-btn:focus-visible,
+[data-gtheme="editorial"] .gt-cta:focus-visible,
+[data-gtheme="editorial"] .gt-choice:focus-visible,
+[data-gtheme="editorial"] .gt-ghost:focus-visible,
+[data-gtheme="editorial"] a:focus-visible {
+  outline-color: var(--g-navy);
+}
+[data-gtheme="editorial"] .gt-cta[data-on="photo"]:focus-visible {
+  outline-color: #fff;
+}
+.gt-field:focus-visible {
+  outline: none;
+}
+/* The editorial nav sits on dark navy: invert its focus ring, keep its own hover. */
+[data-gtheme="editorial"] nav a:focus-visible {
+  outline-color: #fff;
+}
+[data-gtheme="editorial"] nav a:not(.gt-cta):not(.gt-btn):hover {
+  opacity: 1;
 }

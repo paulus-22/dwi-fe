@@ -22,7 +22,7 @@ export function CopyLinkButton({ path, label }: { path: string; label?: string }
           setTimeout(() => setCopied(false), 1500);
         });
       }}
-      className="mt-1 block max-w-full truncate rounded px-1 -mx-1 text-left text-xs text-admin-muted underline underline-offset-2 hover:text-admin-ink"
+      className="mt-1 block max-w-full truncate rounded px-1 -mx-1 text-left text-xs text-admin-muted underline underline-offset-2 transition-colors hover:text-admin-ink"
       title="Salin tautan"
     >
       {copied ? "Tautan disalin!" : label ?? path}

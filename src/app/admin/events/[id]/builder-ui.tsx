@@ -2,13 +2,12 @@
 
 import { startTransition, useState, useTransition, type FormEvent, type ReactNode } from "react";
 
-import { Button } from "@/components/ui";
+import { Button, inputCls } from "@/components/ui";
 import type { ActionState } from "@/lib/builder";
 
 /** Shared bits for the form-field and page-block builders. */
 
-export const inputCls =
-  "h-10 w-full rounded-[var(--radius-control)] border border-panel-border bg-white px-3 text-sm outline-none focus:border-gold";
+export { inputCls };
 
 /**
  * Submits through the action without React's automatic form reset, so a
@@ -58,7 +57,7 @@ export function RowControls({
     <div className="flex shrink-0 flex-wrap items-center gap-1.5">
       <Button
         type="button"
-        variant="ghost"
+        variant="secondary"
         className={smallBtn}
         disabled={pending || index === 0}
         onClick={() => onMove(-1)}
@@ -69,7 +68,7 @@ export function RowControls({
       </Button>
       <Button
         type="button"
-        variant="ghost"
+        variant="secondary"
         className={smallBtn}
         disabled={pending || index === count - 1}
         onClick={() => onMove(1)}
@@ -79,7 +78,7 @@ export function RowControls({
         ↓
       </Button>
       {children}
-      <Button type="button" variant="ghost" className={smallBtn} disabled={pending} onClick={onEdit}>
+      <Button type="button" variant="secondary" className={smallBtn} disabled={pending} onClick={onEdit}>
         {editing ? "Tutup" : "Ubah"}
       </Button>
       <Button type="button" variant="danger" className={smallBtn} disabled={pending} onClick={onDelete}>

@@ -2,16 +2,15 @@
 
 import { useActionState, type ReactNode } from "react";
 
-import { Button, Card, Notice } from "@/components/ui";
+import { Button, Card, Notice, inputCls, textareaCls } from "@/components/ui";
 import type { EventKind } from "@/lib/api";
 import type { ActionState } from "@/lib/builder";
 import type { EventDefaults } from "@/lib/event-form";
 import { GENERIC_THEME_LIST, resolveGenericTheme } from "@/lib/generic-themes";
 import { DEFAULT_THEME, THEME_LIST } from "@/lib/themes";
 
-const field =
-  "h-11 w-full rounded-[var(--radius-control)] border border-panel-border bg-white px-3 text-base outline-none focus:border-gold";
-const area = `${field} h-auto py-2`;
+const field = inputCls;
+const area = textareaCls;
 const label = "block space-y-1.5";
 const cap = "text-sm text-admin-muted";
 
@@ -99,9 +98,9 @@ function GenericThemePick({ defaults }: { defaults?: string }) {
       {GENERIC_THEME_LIST.map((t) => (
         <label
           key={t.key}
-          className="flex cursor-pointer items-start gap-3 rounded-[var(--radius-card)] border border-panel-border bg-white p-3 has-[:checked]:border-gold has-[:checked]:ring-2 has-[:checked]:ring-gold/30"
+          className="flex cursor-pointer items-start gap-3 rounded-[var(--radius-card)] border border-panel-border bg-white p-3 has-[:checked]:border-accent has-[:checked]:ring-2 has-[:checked]:ring-accent/25"
         >
-          <input type="radio" name="theme" value={t.key} defaultChecked={t.key === current} className="mt-1 accent-gold" />
+          <input type="radio" name="theme" value={t.key} defaultChecked={t.key === current} className="mt-1 accent-accent" />
           <span className="min-w-0">
             <span className="mb-2 flex gap-1.5" aria-hidden="true">
               {(t.key === "editorial" ? [t.navy, "#ffffff", "#aab3be"] : [t.navy, t.gold, t.cream]).map((c) => (

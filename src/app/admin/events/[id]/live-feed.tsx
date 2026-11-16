@@ -72,7 +72,7 @@ export function LiveFeed({ eventId }: { eventId: string }) {
         <span className="flex items-center gap-2 text-sm text-admin-muted" aria-live="polite">
           <span
             className={`size-2 rounded-full ${
-              status === "live" ? "animate-pulse bg-ok" : status === "connecting" ? "bg-gold" : "bg-danger"
+              status === "live" ? "animate-pulse bg-ok" : status === "connecting" ? "bg-accent" : "bg-danger"
             }`}
           />
           {status === "live" ? "Terhubung" : status === "connecting" ? "Menghubungkan…" : "Terputus, mencoba lagi…"}

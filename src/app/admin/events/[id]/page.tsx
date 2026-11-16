@@ -1,13 +1,8 @@
-import Link from "next/link";
-
-import { Card, PageTitle, Stat, formatTime } from "@/components/ui";
+import { Card, LinkButton, PageTitle, Stat, formatTime } from "@/components/ui";
 import { api, canManage, eventKind, eventName, type Attendance, type EventItem } from "@/lib/api";
 
 import { DeleteEventButton } from "./edit/delete-button";
 import { LiveFeed } from "./live-feed";
-
-const navLink =
-  "inline-flex h-10 items-center rounded-[var(--radius-control)] border border-panel-border bg-panel px-4 text-sm font-medium hover:bg-panel-hover";
 
 export default async function EventDashboard({ params }: PageProps<"/admin/events/[id]">) {
   const { id } = await params;
@@ -24,28 +19,28 @@ export default async function EventDashboard({ params }: PageProps<"/admin/event
           <div className="flex flex-wrap gap-2">
             {eventKind(event) === "GENERIC" ? (
               <>
-                <Link href={`/admin/events/${id}/form`} className={navLink}>
+                <LinkButton variant="secondary" href={`/admin/events/${id}/form`}>
                   Form pendaftaran
-                </Link>
-                <Link href={`/admin/events/${id}/blocks`} className={navLink}>
+                </LinkButton>
+                <LinkButton variant="secondary" href={`/admin/events/${id}/blocks`}>
                   Blok halaman
-                </Link>
-                <Link href={`/admin/events/${id}/tickets`} className={navLink}>
+                </LinkButton>
+                <LinkButton variant="secondary" href={`/admin/events/${id}/tickets`}>
                   Jenis tiket
-                </Link>
+                </LinkButton>
               </>
             ) : null}
-            <Link href={`/admin/events/${id}/guests`} className={navLink}>
+            <LinkButton variant="secondary" href={`/admin/events/${id}/guests`}>
               Tamu/Peserta
-            </Link>
-            <Link href={`/admin/events/${id}/scanner`} className={navLink}>
+            </LinkButton>
+            <LinkButton variant="secondary" href={`/admin/events/${id}/scanner`}>
               Perangkat scanner
-            </Link>
+            </LinkButton>
             {event.role === "OWNER" ? (
               <>
-                <Link href={`/admin/events/${id}/edit`} className={navLink}>
+                <LinkButton variant="secondary" href={`/admin/events/${id}/edit`}>
                   Edit acara
-                </Link>
+                </LinkButton>
                 <DeleteEventButton id={id} kind={eventKind(event)} />
               </>
             ) : null}
@@ -61,7 +56,7 @@ export default async function EventDashboard({ params }: PageProps<"/admin/event
       </div>
 
       <div className="mt-4 h-2 overflow-hidden rounded-full bg-panel-border" aria-hidden>
-        <div className="h-full rounded-full bg-gold transition-[width] duration-700" style={{ width: `${Math.min(pct, 100)}%` }} />
+        <div className="h-full rounded-full bg-accent transition-[width] duration-700" style={{ width: `${Math.min(pct, 100)}%` }} />
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-[2fr_1fr]">

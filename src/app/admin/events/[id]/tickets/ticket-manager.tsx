@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 
-import { Button, Card, Notice } from "@/components/ui";
+import { Button, Card, Notice, textareaCls } from "@/components/ui";
 import type { ActionState } from "@/lib/builder";
 import type { AllowlistEntry, RegistrationMode, TicketType } from "@/lib/tickets";
 
@@ -65,7 +65,7 @@ export function TicketManager({
                     {t.quota !== null ? <ExpandForm eventId={eventId} id={t.id} /> : null}
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="secondary"
                       className={smallBtn}
                       onClick={() => setEditing(editing === t.id ? null : t.id)}
                     >
@@ -112,7 +112,7 @@ export function TicketManager({
             <Button
               key={m}
               type="button"
-              variant={mode === m ? "primary" : "ghost"}
+              variant={mode === m ? "primary" : "secondary"}
               disabled={row.pending}
               aria-pressed={mode === m}
               onClick={() => row.run(() => setRegistrationMode(eventId, m))}
@@ -171,7 +171,7 @@ function EditForm({ eventId, ticket, onDone }: { eventId: string; ticket: Ticket
   return (
     <form
       onSubmit={(e) => submitKeepingInput(e, action)}
-      className="mt-3 space-y-3 rounded-[var(--radius-control)] border border-gold-line bg-white/60 p-4"
+      className="mt-3 space-y-3 rounded-[var(--radius-control)] border border-accent-line bg-accent-soft/40 p-4"
     >
       {state?.error ? <Notice tone="error">{state.error}</Notice> : null}
       <div className="grid gap-3 sm:grid-cols-3">
@@ -192,7 +192,7 @@ function EditForm({ eventId, ticket, onDone }: { eventId: string; ticket: Ticket
         <Button type="submit" disabled={pending}>
           {pending ? "Menyimpan…" : "Simpan"}
         </Button>
-        <Button type="button" variant="ghost" onClick={onDone} disabled={pending}>
+        <Button type="button" variant="secondary" onClick={onDone} disabled={pending}>
           Batal
         </Button>
       </div>
@@ -211,9 +211,9 @@ function ExpandForm({ eventId, id }: { eventId: string; id: string }) {
         max={10000}
         defaultValue={10}
         aria-label="Jumlah slot tambahan"
-        className="h-8 w-20 rounded-[var(--radius-control)] border border-panel-border bg-white px-2 text-xs"
+        className={`${inputCls} h-8 w-20 px-2 text-xs`}
       />
-      <Button type="submit" variant="ghost" className={smallBtn} disabled={pending}>
+      <Button type="submit" variant="secondary" className={smallBtn} disabled={pending}>
         Tambah slot
       </Button>
       {state?.error ? <span className="text-xs text-danger">{state.error}</span> : null}
@@ -241,7 +241,7 @@ function Allowlist({ eventId, entries, loadError }: { eventId: string; entries: 
           onChange={(e) => setText(e.target.value)}
           rows={4}
           placeholder={"081234567890\nbudi@example.com"}
-          className="w-full rounded-[var(--radius-control)] border border-panel-border bg-white px-3 py-2 font-mono text-sm outline-none focus:border-gold"
+          className={`${textareaCls} font-mono`}
         />
         <Button type="submit" disabled={pending}>
           {pending ? "Menambah…" : "Tambah ke daftar"}

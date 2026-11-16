@@ -2,12 +2,11 @@
 
 import { useActionState } from "react";
 
-import { Button, Notice } from "@/components/ui";
+import { Button, Notice, inputCls } from "@/components/ui";
 
 import { login, type FormState } from "./actions";
 
-const field =
-  "h-11 w-full rounded-[var(--radius-control)] border border-panel-border bg-white px-3 text-base outline-none focus:border-gold";
+const field = inputCls;
 
 export function LoginForm({ next, expired }: { next?: string; expired: boolean }) {
   const [state, action, pending] = useActionState<FormState, FormData>(login, undefined);

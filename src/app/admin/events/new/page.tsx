@@ -21,7 +21,7 @@ export default async function NewEventPage({ searchParams }: PageProps<"/admin/e
   return (
     <>
       <PageTitle kicker="Acara" title="Buat acara baru">
-        <Link href={`/admin?produk=${current.param}`} className="text-sm text-admin-muted hover:text-admin-ink">
+        <Link href={`/admin?produk=${current.param}`} className="text-sm text-admin-muted transition-colors hover:text-admin-ink">
           ← Kembali ke dashboard
         </Link>
       </PageTitle>
@@ -35,7 +35,7 @@ export default async function NewEventPage({ searchParams }: PageProps<"/admin/e
               href={`/admin/events/new?produk=${k.param}`}
               aria-current={active ? "page" : undefined}
               className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
-                active ? "border-gold text-admin-ink" : "border-transparent text-admin-muted hover:text-admin-ink"
+                active ? "border-accent text-admin-ink" : "border-transparent text-admin-muted hover:text-admin-ink"
               }`}
             >
               {k.label}

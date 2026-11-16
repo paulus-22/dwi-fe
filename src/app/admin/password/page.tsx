@@ -3,10 +3,9 @@
 import { useActionState } from "react";
 
 import { changePassword, type FormState } from "@/app/login/actions";
-import { Button, Card, Notice, PageTitle } from "@/components/ui";
+import { Button, Card, Notice, PageTitle, inputCls } from "@/components/ui";
 
-const field =
-  "h-11 w-full rounded-[var(--radius-control)] border border-panel-border bg-white px-3 text-base outline-none focus:border-gold";
+const field = inputCls;
 
 export default function PasswordPage() {
   const [state, action, pending] = useActionState<FormState, FormData>(changePassword, undefined);

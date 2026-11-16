@@ -11,7 +11,7 @@ import { createGuest, type CreateGuestState } from "./actions";
 
 function rsvp(attending: boolean | null) {
   if (attending === null) return { label: "Belum konfirmasi", cls: "text-admin-muted" };
-  return attending ? { label: "Hadir", cls: "text-gold-strong" } : { label: "Tidak hadir", cls: "text-danger" };
+  return attending ? { label: "Hadir", cls: "font-medium text-ok" } : { label: "Tidak hadir", cls: "text-danger" };
 }
 
 export function GuestManager({

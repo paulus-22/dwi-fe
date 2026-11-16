@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 
-import { Button, Card, Notice } from "@/components/ui";
+import { Button, Card, Notice, textareaCls } from "@/components/ui";
 import {
   BLOCK_TYPE_LABELS,
   BLOCK_TYPES,
@@ -62,7 +62,7 @@ export function BlockBuilder({ eventId, blocks }: { eventId: string; blocks: Pag
                   >
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="secondary"
                       className={smallBtn}
                       disabled={row.pending}
                       onClick={() => row.run(() => toggleBlock(eventId, b.id))}
@@ -111,7 +111,7 @@ function BlockEditor({ eventId, block, onDone }: { eventId: string; block?: Page
         setTouched(true);
         submitKeepingInput(e, action);
       }}
-      className="mt-3 space-y-4 rounded-[var(--radius-control)] border border-gold-line bg-white/60 p-4"
+      className="mt-3 space-y-4 rounded-[var(--radius-control)] border border-accent-line bg-accent-soft/40 p-4"
     >
       {state?.error && state.error !== jsonError ? <Notice tone="error">{state.error}</Notice> : null}
       {block ? <input type="hidden" name="sortOrder" value={block.sortOrder} /> : null}
@@ -128,7 +128,7 @@ function BlockEditor({ eventId, block, onDone }: { eventId: string; block?: Page
           </select>
         </label>
         <label className="flex items-center gap-2 self-end pb-2.5 text-sm">
-          <input type="checkbox" name="isVisible" defaultChecked={block?.isVisible ?? true} className="size-4 accent-gold" />
+          <input type="checkbox" name="isVisible" defaultChecked={block?.isVisible ?? true} className="size-4 accent-accent" />
           Tampilkan di halaman
         </label>
       </div>
@@ -145,9 +145,7 @@ function BlockEditor({ eventId, block, onDone }: { eventId: string; block?: Page
           rows={Math.min(Math.max(config.split("\n").length + 1, 6), 24)}
           spellCheck={false}
           aria-invalid={jsonError ? true : undefined}
-          className={`w-full rounded-[var(--radius-control)] border bg-white px-3 py-2 font-mono text-sm outline-none focus:border-gold ${
-            jsonError && touched ? "border-danger" : "border-panel-border"
-          }`}
+          className={`${textareaCls} font-mono ${jsonError && touched ? "border-danger!" : ""}`}
         />
         {jsonError && touched ? (
           <span role="alert" className="block text-sm text-danger">
@@ -162,13 +160,13 @@ function BlockEditor({ eventId, block, onDone }: { eventId: string; block?: Page
         </Button>
         <Button
           type="button"
-          variant="ghost"
+          variant="secondary"
           disabled={pending || !!jsonError}
           onClick={() => "config" in parsed && setConfig(JSON.stringify(parsed.config, null, 2))}
         >
           Rapikan JSON
         </Button>
-        <Button type="button" variant="ghost" onClick={onDone} disabled={pending}>
+        <Button type="button" variant="secondary" onClick={onDone} disabled={pending}>
           Batal
         </Button>
       </div>
