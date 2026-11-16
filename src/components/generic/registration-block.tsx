@@ -143,26 +143,35 @@ function SelfRegistration({
     <form onSubmit={submit} noValidate className="space-y-4">
       {description ? <p className="text-sm leading-relaxed text-[var(--g-muted)]">{description}</p> : null}
       {error ? <FormNotice tone="error">{error}</FormNotice> : null}
-      <fieldset className="space-y-2">
-        <legend className={labelCls}>
-          Jenis tiket<span className="text-danger"> *</span>
-        </legend>
-        {ticketTypes.map((t) => (
-          <label key={t.id} className="flex items-start gap-2">
-            <input
-              type="radio"
-              name="ticketType"
-              checked={ticketTypeId === t.id}
-              onChange={() => setTicketTypeId(t.id)}
-              className="mt-1 accent-[var(--g-gold-ink)]"
-            />
-            <span>
-              <span className="font-medium">{t.name}</span>
-              {t.description ? <span className="block text-sm text-[var(--g-muted)]">{t.description}</span> : null}
-            </span>
-          </label>
-        ))}
-      </fieldset>
+      {ticketTypes.length === 1 ? (
+        <div className="gt-ticket-solo">
+          <span className="gt-ticket-solo-badge" aria-hidden="true">
+            ✓
+          </span>
+          <span>
+            <span className={labelCls}>Tiket Anda</span>
+            <span className="gt-ticket-name block">{ticketTypes[0].name}</span>
+            {ticketTypes[0].description ? <span className="gt-ticket-desc block">{ticketTypes[0].description}</span> : null}
+          </span>
+        </div>
+      ) : (
+        <fieldset className="space-y-2">
+          <legend className={labelCls}>
+            Jenis tiket<span className="text-danger"> *</span>
+          </legend>
+          <div className="gt-ticket-list">
+            {ticketTypes.map((t) => (
+              <label key={t.id} className="gt-ticket">
+                <input type="radio" name="ticketType" checked={ticketTypeId === t.id} onChange={() => setTicketTypeId(t.id)} />
+                <span className="min-w-0">
+                  <span className="gt-ticket-name block">{t.name}</span>
+                  {t.description ? <span className="gt-ticket-desc block">{t.description}</span> : null}
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
       <label className="block">
         <span className={labelCls}>
           Nama<span className="text-danger"> *</span>
