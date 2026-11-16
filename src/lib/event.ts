@@ -79,6 +79,8 @@ export type PublicEvent = {
   hashtag: string | null;
   theme: string;
   themeTokens: Record<string, string> | null;
+  /** Browser-tab icon for this event's public page; absent on older APIs. */
+  faviconUrl?: string | null;
   quoteTextId: string | null;
   quoteTextEn: string | null;
   quoteAuthor: string | null;
@@ -112,8 +114,10 @@ export type PublicGenericEvent = {
   headlineDate: Date;
   timezone: string;
   pageBlocks: PageBlock[];
-  /** `corporate-classic` | `corporate-soft`; absent on older APIs (→ classic). */
+  /** `corporate-classic` | `corporate-soft` | `editorial`; absent on older APIs (→ classic). */
   theme?: string;
+  /** Browser-tab icon for this event's public page; absent on older APIs. */
+  faviconUrl?: string | null;
   /** Absent on APIs that predate self-registration — treat as CLOSED. */
   registrationMode?: "CLOSED" | "OPEN" | "ALLOWLIST";
 };

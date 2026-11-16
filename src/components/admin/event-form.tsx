@@ -214,6 +214,15 @@ export function EventForm({
           </Section>
           <Section title="Tema" description="Tampilan halaman publik acara. Warna dan bentuk sudut mengikuti pilihan ini.">
             <GenericThemePick defaults={d.theme} />
+            <div className="sm:col-span-2">
+              <Input
+                text="URL favicon (opsional)"
+                name="faviconUrl"
+                defaults={d.faviconUrl}
+                placeholder="https://.../favicon.png"
+                hint="Ikon tab browser khusus acara ini. Kosongkan untuk ikon bawaan."
+              />
+            </div>
           </Section>
         </>
       ) : (
@@ -241,6 +250,13 @@ export function EventForm({
             />
             <Input text="URL musik (opsional)" name="musicUrl" defaults={d.musicUrl} placeholder="/music/song.mp3" />
             <Input text="Tagar" name="hashtag" defaults={d.hashtag} placeholder="#AyuToBram" />
+            <Input
+              text="URL favicon (opsional)"
+              name="faviconUrl"
+              defaults={d.faviconUrl}
+              placeholder="https://.../favicon.png"
+              hint="Ikon tab browser khusus acara ini. Kosongkan untuk ikon bawaan."
+            />
           </Section>
 
           <Section title="Mempelai">

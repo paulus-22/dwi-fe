@@ -48,6 +48,7 @@ export type EventDefaults = {
   closingPhotoUrl?: string | null;
   dressCodeImageUrl?: string | null;
   interludePhotos?: string; // one per line
+  faviconUrl?: string | null;
 };
 
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
@@ -78,7 +79,7 @@ export function buildEventBody(
   if (kind === "GENERIC") {
     const title = str(form, "title");
     if (!title) return { error: "Judul acara wajib diisi." };
-    return { body: { kind, ...common, title, subtitle: opt(form, "subtitle"), description: opt(form, "description"), theme: opt(form, "theme") } };
+    return { body: { kind, ...common, title, subtitle: opt(form, "subtitle"), description: opt(form, "description"), theme: opt(form, "theme"), faviconUrl: opt(form, "faviconUrl") } };
   }
 
   const names = ["brideShortName", "brideFullName", "groomShortName", "groomFullName"];
@@ -115,6 +116,7 @@ export function buildEventBody(
       closingPhotoUrl: opt(form, "closingPhotoUrl"),
       dressCodeImageUrl: opt(form, "dressCodeImageUrl"),
       interludePhotos: list(str(form, "interludePhotos"), /\r?\n/),
+      faviconUrl: opt(form, "faviconUrl"),
     },
   };
 }
