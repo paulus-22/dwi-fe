@@ -68,6 +68,8 @@ const id = {
     submitting: "mengirim...",
     successAttending: "Terima kasih, kehadiranmu sudah kami catat.",
     successDeclined: "Terima kasih sudah memberi kabar.",
+    viewPass: "Lihat tiket & QR",
+    passHint: "Tunjukkan QR ini di meja penerima tamu saat acara.",
     update: "ubah konfirmasi",
     errors: {
       nameRequired: "Nama wajib diisi.",
@@ -215,6 +217,8 @@ const en: Dictionary = {
     submitting: "sending...",
     successAttending: "Thank you, we have you on the list.",
     successDeclined: "Thank you for letting us know.",
+    viewPass: "View ticket & QR",
+    passHint: "Show this QR at the reception desk.",
     update: "change response",
     errors: {
       nameRequired: "Name is required.",
