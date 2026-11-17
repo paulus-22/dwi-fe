@@ -29,6 +29,22 @@
   --font-ui: var(--font-jost), ui-sans-serif, system-ui, sans-serif;
   --font-admin: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
+  /* Astryx Stone palette (warm stone & slate tones) + Figtree/Montserrat type —
+     used by the themoments.id landing page. Values lifted from
+     @astryxdesign/theme-stone's reviewed neutral ramp. */
+  --color-stone-bg: #f0f0f6;      /* neutral.100 … neutral.light[95] */
+  --color-stone-panel: #ffffff;   /* neutral.light[100] */
+  --color-stone-border: #e2e2e8;  /* neutral.light[90] */
+  --color-stone-muted: #d4d4da;   /* neutral.light[85] */
+  --color-stone-ink: #25252a;     /* neutral.light[15]  */
+  --color-stone-text-muted: #6a6a6f; /* neutral.light[45] */
+  --color-stone-text-faint: #909095; /* neutral.light[60] */
+  --color-stone-accent: #25252a;  /* neutral.light[15] — dark stone accent */
+  --color-stone-ink-safe: #f0f0f6;/* neutral.light[95] — text on dark stone */
+
+  --font-stone-body: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --font-stone-heading: var(--font-montserrat), var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+
   --radius-control: 8px;
   --radius-card: 12px;
 

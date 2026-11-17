@@ -1,7 +1,9 @@
 import {
   Cormorant_Upright,
+  Figtree,
   Instrument_Serif,
   Jost,
+  Montserrat,
   Parisienne,
   Playfair_Display,
 } from "next/font/google";
@@ -35,6 +37,22 @@ export const jost = Jost({
   display: "swap",
 });
 
+/** Astryx Stone: body face (Figtree). */
+export const figtree = Figtree({
+  variable: "--font-figtree",
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  display: "swap",
+});
+
+/** Astryx Stone: heading face (Montserrat). */
+export const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  display: "swap",
+});
+
 /** Display face for the "modern" pairing — higher contrast, more architectural. */
 export const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -57,4 +75,4 @@ export const parisienne = Parisienne({
   display: "swap",
 });
 
-export const fontVariables = `${cormorant.variable} ${instrument.variable} ${jost.variable} ${playfair.variable} ${parisienne.variable}`;
+export const fontVariables = `${cormorant.variable} ${instrument.variable} ${jost.variable} ${playfair.variable} ${parisienne.variable} ${figtree.variable} ${montserrat.variable}`;
