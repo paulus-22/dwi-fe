@@ -1,6 +1,7 @@
 import { Ceremonies, CeremonyMap } from "@/components/invitation/ceremonies";
 import { Countdown } from "@/components/invitation/countdown";
 import { Couple } from "@/components/invitation/couple";
+import { shortGuestName } from "@/lib/guests";
 import { DressCode } from "@/components/invitation/dress-code";
 import { Gift } from "@/components/invitation/gift";
 import { Hero } from "@/components/invitation/hero";
@@ -90,7 +91,7 @@ export async function WeddingInvitation({
           groomName: event.groomShortName,
           hashtag: event.hashtag,
           dateLabel: formatHeroDate(event.headlineDate, event.timezone),
-          guestName: guest?.householdName ?? null,
+          guestName: shortGuestName(guest?.householdName),
           greeting: dict.hero.guestFallback,
           salutation: dict.hero.salutation,
           kicker: dict.hero.kicker,

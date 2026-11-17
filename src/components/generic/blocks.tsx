@@ -4,6 +4,7 @@ import { Card } from "@/components/ui";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { PublicGenericEvent } from "@/lib/event";
 import type { GenericTheme } from "@/lib/generic-themes";
+import { shortGuestName } from "@/lib/guests";
 import { parseMapsEmbed } from "@/lib/maps";
 import type { FormField, PageBlock } from "@/lib/builder";
 import type { PublicTicketType } from "@/lib/tickets";
@@ -282,7 +283,7 @@ function CoverBlock({ c, ctx, mark }: { c: Config; ctx: BlockContext; mark?: str
           <section className="border-b border-[var(--g-line)] bg-[var(--g-cream)]">
            <div className="mx-auto max-w-[1080px] px-6 py-8 sm:px-12">
             <p className="gt-mono text-[var(--g-muted)]">Undangan pribadi Anda</p>
-            <h2 className="mt-3 text-[clamp(24px,3.5vw,34px)] font-bold tracking-[-0.02em] text-[var(--g-navy)]">Yth. {guest.householdName}</h2>
+            <h2 className="mt-3 text-[clamp(24px,3.5vw,34px)] font-bold tracking-[-0.02em] text-[var(--g-navy)]">Yth. {shortGuestName(guest.householdName)}</h2>
             <p className="mt-2 max-w-[560px] text-sm leading-relaxed text-[var(--g-muted)]">
               Anda diundang secara khusus untuk menghadiri {title}. Kami menantikan kehadiran Anda.
             </p>
@@ -324,7 +325,7 @@ function CoverBlock({ c, ctx, mark }: { c: Config; ctx: BlockContext; mark?: str
             style={{ background: "linear-gradient(135deg,#fff,#f5f0e6)" }}
           >
             <p className="text-[10px] font-normal tracking-[0.25em] text-[var(--g-gold-ink)] uppercase">Undangan pribadi Anda</p>
-            <h2 className="gt-serif mt-2 mb-3 text-[31px] font-normal text-[var(--g-navy)]">Yth. {guest.householdName},</h2>
+            <h2 className="gt-serif mt-2 mb-3 text-[31px] font-normal text-[var(--g-navy)]">Yth. {shortGuestName(guest.householdName)},</h2>
             <p className="text-sm leading-[1.65] text-[#4e5662]">
               Anda diundang secara khusus untuk menghadiri {title}. Undangan ini ditujukan langsung kepada Anda — kami menantikan kehadiran
               Anda.
@@ -353,7 +354,7 @@ function CoverBlock({ c, ctx, mark }: { c: Config; ctx: BlockContext; mark?: str
         aria-hidden="true"
         className="absolute top-[145px] left-1/2 -z-10 size-[320px] -translate-x-1/2 rounded-full border border-white/[0.125]"
       />
-      {guest ? <p className="gt-serif text-xs tracking-[0.11em] text-[#e7d7b6] uppercase">Yth. {guest.householdName}</p> : null}
+      {guest ? <p className="gt-serif text-xs tracking-[0.11em] text-[#e7d7b6] uppercase">Yth. {shortGuestName(guest.householdName)}</p> : null}
       <h1 className="gt-serif mt-[110px] mb-4 max-w-[390px] text-[clamp(39px,11vw,54px)] leading-[1.04] font-normal tracking-[-0.035em]">
         {title}
       </h1>
