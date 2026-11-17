@@ -12,3 +12,4 @@ apps/scanner/node_modules
 apps/scanner/dist
 package-lock.json
 .dev.vars
+.data/
