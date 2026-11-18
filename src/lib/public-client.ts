@@ -11,6 +11,17 @@ const pub = (path: string) => `${PUBLIC_API_URL}/v1/public/events${path}`;
 export const wishesUrl = (slug: string, query = "") => pub(`/${encodeURIComponent(slug)}/wishes${query}`);
 export const rsvpUrl = (slug: string, token: string) =>
   pub(`/${encodeURIComponent(slug)}/guests/${encodeURIComponent(token)}/rsvp`);
+export const gateUrl = (slug: string) => pub(`/${encodeURIComponent(slug)}/gate`);
+
+/** Unlocks a PHONE_6 gate with the guest's code. Resolves true on success. */
+export async function verifyGate(slug: string, token: string, code: string): Promise<boolean> {
+  const res = await fetch(gateUrl(slug), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ token, code }),
+  }).catch(() => null);
+  return res?.ok === true;
+}
 
 export type RsvpResponseValue = { fieldKey: string; value: unknown };
 

@@ -81,6 +81,8 @@ export type PublicEvent = {
   themeTokens: Record<string, string> | null;
   /** Browser-tab icon for this event's public page; absent on older APIs. */
   faviconUrl?: string | null;
+  /** 'OPEN' (no password) or 'PHONE_6' (guest phone's last 6 digits); absent = OPEN. */
+  inviteGate?: "OPEN" | "PHONE_6";
   quoteTextId: string | null;
   quoteTextEn: string | null;
   quoteAuthor: string | null;
@@ -118,6 +120,8 @@ export type PublicGenericEvent = {
   theme?: string;
   /** Browser-tab icon for this event's public page; absent on older APIs. */
   faviconUrl?: string | null;
+  /** 'OPEN' (no password) or 'PHONE_6' (guest phone's last 6 digits); absent = OPEN. */
+  inviteGate?: "OPEN" | "PHONE_6";
   /** Absent on APIs that predate self-registration — treat as CLOSED. */
   registrationMode?: "CLOSED" | "OPEN" | "ALLOWLIST";
 };

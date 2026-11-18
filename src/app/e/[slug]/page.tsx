@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { InviteGate } from "@/components/invitation/invite-gate";
 import { coupleLine } from "@/lib/couple";
 import { findPublicEvent, getPublicEvent } from "@/lib/event";
 import { safeUrl } from "@/components/generic/config";
@@ -33,10 +34,18 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   const { slug } = await params;
   const query = await searchParams;
   const event = await getPublicEvent(slug);
+  const token = typeof query.to === "string" ? query.to : undefined;
 
-  return event.kind === "GENERIC" ? (
-    <GenericInvitation event={event} query={query} />
-  ) : (
-    <WeddingInvitation event={event} query={query} />
+  const invite =
+    event.kind === "GENERIC" ? (
+      <GenericInvitation event={event} query={query} />
+    ) : (
+      <WeddingInvitation event={event} query={query} />
+    );
+
+  return (
+    <InviteGate gate={event.inviteGate} slug={slug} token={token}>
+      {invite}
+    </InviteGate>
   );
 }

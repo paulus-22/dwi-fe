@@ -49,6 +49,8 @@ export type EventDefaults = {
   dressCodeImageUrl?: string | null;
   interludePhotos?: string; // one per line
   faviconUrl?: string | null;
+  /** 'OPEN' (no password) or 'PHONE_6' (guest phone's last 6 digits). */
+  inviteGate?: string;
 };
 
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
@@ -79,7 +81,7 @@ export function buildEventBody(
   if (kind === "GENERIC") {
     const title = str(form, "title");
     if (!title) return { error: "Judul acara wajib diisi." };
-    return { body: { kind, ...common, title, subtitle: opt(form, "subtitle"), description: opt(form, "description"), theme: opt(form, "theme"), faviconUrl: opt(form, "faviconUrl") } };
+    return { body: { kind, ...common, title, subtitle: opt(form, "subtitle"), description: opt(form, "description"), theme: opt(form, "theme"), faviconUrl: opt(form, "faviconUrl"), inviteGate: str(form, "inviteGate") || "OPEN" } };
   }
 
   const names = ["brideShortName", "brideFullName", "groomShortName", "groomFullName"];
@@ -117,6 +119,7 @@ export function buildEventBody(
       dressCodeImageUrl: opt(form, "dressCodeImageUrl"),
       interludePhotos: list(str(form, "interludePhotos"), /\r?\n/),
       faviconUrl: opt(form, "faviconUrl"),
+      inviteGate: str(form, "inviteGate") || "OPEN",
     },
   };
 }

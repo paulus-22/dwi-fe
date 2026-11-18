@@ -189,6 +189,16 @@ export function EventForm({
           ["ARCHIVED", "Arsip"],
         ]}
       />
+      <Pick
+        text="Akses undangan"
+        name="inviteGate"
+        defaults={d.inviteGate ?? "OPEN"}
+        options={[
+          ["OPEN", "Terbuka (tanpa kata sandi)"],
+          ["PHONE_6", "Kata sandi: 6 digit terakhir nomor HP tamu"],
+        ]}
+        hint="Jika PHONE_6, tamu harus memasukkan 6 angka terakhir nomor HP mereka untuk membuka undangan."
+      />
     </>
   );
 
