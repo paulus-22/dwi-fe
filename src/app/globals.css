@@ -1,24 +1,24 @@
 @import "tailwindcss";
 
 /*
- * Admin chrome tokens: a neutral, light-mode B2B palette. The dashboard serves
- * several products (weddings, generic events), so it carries no product brand.
- * Cool grays + one indigo accent (primary actions, links, focus rings).
- * Invitation/public themes use their own tokens further down.
+ * Admin chrome tokens — "The Moments by Bizzmo" brand palette. Warm stone
+ * olives for surfaces/ink (from the logo's muted olive) with the logo's gold
+ * as the single accent (primary actions, links, focus rings). Invitation and
+ * public themes use their own tokens further down.
  */
 @theme {
-  --color-surface: #f6f7f9;
+  --color-surface: #f4f4ef;
   --color-panel: #ffffff;
-  --color-panel-border: #e3e6eb;
-  --color-panel-hover: #f3f4f6;
-  --color-admin-ink: #111827;
-  --color-admin-muted: #4b5563;
-  --color-admin-faint: #6b7280;
+  --color-panel-border: #e3e2d8;
+  --color-panel-hover: #f2f1ea;
+  --color-admin-ink: #2c3120;
+  --color-admin-muted: #5c6350;
+  --color-admin-faint: #777d69;
 
-  --color-accent: #4f46e5;
-  --color-accent-strong: #4338ca;
-  --color-accent-soft: #eef2ff;
-  --color-accent-line: #c7d2fe;
+  --color-accent: #b08a3e;
+  --color-accent-strong: #96732e;
+  --color-accent-soft: #f8f1df;
+  --color-accent-line: #e6d5a8;
 
   --color-ok: #15803d;
   --color-ok-soft: #ecfdf3;
