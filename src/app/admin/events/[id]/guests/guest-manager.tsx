@@ -1,17 +1,45 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useTransition } from "react";
 
 import { CopyLinkButton } from "@/components/copy-link-button";
 import { Button, Card, Notice } from "@/components/ui";
 import { guestLink, voucherLink, type GuestItem } from "@/lib/guests";
 
 import { inputCls, submitKeepingInput } from "../builder-ui";
-import { createGuest, type CreateGuestState } from "./actions";
+import { createGuest, setGuestQrDirect, type CreateGuestState } from "./actions";
 
 function rsvp(attending: boolean | null) {
   if (attending === null) return { label: "Belum konfirmasi", cls: "text-admin-muted" };
   return attending ? { label: "Hadir", cls: "font-medium text-ok" } : { label: "Tidak hadir", cls: "text-danger" };
+}
+
+/** Per-guest 'QR langsung' toggle: grants an immediate pass without RSVP. */
+function QrToggle({ eventId, guestId, on }: { eventId: string; guestId: string; on: boolean }) {
+  const [pending, start] = useTransition();
+  return (
+    <label className="mt-1.5 flex w-fit cursor-pointer items-center gap-2 text-xs">
+      <button
+        type="button"
+        role="switch"
+        aria-checked={on}
+        disabled={pending}
+        onClick={() => start(() => void setGuestQrDirect(eventId, guestId, !on))}
+        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors disabled:opacity-50 ${
+          on ? "bg-accent" : "bg-panel-border"
+        }`}
+      >
+        <span
+          className={`inline-block size-3.5 translate-x-0.5 rounded-full bg-white transition-transform ${
+            on ? "translate-x-[18px]" : ""
+          }`}
+        />
+      </button>
+      <span className="text-admin-muted">
+        {on ? "QR langsung (tanpa konfirmasi)" : "QR langsung"}
+      </span>
+    </label>
+  );
 }
 
 export function GuestManager({
@@ -52,6 +80,7 @@ export function GuestManager({
                       {g.checkedInAt ? " · sudah check-in" : ""}
                     </p>
                     <CopyLinkButton path={guestLink(slug, g.code)} label="Tautan undangan" />
+                    <QrToggle eventId={eventId} guestId={g.id} on={Boolean(g.qrDirect)} />
                     {g.attending ? (
                       <p className="mt-0.5 text-xs">
                         <CopyLinkButton path={voucherLink(slug, g.code)} label="Tautan QR tiket" />

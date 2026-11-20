@@ -34,3 +34,17 @@ export async function createGuest(eventId: string, _: CreateGuestState, form: Fo
   revalidatePath(`/admin/events/${eventId}/guests`);
   return { ok: true, guest: { name: householdName, code } };
 }
+
+/** Flips a single guest's direct-QR flag (issue their pass without confirming). */
+export async function setGuestQrDirect(eventId: string, guestId: string, qrDirect: boolean): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await api(`/v1/events/${eventId}/guests/${guestId}`, {
+      method: "PUT",
+      body: { qrDirect },
+    });
+    revalidatePath(`/admin/events/${eventId}/guests`);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: apiErrorMessage(e, "Gagal mengubah pengaturan QR.") };
+  }
+}
