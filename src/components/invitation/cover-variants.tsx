@@ -45,7 +45,7 @@ function Greeting({
       style={{ animation: "cover-fade-in 900ms ease-out both 1000ms" }}
     >
       <p className="kicker text-cream/60">{salutation}</p>
-      <p className="display mt-2 text-[24px] text-cream">{guestName ?? greeting}</p>
+      <p className="display mt-2 overflow-visible py-1 text-[24px] text-cream">{guestName ?? greeting}</p>
 
       <button
         type="button"

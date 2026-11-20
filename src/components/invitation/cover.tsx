@@ -142,7 +142,7 @@ export function Cover({
         style={{ animation: "cover-fade-in 900ms ease-out both 1200ms" }}
       >
         <p className="kicker text-cream/60">{salutation}</p>
-        <p className="display mt-2 text-[24px] text-cream">
+        <p className="display mt-2 overflow-visible py-1 text-[24px] text-cream">
           {guestName ?? greeting}
         </p>
 
