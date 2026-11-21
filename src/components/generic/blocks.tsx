@@ -12,7 +12,7 @@ import type { PublicTicketType } from "@/lib/tickets";
 import { asConfig, list, safeUrl, str, type Config } from "./config";
 import { GenericCountdown } from "./countdown";
 import { RegistrationBlock } from "./registration-block";
-import { RsvpBlock } from "./rsvp-block";
+import { GroupPassBlock, RsvpBlock } from "./rsvp-block";
 
 /**
  * One component per `blockType` for GENERIC events. Colours and corner radii
@@ -196,8 +196,19 @@ export function GenericBlock({ block, ctx }: { block: PageBlock; ctx: BlockConte
     case "GALLERY":
       return <GalleryBlock c={c} shape={shape} mark={mark} />;
     case "RSVP_FORM":
-      // Group (kelompok) invitations have no per-person confirmation — hide the block.
-      if (ctx.guest?.passMode === "GROUP") return null;
+      // Group (kelompok) invites have no per-person RSVP — show the shareable QR instead.
+      if (ctx.guest?.passMode === "GROUP")
+        return (
+          <Section
+            {...sec}
+            id="rsvp"
+            narrow
+            title={str(c.title) ?? "Kartu & QR"}
+            tone={shape === "sharp" ? "paper" : "alt"}
+          >
+            <GroupPassBlock slug={event.slug} token={ctx.guest.token} />
+          </Section>
+        );
       return (
         <Section {...sec} id="rsvp" narrow title={str(c.title) ?? "RSVP"} tone={shape === "sharp" ? "paper" : "alt"}>
           <RsvpBlock slug={event.slug} guest={ctx.guest} description={str(c.description)} shape={shape} />

@@ -113,7 +113,7 @@ export function GuestManager({
                     </p>
                     <CopyLinkButton path={guestLink(slug, g.code)} label="Tautan undangan" />
                     <PassControls eventId={eventId} guestId={g.id} passMode={g.passMode} passcode={g.passcode} />
-                    {g.attending && g.passMode !== "GROUP" ? (
+                    {g.passMode === "DIRECT" || g.passMode === "GROUP" || g.attending ? (
                       <p className="mt-0.5 text-xs">
                         <CopyLinkButton path={voucherLink(slug, g.code)} label="Tautan QR tiket" />
                       </p>

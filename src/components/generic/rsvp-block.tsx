@@ -39,6 +39,18 @@ export function NeedsInvitation() {
   );
 }
 
+/** Group (kelompok) invite: no per-person RSVP — show the single shareable QR. */
+export function GroupPassBlock({ slug, token }: { slug: string; token: string }) {
+  return (
+    <div className="space-y-3">
+      <FormNotice>Undangan kelompok — pakai satu QR untuk seluruh anggota. Tunjukkan QR saat tiba; di pintu, cukup sebutkan nama yang datang.</FormNotice>
+      <a href={`/v/${encodeURIComponent(slug)}?to=${encodeURIComponent(token)}`} className="gt-btn w-full">
+        Lihat kartu &amp; QR kelompok
+      </a>
+    </div>
+  );
+}
+
 export function RsvpBlock({
   slug,
   guest,
