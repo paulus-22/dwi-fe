@@ -10,8 +10,10 @@ export type GuestItem = {
   admits: number;
   checkedInAt: string | null;
   checkedInHeadcount: number | null;
-  /** Direct-QR: issue the pass without this guest having to confirm. */
-  qrDirect?: boolean;
+  /** NORMAL (confirm→pass) | DIRECT (instant pass) | GROUP (no per-person pass). */
+  passMode?: "NORMAL" | "DIRECT" | "GROUP";
+  /** Optional custom invitation password; blank = auto from phone (last 6). */
+  passcode?: string | null;
 };
 
 export const guestLink = (slug: string, code: string) => `/e/${slug}?to=${encodeURIComponent(code)}`;

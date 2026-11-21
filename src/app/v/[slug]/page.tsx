@@ -136,6 +136,14 @@ export default async function VoucherPage({
               </Link>
             </div>
           </>
+        ) : voucher.status === "group" ? (
+          <MessageCard
+            title={dict.voucher.groupTitle}
+            body={dict.voucher.groupBody}
+            cta={{ href: `${invitationHref}#rsvp`, label: dict.voucher.pendingCta }}
+            coupleLine={couple}
+            dateLine={dateLine}
+          />
         ) : (
           <MessageCard
             title={

@@ -19,6 +19,7 @@ export function RsvpForm({
   defaultName,
   maxGuests,
   existing,
+  group = false,
   dict,
 }: {
   eventSlug: string;
@@ -26,6 +27,8 @@ export function RsvpForm({
   defaultName: string;
   maxGuests: number;
   existing: ExistingRsvp;
+  /** Group invitation — no per-person pass, so no QR/ticket link. */
+  group?: boolean;
   dict: Dictionary;
 }) {
   const [name, setName] = useState(defaultName);
@@ -77,7 +80,7 @@ export function RsvpForm({
         <p className="mt-7 font-body text-[18px] italic leading-relaxed text-cream">
           {attending ? dict.rsvp.successAttending : dict.rsvp.successDeclined}
         </p>
-        {attending ? (
+        {attending && !group ? (
           <div className="mt-7 rounded-lg border border-cream/25 bg-cream/[0.06] px-5 py-5">
             <p className="font-body text-[15px] italic leading-relaxed text-cream/90">
               {dict.rsvp.passHint}

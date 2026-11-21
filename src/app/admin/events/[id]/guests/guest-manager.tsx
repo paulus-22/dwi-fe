@@ -7,38 +7,70 @@ import { Button, Card, Notice } from "@/components/ui";
 import { guestLink, voucherLink, type GuestItem } from "@/lib/guests";
 
 import { inputCls, submitKeepingInput } from "../builder-ui";
-import { createGuest, setGuestQrDirect, type CreateGuestState } from "./actions";
+import { createGuest, setGuestPass, type CreateGuestState } from "./actions";
 
 function rsvp(attending: boolean | null) {
   if (attending === null) return { label: "Belum konfirmasi", cls: "text-admin-muted" };
   return attending ? { label: "Hadir", cls: "font-medium text-ok" } : { label: "Tidak hadir", cls: "text-danger" };
 }
 
-/** Per-guest 'QR langsung' toggle: grants an immediate pass without RSVP. */
-function QrToggle({ eventId, guestId, on }: { eventId: string; guestId: string; on: boolean }) {
+/** Per-guest pass controls: admission mode + optional custom password. */
+function PassControls({
+  eventId,
+  guestId,
+  passMode,
+  passcode,
+}: {
+  eventId: string;
+  guestId: string;
+  passMode?: "NORMAL" | "DIRECT" | "GROUP";
+  passcode?: string | null;
+}) {
   const [pending, start] = useTransition();
+  const [mode, setMode] = useState<"NORMAL" | "DIRECT" | "GROUP">(passMode ?? "NORMAL");
+  const [code, setCode] = useState(passcode ?? "");
+  const [saved, setSaved] = useState(false);
+
+  function save() {
+    setSaved(false);
+    start(() =>
+      void setGuestPass(eventId, guestId, mode, code).then((r) => {
+        if (r.ok) setSaved(true);
+      }),
+    );
+  }
+
   return (
-    <label className="mt-1.5 flex w-fit cursor-pointer items-center gap-2 text-xs">
+    <div className="mt-2 flex w-fit flex-wrap items-center gap-2 text-xs">
+      <select
+        value={mode}
+        disabled={pending}
+        onChange={(e) => setMode(e.target.value as "NORMAL" | "DIRECT" | "GROUP")}
+        className="h-7 rounded-md border border-panel-border bg-[var(--color-panel)] px-2 text-xs outline-none focus:border-accent"
+        aria-label="Mode kartu masuk"
+      >
+        <option value="NORMAL">Normal (konfirmasi → QR)</option>
+        <option value="DIRECT">QR langsung (tanpa konfirmasi)</option>
+        <option value="GROUP">Kelompok (tanpa kartu per orang)</option>
+      </select>
+      <input
+        value={code}
+        disabled={pending}
+        onChange={(e) => setCode(e.target.value)}
+        placeholder="kata sandi (kosong = dari HP)"
+        maxLength={12}
+        className="h-7 w-44 rounded-md border border-panel-border bg-[var(--color-panel)] px-2 text-xs outline-none focus:border-accent"
+        aria-label="Kata sandi undangan"
+      />
       <button
         type="button"
-        role="switch"
-        aria-checked={on}
         disabled={pending}
-        onClick={() => start(() => void setGuestQrDirect(eventId, guestId, !on))}
-        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors disabled:opacity-50 ${
-          on ? "bg-accent" : "bg-panel-border"
-        }`}
+        onClick={save}
+        className="rounded-md border border-panel-border px-2 py-1 text-xs text-admin-muted transition-colors hover:bg-panel-hover disabled:opacity-50"
       >
-        <span
-          className={`inline-block size-3.5 translate-x-0.5 rounded-full bg-white transition-transform ${
-            on ? "translate-x-[18px]" : ""
-          }`}
-        />
+        {pending ? "…" : saved ? "Tersimpan" : "Simpan"}
       </button>
-      <span className="text-admin-muted">
-        {on ? "QR langsung (tanpa konfirmasi)" : "QR langsung"}
-      </span>
-    </label>
+    </div>
   );
 }
 
@@ -80,8 +112,8 @@ export function GuestManager({
                       {g.checkedInAt ? " · sudah check-in" : ""}
                     </p>
                     <CopyLinkButton path={guestLink(slug, g.code)} label="Tautan undangan" />
-                    <QrToggle eventId={eventId} guestId={g.id} on={Boolean(g.qrDirect)} />
-                    {g.attending ? (
+                    <PassControls eventId={eventId} guestId={g.id} passMode={g.passMode} passcode={g.passcode} />
+                    {g.attending && g.passMode !== "GROUP" ? (
                       <p className="mt-0.5 text-xs">
                         <CopyLinkButton path={voucherLink(slug, g.code)} label="Tautan QR tiket" />
                       </p>

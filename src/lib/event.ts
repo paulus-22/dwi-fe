@@ -209,6 +209,8 @@ export type ResolvedGuest = {
   token: string;
   householdName: string;
   plusGuestAllowance: number;
+  /** 'NORMAL' | 'DIRECT' | 'GROUP'; absent on older APIs = NORMAL. */
+  passMode?: "NORMAL" | "DIRECT" | "GROUP";
   rsvp: { attending: boolean; guestCount: number; respondentName?: string | null; message: string | null } | null;
 };
 
@@ -266,7 +268,8 @@ export type VoucherGuest = {
 export type VoucherState =
   | { status: "unknown" }
   | { status: "pending"; guest: VoucherGuest; declined: boolean }
-  | { status: "issued"; guest: VoucherGuest; admits: number; qrPayload: string };
+  | { status: "issued"; guest: VoucherGuest; admits: number; qrPayload: string }
+  | { status: "group"; guest: VoucherGuest };
 
 type RawVoucherGuest = Omit<VoucherGuest, "displayName"> & {
   displayName?: string | null;

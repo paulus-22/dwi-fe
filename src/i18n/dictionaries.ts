@@ -132,6 +132,9 @@ const id = {
     pendingBody:
       "Kartu masuk terbit setelah Anda mengonfirmasi kehadiran pada undangan.",
     pendingCta: "konfirmasi kehadiran",
+    groupTitle: "Undangan kelompok",
+    groupBody:
+      "Undangan ini untuk satu kelompok/rombongan — tidak ada kartu masuk per orang. Cukup konfirmasi kehadiran pada undangan.",
     declinedTitle: "Sampai jumpa lain waktu",
     declinedBody:
       "Anda tercatat tidak dapat hadir, jadi kartu masuk tidak diterbitkan. Berubah pikiran? Ubah konfirmasi pada undangan.",
@@ -281,6 +284,9 @@ const en: Dictionary = {
     pendingBody:
       "Your pass is issued once you confirm your attendance on the invitation.",
     pendingCta: "confirm attendance",
+    groupTitle: "Group invitation",
+    groupBody:
+      "This invitation is for a whole group — there is no per-person entry pass. Just confirm your attendance on the invitation.",
     declinedTitle: "We will miss you",
     declinedBody:
       "You are marked as unable to attend, so no pass was issued. Changed your mind? Update your response on the invitation.",

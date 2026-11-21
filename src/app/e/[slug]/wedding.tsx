@@ -215,13 +215,15 @@ export async function WeddingInvitation({
                       }
                     : null
                 }
+                group={guest.passMode === "GROUP"}
                 dict={dict}
               />
             </Section>
 
             {/* The pass only exists once attendance is confirmed, so the
-                invitation links to it rather than embedding it. */}
-            {guest.rsvp?.attending ? (
+                invitation links to it rather than embedding it. GROUP
+                invitations (e.g. a whole class) have no per-person pass. */}
+            {guest.rsvp?.attending && guest.passMode !== "GROUP" ? (
               <Section ornaments={ornaments}
                 id="pass"
                 kicker={dict.pass.kicker}

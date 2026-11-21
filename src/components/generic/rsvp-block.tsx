@@ -8,6 +8,7 @@ export type BlockGuest = {
   token: string;
   householdName: string;
   plusGuestAllowance: number;
+  passMode?: "NORMAL" | "DIRECT" | "GROUP";
   rsvp: {
     attending: boolean;
     guestCount: number;
@@ -93,7 +94,7 @@ export function RsvpBlock({
           </span>
         ) : null}
         <FormNotice>{attending ? `Terima kasih! Kehadiran ${count} orang tercatat.` : "Terima kasih atas konfirmasinya."}</FormNotice>
-        {attending ? (
+        {attending && guest.passMode !== "GROUP" ? (
           <a href={`/v/${encodeURIComponent(slug)}?to=${encodeURIComponent(guest.token)}`} className="gt-btn mr-4 !w-auto px-6">
             Lihat tiket &amp; QR
           </a>
