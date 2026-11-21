@@ -70,6 +70,8 @@ const id = {
     successDeclined: "Terima kasih sudah memberi kabar.",
     viewPass: "Lihat tiket & QR",
     passHint: "Tunjukkan QR ini di meja penerima tamu saat acara.",
+    groupNote:
+      "Undangan ini untuk satu kelompok/rombongan — tanpa kartu masuk per orang. Mohon konfirmasi langsung kepada kami bila berkenan hadir.",
     update: "ubah konfirmasi",
     errors: {
       nameRequired: "Nama wajib diisi.",
@@ -222,6 +224,8 @@ const en: Dictionary = {
     successDeclined: "Thank you for letting us know.",
     viewPass: "View ticket & QR",
     passHint: "Show this QR at the reception desk.",
+    groupNote:
+      "This invitation is for a whole group — there is no per-person entry pass. Please confirm with us directly if you plan to attend.",
     update: "change response",
     errors: {
       nameRequired: "Name is required.",
