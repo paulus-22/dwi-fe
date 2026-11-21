@@ -29,6 +29,7 @@ export type BlockContext = {
     token: string;
     householdName: string;
     plusGuestAllowance: number;
+    passMode?: "NORMAL" | "DIRECT" | "GROUP";
     rsvp: {
       attending: boolean;
       guestCount: number;
@@ -195,6 +196,8 @@ export function GenericBlock({ block, ctx }: { block: PageBlock; ctx: BlockConte
     case "GALLERY":
       return <GalleryBlock c={c} shape={shape} mark={mark} />;
     case "RSVP_FORM":
+      // Group (kelompok) invitations have no per-person confirmation — hide the block.
+      if (ctx.guest?.passMode === "GROUP") return null;
       return (
         <Section {...sec} id="rsvp" narrow title={str(c.title) ?? "RSVP"} tone={shape === "sharp" ? "paper" : "alt"}>
           <RsvpBlock slug={event.slug} guest={ctx.guest} description={str(c.description)} shape={shape} />

@@ -199,15 +199,9 @@ export async function WeddingInvitation({
 
         {guest ? (
           <>
-            {guest.passMode === "GROUP" ? (
-              <Section ornaments={ornaments} id="rsvp" title={dict.rsvp.title} tone="olive" posy="right">
-                <div className="mx-auto max-w-[22rem] text-center">
-                  <p className="mt-6 font-body text-[17px] italic leading-relaxed text-cream">
-                    {dict.rsvp.groupNote}
-                  </p>
-                </div>
-              </Section>
-            ) : (
+            {/* GROUP (kelompok) invitations: no RSVP form, no per-person pass —
+                the section is omitted entirely (see below). */}
+            {guest.passMode !== "GROUP" ? (
               <Section ornaments={ornaments} id="rsvp" title={dict.rsvp.title} tone="olive" posy="right">
                 <RsvpForm
                   eventSlug={event.slug}
@@ -226,7 +220,7 @@ export async function WeddingInvitation({
                   dict={dict}
                 />
               </Section>
-            )}
+            ) : null}
 
             {/* The pass only exists once attendance is confirmed, so the
                 invitation links to it rather than embedding it. GROUP
