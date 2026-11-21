@@ -13,6 +13,8 @@ type Scan = {
   occurredAt: string;
   deviceName: string;
   override: boolean;
+  /** GROUP check-in: which member arrived (usher-typed). */
+  memberName?: string | null;
 };
 
 type Status = "connecting" | "live" | "offline";
@@ -87,6 +89,7 @@ export function LiveFeed({ eventId }: { eventId: string }) {
               <span className="min-w-0">
                 <span className="font-medium">{s.householdName ?? s.code}</span>{" "}
                 <span className="text-admin-muted">
+                  {s.activity === "CHECK_IN" && s.memberName ? `· ${s.memberName}` : ""}
                   · {ACTIVITY[s.activity]}
                   {s.activity === "CHECK_IN" && s.headcount ? ` · ${s.headcount} orang` : ""}
                   {s.override ? " · manual" : ""}
