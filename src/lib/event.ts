@@ -204,6 +204,10 @@ export async function findPublicEvent(slug: string): Promise<AnyPublicEvent | nu
 
 export const normalizeToken = (raw: string) => raw.trim().toUpperCase();
 
+/** A group (no-per-person-pass) guest is exempt from the invite password. */
+export const isGroupGuest = (g: { passMode?: "NORMAL" | "DIRECT" | "GROUP" } | null | undefined) =>
+  g?.passMode === "GROUP";
+
 export type ResolvedGuest = {
   id: string;
   token: string;

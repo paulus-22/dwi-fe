@@ -19,7 +19,7 @@ import { ornamentSet } from "@/components/motif";
 import { getDictionary } from "@/i18n/dictionaries";
 import { pick, resolveLocale } from "@/i18n/locale";
 import { coupleLine } from "@/lib/couple";
-import { getWishesPage, resolveGuest, type PublicEvent } from "@/lib/event";
+import { getWishesPage, type PublicEvent, type ResolvedGuest } from "@/lib/event";
 import { formatHeroDate } from "@/lib/format";
 import { resolveTheme, themeStyle } from "@/lib/themes";
 
@@ -29,9 +29,11 @@ const WISHES_PAGE_SIZE = 10;
 export async function WeddingInvitation({
   event,
   query,
+  guest,
 }: {
   event: PublicEvent;
   query: Record<string, string | string[] | undefined>;
+  guest: ResolvedGuest | null;
 }) {
 
   const localeParam = typeof query.lang === "string" ? query.lang : undefined;
@@ -41,9 +43,6 @@ export async function WeddingInvitation({
     event.bilingual,
   );
   const dict = getDictionary(locale);
-
-  const tokenParam = typeof query.to === "string" ? query.to : undefined;
-  const guest = await resolveGuest(event.slug, tokenParam);
 
   const { wishes, nextCursor } = await getWishesPage(event.slug, WISHES_PAGE_SIZE);
 

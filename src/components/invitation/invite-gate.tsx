@@ -4,6 +4,10 @@ import { useEffect, useState } from "react";
 
 import { verifyGate } from "@/lib/public-client";
 
+/** A group helper — kept local to this client component (lib/event is server-only). */
+const isGroupGuest = (g: { passMode?: "NORMAL" | "DIRECT" | "GROUP" } | null | undefined) =>
+  g?.passMode === "GROUP";
+
 /**
  * Full-page invitation gate. When the event's `inviteGate` is 'PHONE_6' and
  * the page is opened with a guest token, the invite is covered by a password
@@ -14,11 +18,14 @@ export function InviteGate({
   gate,
   slug,
   token,
+  guest,
   children,
 }: {
   gate?: "OPEN" | "PHONE_6";
   slug: string;
   token?: string;
+  /** The resolved guest, if any — used to exempt group invitations from the password. */
+  guest?: { passMode?: "NORMAL" | "DIRECT" | "GROUP" } | null;
   children: React.ReactNode;
 }) {
   const [unlocked, setUnlocked] = useState(false);
@@ -27,7 +34,9 @@ export function InviteGate({
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const active = gate === "PHONE_6" && !!token;
+  // GROUP invitations (no per-person pass) skip the password entirely; also
+  // skip when there's no gate or no token, or the guest already unlocked.
+  const active = gate === "PHONE_6" && !!token && !isGroupGuest(guest);
 
   // A once-unlocked token stays open for this browser tab, so people don't
   // get re-prompted on every navigation/reload.

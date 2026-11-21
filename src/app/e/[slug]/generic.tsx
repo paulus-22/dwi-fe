@@ -3,7 +3,7 @@ import { getDictionary } from "@/i18n/dictionaries";
 import { ApiError, publicApi } from "@/lib/api";
 import { genericThemeStyle, resolveGenericTheme } from "@/lib/generic-themes";
 import type { FormField } from "@/lib/builder";
-import { resolveGuest, type PublicGenericEvent } from "@/lib/event";
+import { type PublicGenericEvent, type ResolvedGuest } from "@/lib/event";
 import { isPreviewMode } from "@/lib/preview";
 import type { PublicTicketType } from "@/lib/tickets";
 
@@ -11,14 +11,13 @@ import type { PublicTicketType } from "@/lib/tickets";
 export async function GenericInvitation({
   event,
   query,
+  guest,
 }: {
   event: PublicGenericEvent;
   query: Record<string, string | string[] | undefined>;
+  guest: ResolvedGuest | null;
 }) {
   const blocks = event.pageBlocks.filter((b) => b.isVisible).sort((a, b) => a.sortOrder - b.sortOrder);
-
-  const token = typeof query.to === "string" ? query.to : undefined;
-  const guest = await resolveGuest(event.slug, token);
 
   // Only fetch the form definition if a block will actually show it.
   let formFields: FormField[] = [];

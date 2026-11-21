@@ -93,13 +93,15 @@ export function RsvpForm({
             </a>
           </div>
         ) : null}
-        <button
-          type="button"
-          onClick={() => setEditing(true)}
-          className="mt-7 font-ui text-[10px] uppercase tracking-[0.22em] text-cream/70 underline underline-offset-[6px]"
-        >
-          {dict.rsvp.update}
-        </button>
+        {!group ? (
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="mt-7 font-ui text-[10px] uppercase tracking-[0.22em] text-cream/70 underline underline-offset-[6px]"
+          >
+            {dict.rsvp.update}
+          </button>
+        ) : null}
       </div>
     );
   }
