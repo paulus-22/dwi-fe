@@ -35,17 +35,20 @@ export async function createGuest(eventId: string, _: CreateGuestState, form: Fo
   return { ok: true, guest: { name: householdName, code } };
 }
 
-/** Updates a single guest's pass mode (NORMAL/DIRECT/GROUP) and password. */
+/** Updates a single guest's pass mode (NORMAL/DIRECT/GROUP), optional password,
+ *  and whether a password is required at all (`passwordRequired=false` opens the
+ *  invite with no gate, even on a PHONE_6 event). */
 export async function setGuestPass(
   eventId: string,
   guestId: string,
   passMode: "NORMAL" | "DIRECT" | "GROUP",
   passcode: string,
+  noPassword: boolean,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
     await api(`/v1/events/${eventId}/guests/${guestId}`, {
       method: "PUT",
-      body: { passMode, passcode: passcode === "" ? null : passcode },
+      body: { passMode, passcode: passcode === "" ? null : passcode, passwordRequired: !noPassword },
     });
     revalidatePath(`/admin/events/${eventId}/guests`);
     return { ok: true };

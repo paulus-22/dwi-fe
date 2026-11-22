@@ -215,6 +215,8 @@ export type ResolvedGuest = {
   plusGuestAllowance: number;
   /** 'NORMAL' | 'DIRECT' | 'GROUP'; absent on older APIs = NORMAL. */
   passMode?: "NORMAL" | "DIRECT" | "GROUP";
+  /** false = this guest opens the invite without a password, even on PHONE_6 events. */
+  passwordRequired?: boolean;
   rsvp: { attending: boolean; guestCount: number; respondentName?: string | null; message: string | null } | null;
 };
 

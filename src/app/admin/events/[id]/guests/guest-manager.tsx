@@ -20,21 +20,24 @@ function PassControls({
   guestId,
   passMode,
   passcode,
+  passwordRequired,
 }: {
   eventId: string;
   guestId: string;
   passMode?: "NORMAL" | "DIRECT" | "GROUP";
   passcode?: string | null;
+  passwordRequired?: boolean;
 }) {
   const [pending, start] = useTransition();
   const [mode, setMode] = useState<"NORMAL" | "DIRECT" | "GROUP">(passMode ?? "NORMAL");
   const [code, setCode] = useState(passcode ?? "");
+  const [noPassword, setNoPassword] = useState(passwordRequired === false);
   const [saved, setSaved] = useState(false);
 
   function save() {
     setSaved(false);
     start(() =>
-      void setGuestPass(eventId, guestId, mode, code).then((r) => {
+      void setGuestPass(eventId, guestId, mode, code, noPassword).then((r) => {
         if (r.ok) setSaved(true);
       }),
     );
@@ -55,13 +58,23 @@ function PassControls({
       </select>
       <input
         value={code}
-        disabled={pending}
+        disabled={pending || noPassword}
         onChange={(e) => setCode(e.target.value)}
         placeholder="kata sandi (kosong = dari HP)"
         maxLength={12}
-        className="h-7 w-44 rounded-md border border-panel-border bg-[var(--color-panel)] px-2 text-xs outline-none focus:border-accent"
+        className="h-7 w-44 rounded-md border border-panel-border bg-[var(--color-panel)] px-2 text-xs outline-none focus:border-accent disabled:opacity-40"
         aria-label="Kata sandi undangan"
       />
+      <label className="flex cursor-pointer select-none items-center gap-1.5 text-admin-muted">
+        <input
+          type="checkbox"
+          checked={noPassword}
+          disabled={pending || mode === "GROUP"}
+          onChange={(e) => setNoPassword(e.target.checked)}
+          className="accent-accent"
+        />
+        Tanpa kata sandi
+      </label>
       <button
         type="button"
         disabled={pending}
@@ -112,7 +125,7 @@ export function GuestManager({
                       {g.checkedInAt ? " · sudah check-in" : ""}
                     </p>
                     <CopyLinkButton path={guestLink(slug, g.code)} label="Tautan undangan" />
-                    <PassControls eventId={eventId} guestId={g.id} passMode={g.passMode} passcode={g.passcode} />
+                    <PassControls eventId={eventId} guestId={g.id} passMode={g.passMode} passcode={g.passcode} passwordRequired={g.passwordRequired} />
                     {g.passMode === "DIRECT" || g.passMode === "GROUP" || g.attending ? (
                       <p className="mt-0.5 text-xs">
                         <CopyLinkButton path={voucherLink(slug, g.code)} label="Tautan QR tiket" />

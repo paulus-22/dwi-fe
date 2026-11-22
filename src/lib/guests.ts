@@ -14,6 +14,8 @@ export type GuestItem = {
   passMode?: "NORMAL" | "DIRECT" | "GROUP";
   /** Optional custom invitation password; blank = auto from phone (last 6). */
   passcode?: string | null;
+  /** false = this guest opens their invite with no password, even on PHONE_6 events. */
+  passwordRequired?: boolean;
 };
 
 export const guestLink = (slug: string, code: string) => `/e/${slug}?to=${encodeURIComponent(code)}`;

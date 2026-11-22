@@ -8,6 +8,10 @@ import { verifyGate } from "@/lib/public-client";
 const isGroupGuest = (g: { passMode?: "NORMAL" | "DIRECT" | "GROUP" } | null | undefined) =>
   g?.passMode === "GROUP";
 
+/** A guest explicitly marked "no password needed" joins groups in skipping the gate. */
+const passwordFree = (g: { passwordRequired?: boolean } | null | undefined) =>
+  g?.passwordRequired === false;
+
 /**
  * Full-page invitation gate. When the event's `inviteGate` is 'PHONE_6' and
  * the page is opened with a guest token, the invite is covered by a password
@@ -24,8 +28,8 @@ export function InviteGate({
   gate?: "OPEN" | "PHONE_6";
   slug: string;
   token?: string;
-  /** The resolved guest, if any — used to exempt group invitations from the password. */
-  guest?: { passMode?: "NORMAL" | "DIRECT" | "GROUP" } | null;
+  /** The resolved guest, if any — used to exempt groups and password-free guests. */
+  guest?: { passMode?: "NORMAL" | "DIRECT" | "GROUP"; passwordRequired?: boolean } | null;
   children: React.ReactNode;
 }) {
   const [unlocked, setUnlocked] = useState(false);
@@ -34,9 +38,10 @@ export function InviteGate({
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // GROUP invitations (no per-person pass) skip the password entirely; also
-  // skip when there's no gate or no token, or the guest already unlocked.
-  const active = gate === "PHONE_6" && !!token && !isGroupGuest(guest);
+  // GROUP invitations (no per-person pass) and password-free guests skip the
+  // password entirely; also skip when there's no gate or no token, or the
+  // guest already unlocked.
+  const active = gate === "PHONE_6" && !!token && !isGroupGuest(guest) && !passwordFree(guest);
 
   // A once-unlocked token stays open for this browser tab, so people don't
   // get re-prompted on every navigation/reload.
