@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { LocaleSwitch } from "@/components/locale-switch";
 import { ornamentSet } from "@/components/motif";
+import { PendingRsvpCard } from "@/components/voucher/pending-confirm";
 import { SaveVoucherImage } from "@/components/voucher/save-image";
 import { VoucherTicket } from "@/components/voucher/ticket";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -144,34 +145,27 @@ export default async function VoucherPage({
             coupleLine={couple}
             dateLine={dateLine}
           />
-        ) : (
+        ) : voucher.status === "unknown" ? (
           <MessageCard
-            title={
-              voucher.status === "unknown"
-                ? dict.voucher.unknownTitle
-                : voucher.declined
-                  ? dict.voucher.declinedTitle
-                  : dict.voucher.pendingTitle
-            }
-            body={
-              voucher.status === "unknown"
-                ? dict.voucher.unknownBody
-                : voucher.declined
-                  ? dict.voucher.declinedBody
-                  : dict.voucher.pendingBody
-            }
-            cta={
-              voucher.status === "unknown"
-                ? null
-                : {
-                    href: `${invitationHref}#rsvp`,
-                    label: voucher.declined
-                      ? dict.voucher.declinedCta
-                      : dict.voucher.pendingCta,
-                  }
-            }
+            title={dict.voucher.unknownTitle}
+            body={dict.voucher.unknownBody}
+            cta={null}
             coupleLine={couple}
             dateLine={dateLine}
+          />
+        ) : (
+          // Not confirmed yet (or previously declined) — pop the RSVP form here
+          // so the guest confirms without scrolling the whole invitation. On
+          // "Hadir" the page reloads and the issued Kartu masuk pass appears.
+          <PendingRsvpCard
+            eventSlug={event.slug}
+            token={voucher.guest.token}
+            defaultName={voucher.guest.displayName}
+            maxGuests={voucher.guest.plusGuestAllowance + 1}
+            coupleLine={couple}
+            dateLine={dateLine}
+            declined={voucher.declined}
+            dict={dict}
           />
         )}
       </div>

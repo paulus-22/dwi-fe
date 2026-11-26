@@ -21,6 +21,7 @@ export function RsvpForm({
   existing,
   group = false,
   dict,
+  onDone,
 }: {
   eventSlug: string;
   token: string;
@@ -30,6 +31,8 @@ export function RsvpForm({
   /** Group invitation — no per-person pass, so no QR/ticket link. */
   group?: boolean;
   dict: Dictionary;
+  /** Fired after a successful submit so a parent can react (e.g. reveal a pass). */
+  onDone?: (attending: boolean) => void;
 }) {
   const [name, setName] = useState(defaultName);
   const [attending, setAttending] = useState<boolean | null>(
@@ -71,6 +74,7 @@ export function RsvpForm({
 
     setStatus("done");
     setEditing(false);
+    onDone?.(attending === true);
   }
 
   if (status === "done" && !editing) {
