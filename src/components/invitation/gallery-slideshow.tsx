@@ -31,6 +31,15 @@ export function GallerySlideshow({ photos, label = "Galeri" }: { photos: string[
 
   if (count === 0) return null;
 
+  const css = (
+    <style
+      dangerouslySetInnerHTML={{
+        __html: `@keyframes galFade{from{opacity:0;transform:scale(1.035)}to{opacity:1;transform:scale(1)}}
+.gal-fade{animation:galFade .7s cubic-bezier(.2,.7,.3,1) both}`,
+      }}
+    />
+  );
+
   const dot = (i: number) => (
     <button
       key={i}
@@ -68,10 +77,11 @@ export function GallerySlideshow({ photos, label = "Galeri" }: { photos: string[
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
+            key={`deck-${at}`}
             src={photos[at]}
             alt={label}
             loading="lazy"
-            className="h-full w-full object-cover"
+            className="gal-fade h-full w-full object-cover"
             style={{ transform: "scale(1.001)" }}
           />
         </button>
@@ -118,9 +128,9 @@ export function GallerySlideshow({ photos, label = "Galeri" }: { photos: string[
     return () => window.removeEventListener("keydown", onKey);
   }, [lightbox, count]);
 
-  if (!lightbox) return <div>{deck}</div>;
+  if (!lightbox) return <>{css}{deck}</>;
 
-  return (
+  return <>{css}
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: "rgba(0,0,0,.9)" }}
@@ -131,7 +141,7 @@ export function GallerySlideshow({ photos, label = "Galeri" }: { photos: string[
         onClick={(e) => e.stopPropagation()}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={photos[at]} alt={label} className="mx-auto max-h-[82dvh] max-w-full rounded-lg object-contain" />
+        <img key={`light-${at}`} src={photos[at]} alt={label} className="gal-fade mx-auto max-h-[82dvh] max-w-full rounded-lg object-contain" />
         <div className="mt-3 flex items-center justify-center gap-6 text-white">
           <button type="button" onClick={() => go(at - 1)} className="text-2xl" aria-label="Sebelumnya">←</button>
           <button type="button" onClick={() => setLightbox(false)} className="text-sm underline" aria-label="Tutup">Tutup</button>
@@ -139,5 +149,5 @@ export function GallerySlideshow({ photos, label = "Galeri" }: { photos: string[
         </div>
       </div>
     </div>
-  );
+  </>;
 }
