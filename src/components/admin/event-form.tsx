@@ -327,6 +327,15 @@ export function EventForm({
                 hint="Satu jalur per baris. Maksimal 4 yang ditampilkan."
               />
             </div>
+            <div className="sm:col-span-2">
+              <Area
+                text="Galeri foto pra-nikah (slideshow)"
+                name="galleryPhotos"
+                rows={5}
+                defaults={d.galleryPhotos}
+                hint="Satu jalur per baris. Ditampilkan sebagai slideshow. Kosongkan untuk menyembunyikan bagian ini."
+              />
+            </div>
           </Section>
         </>
       )}

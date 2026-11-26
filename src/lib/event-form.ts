@@ -48,6 +48,7 @@ export type EventDefaults = {
   closingPhotoUrl?: string | null;
   dressCodeImageUrl?: string | null;
   interludePhotos?: string; // one per line
+  galleryPhotos?: string; // one per line
   faviconUrl?: string | null;
   /** 'OPEN' (no password) or 'PHONE_6' (guest phone's last 6 digits). */
   inviteGate?: string;
@@ -118,6 +119,7 @@ export function buildEventBody(
       closingPhotoUrl: opt(form, "closingPhotoUrl"),
       dressCodeImageUrl: opt(form, "dressCodeImageUrl"),
       interludePhotos: list(str(form, "interludePhotos"), /\r?\n/),
+      galleryPhotos: list(str(form, "galleryPhotos"), /\r?\n/),
       faviconUrl: opt(form, "faviconUrl"),
       inviteGate: str(form, "inviteGate") || "OPEN",
     },

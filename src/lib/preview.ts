@@ -84,6 +84,7 @@ export const previewEvent: PublicEvent = {
   giftImageUrl: null,
   giftAddress: null,
   interludePhotos: [],
+  galleryPhotos: [],
 
   ceremonies: [
     {

@@ -3,6 +3,7 @@ import { Countdown } from "@/components/invitation/countdown";
 import { Couple } from "@/components/invitation/couple";
 import { shortGuestName } from "@/lib/guests";
 import { DressCode } from "@/components/invitation/dress-code";
+import { GallerySlideshow } from "@/components/invitation/gallery-slideshow";
 import { Gift } from "@/components/invitation/gift";
 import { Hero } from "@/components/invitation/hero";
 import { Quote } from "@/components/invitation/quote";
@@ -145,6 +146,12 @@ export async function WeddingInvitation({
             posy="left"
           >
             <Story milestones={event.milestones} locale={locale} />
+          </Section>
+        ) : null}
+
+        {event.galleryPhotos.length > 0 ? (
+          <Section ornaments={ornaments} id="gallery" kicker="Pre-Wedding" title="Galeri Foto" tone="cream" posy="right">
+            <GallerySlideshow photos={event.galleryPhotos} />
           </Section>
         ) : null}
 

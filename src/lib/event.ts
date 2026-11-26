@@ -101,6 +101,8 @@ export type PublicEvent = {
   giftImageUrl: string | null;
   giftAddress: string | null;
   interludePhotos: string[];
+  /** Pre-wedding / gallery photos shown as a slideshow section. */
+  galleryPhotos: string[];
   ceremonies: PublicCeremony[];
   milestones: PublicMilestone[];
   rundown: PublicRundownItem[];
@@ -153,6 +155,7 @@ function revive(slug: string, raw: Raw): AnyPublicEvent {
     themeTokens: r.themeTokens ?? null,
     dressCodeColors: r.dressCodeColors ?? [],
     interludePhotos: r.interludePhotos ?? [],
+    galleryPhotos: r.galleryPhotos ?? [],
     ceremonies: bySort(r.ceremonies).map((c) => ({
       ...c,
       startsAt: new Date(c.startsAt as unknown as string),
