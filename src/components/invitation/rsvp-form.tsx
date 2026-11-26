@@ -80,19 +80,6 @@ export function RsvpForm({
         <p className="mt-7 font-body text-[18px] italic leading-relaxed text-cream">
           {attending ? dict.rsvp.successAttending : dict.rsvp.successDeclined}
         </p>
-        {attending && !group ? (
-          <div className="mt-7 rounded-lg border border-cream/25 bg-cream/[0.06] px-5 py-5">
-            <p className="font-body text-[15px] italic leading-relaxed text-cream/90">
-              {dict.rsvp.passHint}
-            </p>
-            <a
-              href={`/v/${encodeURIComponent(eventSlug)}?to=${encodeURIComponent(token)}`}
-              className="mt-4 inline-block border border-champagne/70 px-8 py-3 font-ui text-[10px] uppercase tracking-[0.22em] text-cream transition-colors duration-300 hover:border-peach hover:bg-peach hover:text-peach-text"
-            >
-              {dict.rsvp.viewPass}
-            </a>
-          </div>
-        ) : null}
         {!group ? (
           <button
             type="button"
