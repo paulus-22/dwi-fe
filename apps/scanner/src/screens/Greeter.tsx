@@ -91,8 +91,6 @@ export function GreeterScreen() {
   const [backdrop, setBackdrop] = useState<string | null>(null);
   const [index, setIndex] = useState(0);
   const [greeting, setGreeting] = useState<Greeting | null>(null);
-  /** The photo URL the TV has actually loaded — until it does, the intro shows. */
-  const [readyUrl, setReadyUrl] = useState<string | null>(null);
   const skippedRef = useRef<Set<string>>(new Set());
   const queueRef = useRef<Greeting[]>([]);
   const selfiesByCodeRef = useRef<Record<string, string>>({});
@@ -273,11 +271,6 @@ export function GreeterScreen() {
     return out;
   }, [slides, selfies]);
 
-  // Each new slide starts "not ready" — the intro shows until its image lands.
-  useEffect(() => {
-    setReadyUrl(null);
-  }, [index]);
-
   const current = items[index % Math.max(items.length, 1)];
   const event = pairing?.event;
   const fsSupported = typeof document !== "undefined" && "requestFullscreen" in document.documentElement;
@@ -288,7 +281,7 @@ export function GreeterScreen() {
         item.kind === "photo" ? (
           <div
             key={`${item.id}-${i}`}
-            className={`absolute inset-0 transition-opacity duration-[1500ms] ${i === index && readyUrl === item.url ? "opacity-100" : "opacity-0"}`}
+            className={`absolute inset-0 transition-opacity duration-[1500ms] ${i === index ? "opacity-100" : "opacity-0"}`}
           >
             {i === index ? (
               <>
@@ -296,7 +289,6 @@ export function GreeterScreen() {
                   src={item.url}
                   alt=""
                   className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl"
-                  onLoad={() => setReadyUrl(item.url)}
                   onError={() => {
                     if (!skippedRef.current.has(item.url)) {
                       skippedRef.current.add(item.url);
@@ -311,9 +303,7 @@ export function GreeterScreen() {
         ) : null,
       )}
 
-      {/* The intro card doubles as the loading/fallback frame: it shows while a
-          photo is still loading OR instead of one that failed — no blank waits. */}
-      {current.kind === "title" || (current.kind === "photo" && readyUrl !== current.url) ? (
+      {current.kind === "title" ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center">
           <div
             className="absolute inset-0 bg-[radial-gradient(110%_75%_at_50%_0%,#20291a_0%,#151b11_58%,#0c1009_100%)]"
