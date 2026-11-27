@@ -284,7 +284,6 @@ function ManualEntry({ onClose, onSubmit }: { onClose(): void; onSubmit(text: st
             <p className="kicker text-peach">Check-in manual</p>
             <h2 className="mt-1 font-display text-[length:calc(28px*var(--fs))]">Ketik kode undangan</h2>
             <input
-              autoFocus
               value={text}
               onChange={(e) => setText(e.target.value.toUpperCase())}
               placeholder="AJ27-FAM-0001-2"
@@ -307,7 +306,7 @@ function ManualEntry({ onClose, onSubmit }: { onClose(): void; onSubmit(text: st
             </div>
           </form>
         ) : (
-          <div>
+          <div className="flex flex-col">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="kicker text-peach">Cari nama</p>
@@ -321,16 +320,9 @@ function ManualEntry({ onClose, onSubmit }: { onClose(): void; onSubmit(text: st
                 Kembali ke kode
               </button>
             </div>
-            <input
-              autoFocus
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Cari nama atau kode…"
-              className="mt-4 w-full rounded-2xl border border-edge bg-ground px-4 py-3.5 text-[length:calc(16px*var(--fs))] text-cream outline-none placeholder:text-mute focus:border-peach"
-              autoComplete="off"
-              spellCheck={false}
-            />
-            <div className="mt-3 max-h-[46vh] overflow-y-auto pb-4">
+            {/* Results ABOVE the field, so they grow upward and stay clear of the
+                on-screen keyboard on a tablet. */}
+            <div className="mt-3 max-h-[50dvh] overflow-y-auto">
               {name.trim() && matches.length === 0 ? (
                 <p className="py-8 text-center text-[length:calc(14px*var(--fs))] text-mute">Tidak ada yang cocok.</p>
               ) : (
@@ -354,6 +346,14 @@ function ManualEntry({ onClose, onSubmit }: { onClose(): void; onSubmit(text: st
                 </ul>
               )}
             </div>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Cari nama atau kode…"
+              className="mt-3 w-full rounded-2xl border border-edge bg-ground px-4 py-3.5 text-[length:calc(16px*var(--fs))] text-cream outline-none placeholder:text-mute focus:border-peach"
+              autoComplete="off"
+              spellCheck={false}
+            />
           </div>
         )}
       </div>
