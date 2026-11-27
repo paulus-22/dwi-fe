@@ -124,7 +124,10 @@ export async function checkIn(
     ...(memberName !== undefined ? { memberName } : {}),
   };
   await store.putCheckIn(row);
-  void syncNow();
+  // Flush to the backend NOW so the TV greeting queues at check-in, not when the
+  // selfie sync later happens to carry it. (Fire-and-forget could batch the
+  // check-in with the photo and make the greeting appear only after the picture.)
+  await syncNow();
   return row;
 }
 
