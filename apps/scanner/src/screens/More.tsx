@@ -329,7 +329,7 @@ function TvDuration({
 }
 
 function TvSettings() {
-  const { tvSlideSec, setTvSlideSec, tvGreetSec, setTvGreetSec } = useApp();
+  const { tvSlideSec, setTvSlideSec, tvGreetSec, setTvGreetSec, tvShowSelfie, setTvShowSelfie } = useApp();
   return (
     <div className="mt-3">
       <TvDuration
@@ -344,6 +344,15 @@ function TvSettings() {
         value={tvGreetSec}
         onChange={setTvGreetSec}
       />
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <span>
+          <span className="block text-[length:calc(16px*var(--fs))] text-cream">Foto di sapaan</span>
+          <span className="block text-[length:calc(12px*var(--fs))] text-mute">
+            Bawaan nonaktif — layar hanya menampilkan nama tamu.
+          </span>
+        </span>
+        <Toggle on={tvShowSelfie} onChange={setTvShowSelfie} />
+      </div>
     </div>
   );
 }

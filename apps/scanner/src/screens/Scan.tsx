@@ -4,7 +4,7 @@ import { ActivityRunner } from "./Activities";
 import { IdleSlideshow } from "./Idle";
 import { ResultView } from "./Result";
 import { Button, Header, Icon } from "../components/ui";
-import { checkIn, lookup, type Lookup } from "../data/scanner";
+import { checkIn, lookup, sendGreeting, type Lookup } from "../data/scanner";
 import { store } from "../data/store";
 import type { ActivityType, CheckIn, SnapshotGuest } from "../domain/types";
 import { useCamera } from "../lib/camera";
@@ -109,6 +109,7 @@ export function ScanScreen() {
     const row = await checkIn(guest, headcount, pairing!.deviceName, override, memberName);
     refresh();
     if (auto.on && auto.skipActivities) {
+      void sendGreeting(row, { skippedActivities: true });
       cue.ok();
       setPhase({ kind: "done", checkIn: row, guest, completed: [] });
     } else {
@@ -127,6 +128,8 @@ export function ScanScreen() {
         checkIn={phase.checkIn}
         guest={phase.guest}
         onFinish={(completed) => {
+          // If PHOTO was disabled in settings, ensure GREET still fires on finish.
+          void sendGreeting(phase.checkIn);
           refresh();
           setPhase({ kind: "done", checkIn: phase.checkIn, guest: phase.guest, completed });
         }}

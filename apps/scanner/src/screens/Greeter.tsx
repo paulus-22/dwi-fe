@@ -85,7 +85,7 @@ function TVFloral({ className, mirrored = false }: { className?: string; mirrore
  * selfie — then resumes. It shares the same R2 content as the scanners.
  */
 export function GreeterScreen() {
-  const { pairing, tvSlideSec, tvGreetSec } = useApp();
+  const { pairing, tvSlideSec, tvGreetSec, tvShowSelfie } = useApp();
   const [slides, setSlides] = useState<Slide[]>([]);
   const [selfies, setSelfies] = useState<Selfie[]>([]);
   const [backdrop, setBackdrop] = useState<string | null>(null);
@@ -95,7 +95,8 @@ export function GreeterScreen() {
   const [readyUrl, setReadyUrl] = useState<string | null>(null);
   const skippedRef = useRef<Set<string>>(new Set());
   const queueRef = useRef<Greeting[]>([]);
-  /** Highest confirmed-photo `seq` already shown/queued — shared dedupe for SSE + poll. */
+  const selfiesByCodeRef = useRef<Record<string, string>>({});
+  /** Highest `GREET` `scanner_event.seq` already shown/queued — shared dedupe for SSE + poll. */
   const lastSeqRef = useRef(0);
   /** True after the initial cursor sync on mount. */
   const initializedRef = useRef(false);
@@ -127,8 +128,8 @@ export function GreeterScreen() {
     };
   }, [eventId]);
 
-  // Live stream: queue a greeting ONLY once the guest has taken a picture and
-  // confirmed it ("Pakai foto" → POST /v1/photos → SSE `photo` event).
+  // Live stream: remember fresh selfies, and queue a greeting ONLY when `GREET`
+  // arrives (emitted strictly after the guest confirms "Pakai foto" or skips).
   useEffect(() => {
     if (!eventId || !api.live || !API_ROOT || !session.token) return;
     const es = new EventSource(`${API_ROOT}/v1/events/${eventId}/live?access_token=${encodeURIComponent(session.token)}`);
@@ -141,21 +142,25 @@ export function GreeterScreen() {
       }
       if (m.type === "photo" && m.url) {
         const photoUrl = m.url;
-        const name = (m.memberName || m.member_name || m.householdName || m.household_name || "").trim();
-        // Add fresh confirmed selfie into the slideshow pool immediately too.
+        if (m.code) selfiesByCodeRef.current[m.code] = photoUrl;
+        const pName = (m.memberName || m.member_name || m.householdName || m.household_name || "").trim();
         if (m.id) {
           const photoId = m.id;
           setSelfies((prev) =>
             prev.some((s) => s.id === photoId)
               ? prev
-              : [...prev, { id: photoId, url: photoUrl, householdName: name || null }],
+              : [...prev, { id: photoId, url: photoUrl, householdName: pName || null }],
           );
         }
+      }
+      if (m.type === "scan" && m.activity === "GREET") {
+        const name = (m.memberName || m.member_name || m.householdName || m.household_name || "").trim();
         if (!name) return;
         if (m.seq != null && m.seq <= lastSeqRef.current) return; // the poll already handled it
         if (m.seq != null) lastSeqRef.current = Math.max(lastSeqRef.current, m.seq);
         initializedRef.current = true;
-        enqueue({ name, selfie: photoUrl, seq: m.seq ?? 0 });
+        const selfie = m.code ? (selfiesByCodeRef.current[m.code] ?? null) : null;
+        enqueue({ name, selfie, seq: m.seq ?? 0 });
       }
     };
     return () => es.close();
@@ -334,7 +339,7 @@ export function GreeterScreen() {
             <h2 className="mt-4 font-display text-[clamp(56px,14vw,130px)] font-light leading-none text-cream">
               {greeting.name}
             </h2>
-            {greeting.selfie ? (
+            {tvShowSelfie && greeting.selfie ? (
               <img
                 src={greeting.selfie}
                 alt={greeting.name}

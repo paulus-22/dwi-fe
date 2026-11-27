@@ -21,6 +21,8 @@ export const DEFAULT_TV_SLIDE_SEC = 8;
 export const TV_SLIDE_SEC_MAX = 20;
 export const DEFAULT_TV_GREET_SEC = 7;
 export const TV_GREET_SEC_MAX = 15;
+/** By default TV greeting cards show the guest's name ONLY (no picture). */
+export const DEFAULT_TV_SHOW_SELFIE = false;
 
 /** Scanner UI theme. `data-scanner-theme` on <html> re-colours the whole app. */
 export type ScannerTheme = "night" | "day" | "midnight" | "terracotta";
@@ -67,6 +69,9 @@ type AppState = {
   setTvSlideSec(sec: number): void;
   tvGreetSec: number;
   setTvGreetSec(sec: number): void;
+  /** Whether the TV greeting card renders the guest's selfie (default false = name only). */
+  tvShowSelfie: boolean;
+  setTvShowSelfie(on: boolean): void;
   /** Which UI theme the device renders with; remembered per device. */
   theme: ScannerTheme;
   setTheme(theme: ScannerTheme): void;
@@ -98,6 +103,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [photoDelay, setPhotoDelayState] = useState(DEFAULT_PHOTO_DELAY);
   const [tvSlideSec, setTvSlideSecState] = useState(DEFAULT_TV_SLIDE_SEC);
   const [tvGreetSec, setTvGreetSecState] = useState(DEFAULT_TV_GREET_SEC);
+  const [tvShowSelfie, setTvShowSelfieState] = useState(DEFAULT_TV_SHOW_SELFIE);
   const [theme, setThemeState] = useState<ScannerTheme>(DEFAULT_SCANNER_THEME);
 
   useEffect(() => {
@@ -112,6 +118,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setPhotoDelayState((await store.getPref<number>("photoDelay")) ?? DEFAULT_PHOTO_DELAY);
       setTvSlideSecState((await store.getPref<number>("tvSlideSec")) ?? DEFAULT_TV_SLIDE_SEC);
       setTvGreetSecState((await store.getPref<number>("tvGreetSec")) ?? DEFAULT_TV_GREET_SEC);
+      setTvShowSelfieState((await store.getPref<boolean>("tvShowSelfie")) ?? DEFAULT_TV_SHOW_SELFIE);
       const t = (await store.getPref<ScannerTheme>("theme")) ?? DEFAULT_SCANNER_THEME;
       applyTheme(t);
       setThemeState(t);
@@ -188,6 +195,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     void store.setPref("tvGreetSec", clamped);
   }, []);
 
+  const setTvShowSelfie = useCallback((on: boolean) => {
+    setTvShowSelfieState(on);
+    void store.setPref("tvShowSelfie", on);
+  }, []);
+
   const setTheme = useCallback((t: ScannerTheme) => {
     applyTheme(t);
     setThemeState(t);
@@ -229,6 +241,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setTvSlideSec,
         tvGreetSec,
         setTvGreetSec,
+        tvShowSelfie,
+        setTvShowSelfie,
         theme,
         setTheme,
       }}

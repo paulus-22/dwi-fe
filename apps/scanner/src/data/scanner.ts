@@ -5,10 +5,10 @@ import type {
   EventInfo,
   ActivityConfig,
   ActivityRecord,
-  ActivityType,
   CheckIn,
   Pairing,
   PhotoRecord,
+  RecordType,
   SnapshotGuest,
 } from "../domain/types";
 
@@ -133,7 +133,7 @@ export async function checkIn(
 
 export async function recordActivity(
   checkIn: CheckIn,
-  type: ActivityType,
+  type: RecordType,
   data: Record<string, unknown>,
 ): Promise<ActivityRecord> {
   const row: ActivityRecord = {
@@ -150,6 +150,29 @@ export async function recordActivity(
   return row;
 }
 
+/**
+ * Signals the TV greeter that this guest is ready to be welcomed (called
+ * strictly after "Pakai foto" is confirmed, or when the photo step is skipped /
+ * disabled). Tracked in memory per check-in so a guest is greeted once per scan.
+ */
+const greetedCheckIns = new Set<string>();
+
+export async function sendGreeting(checkIn: CheckIn, data: Record<string, unknown> = {}) {
+  if (greetedCheckIns.has(checkIn.id)) return;
+  greetedCheckIns.add(checkIn.id);
+  const row: ActivityRecord = {
+    id: uid(),
+    checkInId: checkIn.id,
+    code: checkIn.code,
+    type: "GREET",
+    occurredAt: new Date().toISOString(),
+    data,
+    synced: false,
+  };
+  await store.putRecord(row);
+  await syncNow();
+}
+
 export async function savePhoto(checkIn: CheckIn, guest: SnapshotGuest, blob: Blob) {
   const row: PhotoRecord = {
     id: uid(),
@@ -162,9 +185,9 @@ export async function savePhoto(checkIn: CheckIn, guest: SnapshotGuest, blob: Bl
   };
   await store.putPhoto(row);
   await recordActivity(checkIn, "PHOTO", { photoId: row.id, bytes: blob.size });
-  // Flush NOW so the confirmed selfie lands on R2 + POST /v1/photos right away,
-  // triggering the TV greeting immediately after the guest taps "Pakai foto".
-  await syncNow();
+  // Queue GREET after saving the confirmed photo; syncNow uploads photos before
+  // flushing GREET records so the TV greets strictly after confirmation.
+  await sendGreeting(checkIn, { photoId: row.id });
   return row;
 }
 
@@ -240,13 +263,17 @@ export async function syncNow() {
       emit({ syncing: true });
       try {
         const checkIns = (await store.checkIns()).filter((c) => !c.synced);
-        const records = (await store.records()).filter((r) => !r.synced);
-        if (checkIns.length || records.length || api.live) {
+        const allRecords = (await store.records()).filter((r) => !r.synced);
+        const nonGreetRecords = allRecords.filter((r) => r.type !== "GREET");
+        const greetRecords = allRecords.filter((r) => r.type === "GREET");
+
+        // 1. Push check-ins + activity records first so `check_in` exists on server.
+        if (checkIns.length || nonGreetRecords.length || (api.live && greetRecords.length === 0)) {
           let cursor = (await store.getPref<number>("cursor")) ?? 0;
-          let res = await api.sync({ checkIns, records, cursor });
+          let res = await api.sync({ checkIns, records: nonGreetRecords, cursor });
           const done = new Set(res.acked);
           for (const c of checkIns) if (done.has(c.id)) await store.putCheckIn({ ...c, synced: true });
-          for (const r of records) if (done.has(r.id)) await store.putRecord({ ...r, synced: true });
+          for (const r of nonGreetRecords) if (done.has(r.id)) await store.putRecord({ ...r, synced: true });
           // Pull: keep paging while the server says there is more.
           for (;;) {
             await storeRemote(res.remoteCheckIns);
@@ -256,9 +283,26 @@ export async function syncNow() {
             res = await api.sync({ checkIns: [], records: [], cursor });
           }
         }
+
+        // 2. Upload confirmed photos before emitting GREET so R2 URLs are ready if needed.
         for (const photo of (await store.photos()).filter((p) => !p.synced)) {
           await api.uploadPhoto(photo);
           await store.putPhoto({ ...photo, synced: true });
+        }
+
+        // 3. Push GREET records last — triggers TV welcome strictly after confirmation.
+        if (greetRecords.length) {
+          let cursor = (await store.getPref<number>("cursor")) ?? 0;
+          let res = await api.sync({ checkIns: [], records: greetRecords, cursor });
+          const done = new Set(res.acked);
+          for (const r of greetRecords) if (done.has(r.id)) await store.putRecord({ ...r, synced: true });
+          for (;;) {
+            await storeRemote(res.remoteCheckIns);
+            cursor = res.cursor;
+            await store.setPref("cursor", cursor);
+            if (!res.hasMore) break;
+            res = await api.sync({ checkIns: [], records: [], cursor });
+          }
         }
         emit({ lastSyncedAt: new Date().toISOString() });
       } catch (error) {

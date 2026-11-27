@@ -34,6 +34,7 @@ export type SnapshotGuest = {
 };
 
 export type ActivityType = "PHOTO" | "SOUVENIR" | "GUESTBOOK";
+export type RecordType = ActivityType | "GREET";
 
 export type ActivityConfig = {
   type: ActivityType;
@@ -58,7 +59,7 @@ export type ActivityRecord = {
   id: string;
   checkInId: string;
   code: string;
-  type: ActivityType;
+  type: RecordType;
   occurredAt: string;
   data: Record<string, unknown>;
   synced: boolean;

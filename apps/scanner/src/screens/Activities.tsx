@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { Button, Icon } from "../components/ui";
-import { recordActivity, savePhoto } from "../data/scanner";
+import { recordActivity, savePhoto, sendGreeting } from "../data/scanner";
 import type { ActivityConfig, ActivityType, CheckIn, SnapshotGuest } from "../domain/types";
 import { useCamera } from "../lib/camera";
 import { cue } from "../lib/cue";
@@ -131,6 +131,11 @@ function SelfieStep({ step, checkIn, guest, onDone, onSkip }: StepProps) {
     onDone();
   }
 
+  function skipPhoto() {
+    void sendGreeting(checkIn, { skippedPhoto: true });
+    onSkip();
+  }
+
   if (stage === "handover") {
     return (
       <div className="flex h-full flex-col items-center justify-center px-8 text-center">
@@ -161,7 +166,7 @@ function SelfieStep({ step, checkIn, guest, onDone, onSkip }: StepProps) {
           <Button onClick={() => setStage("live")}>
             <Icon name="camera" /> Mulai foto
           </Button>
-          {!step.required ? <Button tone="quiet" onClick={onSkip}>Lewati foto</Button> : null}
+          {!step.required ? <Button tone="quiet" onClick={skipPhoto}>Lewati foto</Button> : null}
         </div>
       </div>
     );
@@ -227,7 +232,7 @@ function SelfieStep({ step, checkIn, guest, onDone, onSkip }: StepProps) {
       </p>
       <div className="safe-bottom flex items-center justify-between px-8 pt-3">
         {!step.required ? (
-          <button type="button" onClick={onSkip} className="w-20 text-left text-[length:calc(15px*var(--fs))] text-cream-dim">Lewati</button>
+          <button type="button" onClick={skipPhoto} className="w-20 text-left text-[length:calc(15px*var(--fs))] text-cream-dim">Lewati</button>
         ) : <span className="w-20" />}
         <button
           type="button"
