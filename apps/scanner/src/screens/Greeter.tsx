@@ -38,24 +38,24 @@ function TVFloral({ className, mirrored = false }: { className?: string; mirrore
       aria-hidden="true"
       focusable="false"
     >
-      {/* foliage */}
-      <path d="M6,148 C24,118 58,112 92,130 C58,158 20,160 6,148 Z" fill="#5a4326" opacity="0.85" />
-      <path d="M4,136 C20,112 52,108 82,122 C52,146 18,148 4,136 Z" fill="#6b5230" opacity="0.8" />
-      <path d="M70,150 C62,118 60,84 66,50" fill="none" stroke="#6b5230" strokeWidth="3" strokeLinecap="round" />
-      {/* rose */}
+      {/* foliage (sage, not brown) */}
+      <path d="M6,148 C24,118 58,112 92,130 C58,158 20,160 6,148 Z" fill="#3a4628" opacity="0.85" />
+      <path d="M4,136 C20,112 52,108 82,122 C52,146 18,148 4,136 Z" fill="#465437" opacity="0.8" />
+      <path d="M70,150 C62,118 60,84 66,50" fill="none" stroke="#53633c" strokeWidth="3" strokeLinecap="round" />
+      {/* rose — sage-tinted instead of peach */}
       <g transform="translate(52 44)">
         {petals.map((a) => (
-          <path key={`o${a}`} d={rose} fill="#e9af8a" opacity="0.95" transform={`rotate(${a}) translate(0 -8) scale(1.12)`} />
+          <path key={`o${a}`} d={rose} fill="#a9b98a" opacity="0.95" transform={`rotate(${a}) translate(0 -8) scale(1.12)`} />
         ))}
         {core.map((a) => (
-          <path key={`m${a}`} d={rose} fill="#d8936b" transform={`rotate(${a}) translate(0 -3) scale(0.8)`} />
+          <path key={`m${a}`} d={rose} fill="#8ba06a" transform={`rotate(${a}) translate(0 -3) scale(0.8)`} />
         ))}
-        <circle cx="0" cy="0" r="6.5" fill="#f2c9a6" />
+        <circle cx="0" cy="0" r="6.5" fill="#cdd6ae" />
       </g>
       {/* buds */}
-      <path d="M24,98 C17,92 17,81 25,75 C33,81 33,92 24,98 Z" fill="#d8936b" />
-      <path d="M88,116 C96,106 98,90 90,84 C82,92 81,104 88,116 Z" fill="#e9af8a" />
-      {/* gold blossoms */}
+      <path d="M24,98 C17,92 17,81 25,75 C33,81 33,92 24,98 Z" fill="#8ba06a" />
+      <path d="M88,116 C96,106 98,90 90,84 C82,92 81,104 88,116 Z" fill="#a9b98a" />
+      {/* gold blossoms (unchanged — gold isn't red) */}
       {[
         [94, 60, 9],
         [18, 132, 8],
@@ -65,7 +65,7 @@ function TVFloral({ className, mirrored = false }: { className?: string; mirrore
           {[0, 72, 144, 216, 288].map((a) => (
             <ellipse key={a} cx="0" cy={-r * 0.7} rx={r * 0.42} ry={r * 0.6} fill="#d8c3a5" opacity="0.9" transform={`rotate(${a})`} />
           ))}
-          <circle cx="0" cy="0" r={r * 0.26} fill="#e9af8a" />
+          <circle cx="0" cy="0" r={r * 0.26} fill="#bdca9f" />
         </g>
       ))}
     </svg>
@@ -235,7 +235,7 @@ export function GreeterScreen() {
   const fsSupported = typeof document !== "undefined" && "requestFullscreen" in document.documentElement;
 
   return (
-    <div className="absolute inset-0 overflow-hidden bg-[#14100b]" onClick={handleTap}>
+    <div className="absolute inset-0 overflow-hidden bg-[#0f140d]" onClick={handleTap}>
       {items.map((item, i) =>
         item.kind === "photo" ? (
           <div
@@ -255,16 +255,16 @@ export function GreeterScreen() {
       {current?.kind === "title" ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center">
           <div
-            className="absolute inset-0 bg-[radial-gradient(110%_75%_at_50%_0%,#241710_0%,#16100b_58%,#0f0a07_100%)]"
+            className="absolute inset-0 bg-[radial-gradient(110%_75%_at_50%_0%,#20291a_0%,#151b11_58%,#0c1009_100%)]"
             aria-hidden
           />
           <div
-            className="absolute inset-0 bg-[radial-gradient(60%_45%_at_50%_38%,rgba(233,175,138,0.28),transparent_70%)]"
+            className="absolute inset-0 bg-[radial-gradient(60%_45%_at_50%_38%,rgba(168,188,128,0.26),transparent_70%)]"
             aria-hidden
           />
           <TVFloral className="absolute left-4 top-[max(env(safe-area-inset-top),20px)] h-36 w-28 opacity-90" />
           <TVFloral className="absolute right-4 top-[max(env(safe-area-inset-top),20px)] h-36 w-28 opacity-90" mirrored />
-          <p className="kicker relative text-peach">The wedding of</p>
+          <p className="kicker relative text-[#bdca9f]">The wedding of</p>
           <h1 className="relative mt-4 font-display text-[clamp(52px,13vw,120px)] font-light leading-[0.95] text-cream">
             {event?.coupleLine?.split("&").map((n, i, all) => (
               <span key={n} className="block">
@@ -280,17 +280,17 @@ export function GreeterScreen() {
           </div>
           {event?.dateLabel ? <p className="kicker relative mt-6 text-gold">{event.dateLabel}</p> : null}
           {event?.venue ? <p className="relative mt-2 text-[length:calc(15px*var(--fs))] text-cream-dim">{event.venue}</p> : null}
-          {event?.hashtag ? <p className="relative mt-6 font-display text-[length:calc(24px*var(--fs))] text-peach">{event.hashtag}</p> : null}
+          {event?.hashtag ? <p className="relative mt-6 font-display text-[length:calc(24px*var(--fs))] text-[#bdca9f]">{event.hashtag}</p> : null}
         </div>
       ) : null}
 
       {greeting ? (
-        <div className="rise absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#1b110b]/95 px-8 text-center">
+        <div className="rise absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#141a10]/95 px-8 text-center">
           {backdrop ? (
             <img src={backdrop} alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />
           ) : null}
           <div className="relative">
-            <p className="kicker text-peach">Selamat datang</p>
+            <p className="kicker text-[#bdca9f]">Selamat datang</p>
             <h2 className="mt-4 font-display text-[clamp(56px,14vw,130px)] font-light leading-none text-cream">
               {greeting.name}
             </h2>
@@ -298,7 +298,7 @@ export function GreeterScreen() {
               <img
                 src={greeting.selfie}
                 alt={greeting.name}
-                className="mx-auto mt-8 h-56 w-44 rounded-3xl border-4 border-peach/60 object-cover"
+                className="mx-auto mt-8 h-56 w-44 rounded-3xl border-4 border-[#bdca9f]/60 object-cover"
               />
             ) : null}
           </div>
