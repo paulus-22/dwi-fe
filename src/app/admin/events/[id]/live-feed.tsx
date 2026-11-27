@@ -84,22 +84,44 @@ export function LiveFeed({ eventId }: { eventId: string }) {
         <p className="text-sm text-admin-muted">Belum ada aktivitas sejak halaman ini dibuka.</p>
       ) : (
         <ul className="divide-y divide-panel-border">
-          {feed.map((s) => (
-            <li key={s.id} className="flex items-baseline justify-between gap-3 py-2 text-sm">
-              <span className="min-w-0">
-                <span className="font-medium">{s.householdName ?? s.code}</span>{" "}
-                <span className="text-admin-muted">
-                  {s.activity === "CHECK_IN" && s.memberName ? `· ${s.memberName}` : ""}
-                  · {ACTIVITY[s.activity]}
-                  {s.activity === "CHECK_IN" && s.headcount ? ` · ${s.headcount} orang` : ""}
-                  {s.override ? " · manual" : ""}
+          {feed.map((s) => {
+            const detail =
+              s.activity === "CHECK_IN"
+                ? s.memberName
+                  ? `Anggota: ${s.memberName}`
+                  : "Check-in"
+                : ACTIVITY[s.activity];
+            return (
+              <li key={s.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                <span className="min-w-0">
+                  <span className="block truncate">
+                    <span className="font-medium">{s.householdName ?? "(tamu luar)"}</span>
+                    {s.activity === "CHECK_IN" ? (
+                      <span className="ml-2 rounded bg-accent/10 px-1.5 py-0.5 font-mono text-xs text-accent">
+                        #{s.code}
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="block truncate text-admin-muted">
+                    {detail}
+                    {s.override ? " · manual" : ""}
+                  </span>
                 </span>
-              </span>
-              <span className="shrink-0 text-admin-muted tabular-nums">
-                {s.deviceName} · {TIME.format(new Date(s.occurredAt))}
-              </span>
-            </li>
-          ))}
+                <span className="shrink-0 text-right">
+                  {s.activity === "CHECK_IN" ? (
+                    <span className="block">
+                      <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium tabular-nums text-accent">
+                        {s.headcount ?? 1} org
+                      </span>
+                    </span>
+                  ) : null}
+                  <span className="block text-xs text-admin-muted tabular-nums">
+                    {s.deviceName} · {TIME.format(new Date(s.occurredAt))}
+                  </span>
+                </span>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

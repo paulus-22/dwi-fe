@@ -113,6 +113,7 @@ export type Arrival = {
   occurredAt: string;
   deviceName: string;
   householdName: string | null;
+  memberName?: string | null;
 };
 
 export type Attendance = {
@@ -121,6 +122,8 @@ export type Attendance = {
   expectedPeople: number;
   checkedInHouseholds: number;
   checkedInPeople: number;
+  /** All CHECK_IN events for the event, including repeat scans. */
+  totalScans: number;
   repeatScans: number;
   byDevice: { deviceName: string; checkIns: number }[];
   recent: Arrival[];

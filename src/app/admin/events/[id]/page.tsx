@@ -11,6 +11,8 @@ export default async function EventDashboard({ params }: PageProps<"/admin/event
     api<Attendance>(`/v1/events/${id}/attendance`),
   ]);
   const pct = att.expectedPeople > 0 ? Math.round((att.checkedInPeople / att.expectedPeople) * 100) : 0;
+  const avgPeople =
+    att.checkedInHouseholds > 0 ? (att.checkedInPeople / att.checkedInHouseholds).toFixed(1) : "0";
 
   return (
     <>
@@ -49,10 +51,10 @@ export default async function EventDashboard({ params }: PageProps<"/admin/event
       </PageTitle>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="Tamu hadir" value={att.checkedInPeople} sub={`dari ${att.expectedPeople} konfirmasi · ${pct}%`} />
-        <Stat label="Undangan check-in" value={att.checkedInHouseholds} sub={`dari ${att.households} undangan`} />
-        <Stat label="Konfirmasi hadir" value={att.attendingHouseholds} sub="undangan" />
-        <Stat label="Scan ulang" value={att.repeatScans} sub="tamu yang sama, dihitung sekali" />
+        <Stat label="QR/Tiket discan" value={att.checkedInHouseholds} sub={`${att.totalScans} scan · ${att.repeatScans} ulang`} />
+        <Stat label="Orang hadir" value={att.checkedInPeople} sub={`rata-rata ${avgPeople} orang/tiket · ${pct}% dari konfirmasi`} />
+        <Stat label="Konfirmasi hadir" value={att.attendingHouseholds} sub={`dari ${att.households} undangan`} />
+        <Stat label="Scan ulang" value={att.repeatScans} sub="tiket yang discan lagi, tak dihitung ganda" />
       </div>
 
       <div className="mt-4 h-2 overflow-hidden rounded-full bg-panel-border" aria-hidden>
@@ -86,9 +88,14 @@ export default async function EventDashboard({ params }: PageProps<"/admin/event
             ) : (
               <ul className="space-y-1.5 text-sm">
                 {att.recent.slice(0, 8).map((r) => (
-                  <li key={r.id} className="flex justify-between gap-3">
-                    <span className="truncate">{r.householdName ?? r.code}</span>
-                    <span className="shrink-0 text-admin-muted tabular-nums">{formatTime(r.occurredAt)}</span>
+                  <li key={r.id} className="flex items-baseline justify-between gap-3">
+                    <span className="min-w-0 truncate">
+                      {r.householdName ?? r.code}
+                      {r.memberName ? <span className="text-admin-muted"> · {r.memberName}</span> : null}
+                    </span>
+                    <span className="shrink-0 text-admin-muted tabular-nums">
+                      {r.headcount} org · {formatTime(r.occurredAt)}
+                    </span>
                   </li>
                 ))}
               </ul>
