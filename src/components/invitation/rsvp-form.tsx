@@ -78,7 +78,11 @@ export function RsvpForm({
 
     setStatus("done");
     setEditing(false);
-    onDone?.(attending === true);
+    const isAttending = attending === true;
+    onDone?.(isAttending);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("dwi:rsvp-status", { detail: { attending: isAttending } }));
+    }
   }
 
   if (status === "done" && !editing) {

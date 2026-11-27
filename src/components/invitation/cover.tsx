@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import type { OrnamentSet } from "@/components/motif";
 
 /**
@@ -17,6 +19,8 @@ export function Cover({
   salutation,
   kicker,
   openLabel,
+  voucherHref,
+  voucherLabel,
   opening,
   onOpen,
   ornaments,
@@ -30,6 +34,8 @@ export function Cover({
   salutation: string;
   kicker: string;
   openLabel: string;
+  voucherHref?: string | null;
+  voucherLabel?: string;
   opening: boolean;
   onOpen: () => void;
   ornaments: OrnamentSet;
@@ -155,9 +161,32 @@ export function Cover({
           {openLabel}
         </button>
 
+        {voucherHref && voucherLabel ? (
+          <div className="mt-4">
+            <Link
+              href={voucherHref}
+              className="inline-flex items-center gap-2 border border-peach/60 bg-peach px-5 py-2.5 font-ui text-[10px] uppercase tracking-[0.22em] text-peach-text transition-colors duration-300 hover:bg-transparent hover:text-peach"
+            >
+              <QrGlyph />
+              {voucherLabel}
+            </Link>
+          </div>
+        ) : null}
+
         {/* Quiet cue that there is more below once the envelope lifts. */}
-        <span className="mx-auto mt-8 block h-8 w-px bg-gradient-to-b from-cream/40 to-transparent" />
+        <span className="mx-auto mt-6 block h-8 w-px bg-gradient-to-b from-cream/40 to-transparent" />
       </div>
     </div>
+  );
+}
+
+function QrGlyph() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="1.5" y="1.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />
+      <rect x="9.5" y="1.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />
+      <rect x="1.5" y="9.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M9.5 9.5h2v2h-2zM12.5 9.5h2v2h-2zM9.5 12.5h2v2h-2zM12.5 12.5h2v2h-2z" fill="currentColor" />
+    </svg>
   );
 }

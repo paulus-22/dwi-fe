@@ -47,11 +47,18 @@ export async function GenericInvitation({
   const editorial = theme.key === "editorial";
   const rsvp = blocks.some((b) => b.blockType === "RSVP_FORM");
   const registration = blocks.some((b) => b.blockType === "REGISTRATION_FORM");
-  const cta = rsvp
-    ? { href: "#rsvp", label: "Konfirmasi Kehadiran" }
-    : registration
-      ? { href: "#pendaftaran", label: "Daftar Sekarang" }
-      : null;
+  const hasIssuedPass = Boolean(
+    guest && (guest.rsvp?.attending || guest.passMode === "DIRECT" || guest.passMode === "GROUP"),
+  );
+  const voucherHref =
+    hasIssuedPass && guest ? `/v/${encodeURIComponent(event.slug)}?to=${encodeURIComponent(guest.token)}` : null;
+  const cta = voucherHref
+    ? { href: voucherHref, label: "Lihat Tiket & QR" }
+    : rsvp
+      ? { href: "#rsvp", label: "Konfirmasi Kehadiran" }
+      : registration
+        ? { href: "#pendaftaran", label: "Daftar Sekarang" }
+        : null;
   const ctx: BlockContext = {
     event,
     theme,
@@ -77,7 +84,7 @@ export async function GenericInvitation({
             <a href="#atas" className="max-w-[34%] shrink-0 truncate text-sm sm:max-w-[45%] font-bold tracking-[-0.01em]">
               {event.title}
             </a>
-            <ul className="gt-mono flex min-w-0 gap-4 overflow-x-auto !text-[10px] whitespace-nowrap text-white/80 sm:gap-7 sm:!text-[11px]">
+            <ul className="gt-mono flex min-w-0 items-center gap-4 overflow-x-auto !text-[10px] whitespace-nowrap text-white/80 sm:gap-7 sm:!text-[11px]">
               {navLinks.map((l) => (
                 <li key={l.id}>
                   <a href={`#blk-${l.id}`} className="py-4 hover:text-white">
@@ -85,6 +92,16 @@ export async function GenericInvitation({
                   </a>
                 </li>
               ))}
+              {voucherHref ? (
+                <li>
+                  <a
+                    href={voucherHref}
+                    className="inline-flex items-center gap-1.5 rounded bg-[var(--g-gold)] px-2.5 py-1 font-semibold text-[#112235] hover:opacity-90"
+                  >
+                    Tiket &amp; QR
+                  </a>
+                </li>
+              ) : null}
             </ul>
           </div>
         </nav>

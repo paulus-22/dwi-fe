@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import type { CoverVariantProps } from "./cover-variants";
 import { NaturalPhoto } from "./natural-photo";
 import { PhotoImage } from "./photo";
@@ -93,6 +95,22 @@ export function KeepsakeCover(
           {props.openLabel}
         </span>
       </button>
+
+      {props.voucherHref && props.voucherLabel ? (
+        <Link
+          href={props.voucherHref}
+          className="mt-4 inline-flex items-center gap-2 border border-peach/60 bg-peach px-5 py-2.5 font-ui text-[10px] uppercase tracking-[0.22em] text-peach-text transition-colors duration-300 hover:bg-transparent hover:text-peach"
+          style={{ animation: "cover-fade-in 900ms ease-out both 1400ms" }}
+        >
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <rect x="1.5" y="1.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />
+            <rect x="9.5" y="1.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />
+            <rect x="1.5" y="9.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />
+            <path d="M9.5 9.5h2v2h-2zM12.5 9.5h2v2h-2zM9.5 12.5h2v2h-2zM12.5 12.5h2v2h-2z" fill="currentColor" />
+          </svg>
+          {props.voucherLabel}
+        </Link>
+      ) : null}
     </div>
   );
 }

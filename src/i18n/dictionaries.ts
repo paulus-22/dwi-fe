@@ -116,6 +116,7 @@ const id = {
     title: "Kartu masuk",
     instruction: "tunjukkan qr ini di meja penerima tamu",
     admits: "berlaku untuk {count} orang",
+    confirmedBadge: "Kehadiran tercatat",
   },
   voucher: {
     kicker: "e-voucher",
@@ -268,6 +269,7 @@ const en: Dictionary = {
     title: "Entry pass",
     instruction: "show this qr code at the reception desk",
     admits: "admits {count} people",
+    confirmedBadge: "Attendance confirmed",
   },
   voucher: {
     kicker: "e-voucher",

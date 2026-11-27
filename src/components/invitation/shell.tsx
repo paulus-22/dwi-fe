@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 
 import { LocaleSwitch } from "@/components/locale-switch";
@@ -30,6 +31,16 @@ export type CoverCopy = {
   backgroundUrl: string | null;
 };
 
+export type QuickPassBar = {
+  href: string;
+  /** True when the guest already has an issued pass on initial load. */
+  initiallyReady: boolean;
+  /** True when passMode === "DIRECT" (pass stays issued regardless of RSVP). */
+  alwaysReady?: boolean;
+  badgeLabel: string;
+  ctaLabel: string;
+};
+
 /**
  * Holds the envelope gate. The cover fills the viewport and the invitation
  * stays mounted-but-hidden until it is opened — that tap doubles as the user
@@ -44,6 +55,7 @@ export function InvitationShell({
   ornamentFamily,
   musicUrl,
   musicLabels,
+  quickPass,
 }: {
   cover: CoverCopy;
   children: ReactNode;
@@ -58,11 +70,27 @@ export function InvitationShell({
   ornamentFamily: OrnamentFamily;
   musicUrl?: string | null;
   musicLabels: { play: string; pause: string };
+  quickPass?: QuickPassBar | null;
 }) {
   const ornaments = ornamentSet(ornamentFamily);
   const [phase, setPhase] = useState<"closed" | "opening" | "open">("closed");
   const opened = phase === "open";
   const music = useBackgroundMusic(musicUrl);
+  const [rsvpAttending, setRsvpAttending] = useState<boolean | null>(null);
+  const passReady = Boolean(
+    quickPass && (quickPass.alwaysReady || (rsvpAttending ?? quickPass.initiallyReady)),
+  );
+
+  useEffect(() => {
+    function onRsvpStatus(e: Event) {
+      const detail = (e as CustomEvent<{ attending?: boolean }>).detail;
+      if (typeof detail?.attending === "boolean") {
+        setRsvpAttending(detail.attending);
+      }
+    }
+    window.addEventListener("dwi:rsvp-status", onRsvpStatus);
+    return () => window.removeEventListener("dwi:rsvp-status", onRsvpStatus);
+  }, []);
 
   useEffect(() => {
     document.body.classList.toggle("scroll-locked", !opened);
@@ -100,6 +128,8 @@ export function InvitationShell({
             style={coverStyle}
             ornaments={ornaments}
             cover={cover}
+            voucherHref={passReady && quickPass ? quickPass.href : null}
+            voucherLabel={quickPass?.ctaLabel}
             opening={phase === "opening"}
             onOpen={open}
           />
@@ -120,6 +150,26 @@ export function InvitationShell({
         }
         inert={!opened}
       >
+        {opened && passReady && quickPass ? (
+          <div className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-champagne/30 bg-olive-deep/95 px-4 py-2.5 backdrop-blur">
+            <span className="flex min-w-0 items-center gap-2 font-ui text-[10px] uppercase tracking-[0.18em] text-cream/85">
+              <span className="inline-block size-1.5 shrink-0 rounded-full bg-peach" aria-hidden="true" />
+              <span className="truncate">{quickPass.badgeLabel}</span>
+            </span>
+            <Link
+              href={quickPass.href}
+              className="inline-flex shrink-0 items-center gap-1.5 border border-peach bg-peach px-3.5 py-1.5 font-ui text-[10px] uppercase tracking-[0.2em] text-peach-text transition-colors hover:bg-transparent hover:text-peach"
+            >
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <rect x="1.5" y="1.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />
+                <rect x="9.5" y="1.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />
+                <rect x="1.5" y="9.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />
+                <path d="M9.5 9.5h2v2h-2zM12.5 9.5h2v2h-2zM9.5 12.5h2v2h-2zM12.5 12.5h2v2h-2z" fill="currentColor" />
+              </svg>
+              {quickPass.ctaLabel}
+            </Link>
+          </div>
+        ) : null}
         {children}
       </div>
 
@@ -146,16 +196,20 @@ function CoverForStyle({
   style,
   ornaments,
   cover,
+  voucherHref,
+  voucherLabel,
   opening,
   onOpen,
 }: {
   style: CoverStyle;
   ornaments: OrnamentSet;
   cover: CoverCopy;
+  voucherHref?: string | null;
+  voucherLabel?: string;
   opening: boolean;
   onOpen: () => void;
 }) {
-  const shared = { ...cover, opening, onOpen, ornaments };
+  const shared = { ...cover, voucherHref, voucherLabel, opening, onOpen, ornaments };
 
   if (style === "arch") return <ArchCover {...shared} />;
   if (style === "card") return <CardCover {...shared} />;

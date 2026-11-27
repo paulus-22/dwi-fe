@@ -76,6 +76,19 @@ export async function WeddingInvitation({
     pick(locale, event.closingNoteId, event.closingNoteEn) || dict.closing.default;
   const dressCodeNote = pick(locale, event.dressCodeNoteId, event.dressCodeNoteEn);
   const quoteText = pick(locale, event.quoteTextId, event.quoteTextEn);
+  const voucherHref =
+    guest && guest.passMode !== "GROUP"
+      ? `/v/${event.slug}?to=${encodeURIComponent(guest.token)}`
+      : null;
+  const quickPass = voucherHref
+    ? {
+        href: voucherHref,
+        initiallyReady: Boolean(guest?.rsvp?.attending || guest?.passMode === "DIRECT"),
+        alwaysReady: guest?.passMode === "DIRECT",
+        badgeLabel: dict.pass.confirmedBadge,
+        ctaLabel: dict.rsvp.viewPass,
+      }
+    : null;
 
   return (
     <main style={cssVars} className="bg-olive-mid/10 font-body text-black">
@@ -86,6 +99,7 @@ export async function WeddingInvitation({
         ornamentFamily={theme.design.ornament}
         musicUrl={event.musicUrl}
         musicLabels={{ play: dict.music.play, pause: dict.music.pause }}
+        quickPass={quickPass}
         cover={{
           brideName: event.brideShortName,
           groomName: event.groomShortName,
@@ -230,10 +244,10 @@ export async function WeddingInvitation({
               </Section>
             ) : null}
 
-            {/* The pass only exists once attendance is confirmed, so the
-                invitation links to it rather than embedding it. GROUP
-                invitations (e.g. a whole class) have no per-person pass. */}
-            {guest.rsvp?.attending && guest.passMode !== "GROUP" ? (
+            {/* The pass exists once attendance is confirmed (or immediately on
+                DIRECT invites), so the invitation links to it rather than
+                embedding it. GROUP invitations have no per-person pass here. */}
+            {(guest.rsvp?.attending || guest.passMode === "DIRECT") && guest.passMode !== "GROUP" ? (
               <Section ornaments={ornaments}
                 id="pass"
                 kicker={dict.pass.kicker}
