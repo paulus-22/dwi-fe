@@ -248,7 +248,7 @@ export function ScanScreen() {
 }
 
 function ManualEntry({ onClose, onSubmit }: { onClose(): void; onSubmit(text: string): void }) {
-  const [mode, setMode] = useState<"code" | "name">("code");
+  const [mode, setMode] = useState<"code" | "name">("name");
   const [text, setText] = useState("");
   const [name, setName] = useState("");
   const [guests, setGuests] = useState<SnapshotGuest[]>([]);
