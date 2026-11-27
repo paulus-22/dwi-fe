@@ -82,7 +82,7 @@ textarea {
 
 .kicker {
   font-family: var(--font-ui);
-  font-size: calc(11px * var(--fs));
+  font-size: calc(18px * var(--fs));
   letter-spacing: 0.22em;
   text-transform: uppercase;
 }
