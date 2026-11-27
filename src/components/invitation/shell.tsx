@@ -137,14 +137,14 @@ export function InvitationShell({
       ) : null}
 
       {opened && passReady && quickPass ? (
-        <div className="fixed top-0 left-1/2 z-40 flex w-full max-w-[460px] -translate-x-1/2 items-center justify-between gap-3 border-b border-champagne/30 bg-olive-deep/95 px-4 py-2.5 shadow-md backdrop-blur">
-          <span className="flex min-w-0 items-center gap-2 font-ui text-[10px] uppercase tracking-[0.18em] text-cream/85">
+        <div className="qr-pass-bar fixed top-0 left-1/2 z-40 flex w-full max-w-[460px] -translate-x-1/2 items-center justify-between gap-3 border-b border-champagne/30 px-4 py-2.5 shadow-md backdrop-blur">
+          <span className="flex min-w-0 items-center gap-2 font-ui text-[10px] font-medium uppercase tracking-[0.18em]">
             <span className="inline-block size-1.5 shrink-0 rounded-full bg-peach" aria-hidden="true" />
             <span className="truncate">{quickPass.badgeLabel}</span>
           </span>
           <Link
             href={quickPass.href}
-            className="inline-flex shrink-0 items-center gap-1.5 border border-peach bg-peach px-3.5 py-1.5 font-ui text-[10px] uppercase tracking-[0.2em] text-peach-text transition-colors hover:bg-transparent hover:text-peach"
+            className="qr-pass-btn inline-flex shrink-0 items-center gap-1.5 px-3.5 py-1.5 font-ui text-[10px] uppercase tracking-[0.2em] transition-colors"
           >
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <rect x="1.5" y="1.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />

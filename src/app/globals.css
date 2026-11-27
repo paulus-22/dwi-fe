@@ -79,11 +79,16 @@
 }
 
 @layer base {
+  :root,
   html {
+    color-scheme: only light;
+    forced-color-adjust: none;
     -webkit-text-size-adjust: 100%;
   }
 
   body {
+    color-scheme: only light;
+    forced-color-adjust: none;
     font-family: var(--font-ui);
     color: var(--color-admin-ink);
     background: var(--color-surface);
@@ -221,6 +226,32 @@
 .scroll-locked {
   overflow: hidden;
   touch-action: none;
+}
+
+/* Lock exact theme contrast on QR pass callouts and the top sticky bar so
+   mobile browsers with Force-Dark / Auto-Dark never invert or dim the font. */
+.qr-pass-bar {
+  color-scheme: only light;
+  forced-color-adjust: none;
+  background-color: color-mix(in srgb, var(--color-olive-deep) 96%, #000);
+  color: var(--color-cream);
+  -webkit-text-fill-color: var(--color-cream);
+}
+
+.qr-pass-btn {
+  color-scheme: only light;
+  forced-color-adjust: none;
+  background-color: var(--color-peach);
+  border: 1px solid var(--color-peach);
+  color: var(--color-peach-text);
+  -webkit-text-fill-color: var(--color-peach-text);
+  font-weight: 500;
+}
+.qr-pass-btn:hover {
+  background-color: var(--color-olive-deep);
+  border-color: var(--color-peach);
+  color: var(--color-peach);
+  -webkit-text-fill-color: var(--color-peach);
 }
 
 /* Indeterminate progress: a bar that sweeps rather than pretending to measure

@@ -40,7 +40,10 @@ export async function VoucherTicket({
   });
 
   return (
-    <div className="relative mx-auto w-full max-w-[22rem] bg-paper shadow-[0_24px_60px_rgba(0,0,0,0.30)]">
+    <div
+      style={{ colorScheme: "only light", forcedColorAdjust: "none" }}
+      className="relative mx-auto w-full max-w-[22rem] bg-paper text-ink shadow-[0_24px_60px_rgba(0,0,0,0.30)]"
+    >
       <div className="border border-champagne">
         <div className="px-6 pt-7 text-center">
           <div className="flex justify-center">

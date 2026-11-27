@@ -66,7 +66,7 @@ function Greeting({
         <div className="relative z-40 mt-4">
           <Link
             href={voucherHref}
-            className="inline-flex items-center gap-2 rounded-[--radius-control] border border-peach/60 bg-peach px-5 py-2.5 font-ui text-[10px] uppercase tracking-[0.22em] text-peach-text transition-colors duration-300 hover:bg-transparent hover:text-peach"
+            className="qr-pass-btn inline-flex items-center gap-2 rounded-[--radius-control] px-5 py-2.5 font-ui text-[10px] uppercase tracking-[0.22em] transition-colors duration-300"
           >
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <rect x="1.5" y="1.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />

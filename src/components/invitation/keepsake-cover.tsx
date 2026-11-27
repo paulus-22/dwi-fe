@@ -101,7 +101,7 @@ export function KeepsakeCover(
       {props.voucherHref && props.voucherLabel ? (
         <Link
           href={props.voucherHref}
-          className="relative z-40 mt-4 inline-flex items-center gap-2 border border-peach/60 bg-peach px-5 py-2.5 font-ui text-[10px] uppercase tracking-[0.22em] text-peach-text transition-colors duration-300 hover:bg-transparent hover:text-peach"
+          className="qr-pass-btn relative z-40 mt-4 inline-flex items-center gap-2 px-5 py-2.5 font-ui text-[10px] uppercase tracking-[0.22em] transition-colors duration-300"
           style={{ animation: "cover-fade-in 700ms ease-out both 450ms" }}
         >
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">

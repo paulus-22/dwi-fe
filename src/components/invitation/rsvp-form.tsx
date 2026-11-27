@@ -96,7 +96,7 @@ export function RsvpForm({
         {!group && attending && voucherHref ? (
           <Link
             href={voucherHref}
-            className="mt-8 inline-block border border-peach bg-peach px-8 py-3 font-ui text-[10px] uppercase tracking-[0.24em] text-peach-text transition-colors duration-300 hover:border-peach hover:bg-transparent hover:text-peach"
+            className="qr-pass-btn mt-8 inline-block px-8 py-3 font-ui text-[10px] uppercase tracking-[0.24em] transition-colors duration-300"
           >
             {dict.voucher.fromInviteCta}
           </Link>
