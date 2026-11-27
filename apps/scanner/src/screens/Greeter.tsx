@@ -7,7 +7,7 @@ import { useApp } from "../state";
 
 type Slide = { id: string; url: string };
 type Selfie = { id: string; url: string; householdName: string | null };
-type Greeting = { name: string; selfie?: string | null };
+type Greeting = { name: string; selfie?: string | null; seq: number };
 
 const GREETING_MS = 7000;
 const SLIDE_SEC = 8;
@@ -16,6 +16,7 @@ type LiveMsg = {
   type?: string;
   activity?: string;
   code?: string;
+  seq?: number;
   householdName?: string | null;
   memberName?: string | null;
   household_name?: string | null;
@@ -39,6 +40,8 @@ export function GreeterScreen() {
   const [greeting, setGreeting] = useState<Greeting | null>(null);
   const queueRef = useRef<Greeting[]>([]);
   const selfiesByCodeRef = useRef<Record<string, string>>({});
+  /** Highest check-in `seq` already shown/queued — shared dedupe for SSE + poll. */
+  const lastSeqRef = useRef(0);
 
   const eventId = pairing?.event.id;
 
@@ -87,19 +90,51 @@ export function GreeterScreen() {
         const name =
           (m.memberName || m.member_name || m.householdName || m.household_name || "").trim();
         if (!name) return;
+        if (m.seq != null && m.seq <= lastSeqRef.current) return; // the poll already handled it
+        if (m.seq != null) lastSeqRef.current = Math.max(lastSeqRef.current, m.seq);
         const selfie = selfiesByCodeRef.current[m.code ?? ""];
-        enqueue({ name, selfie });
+        enqueue({ name, selfie, seq: m.seq ?? 0 });
       }
     };
     return () => es.close();
   }, [eventId]);
 
-  function enqueue(g: Greeting) {
-    if (!greeting) {
-      setGreeting(g);
-    } else {
-      queueRef.current.push(g);
+  // Durable backstop: drain any check-in we missed (offline/reconnect) from the
+  // server queue so no welcome is ever dropped. `seq` dedupes with the SSE above.
+  useEffect(() => {
+    if (!eventId || !api.live) return;
+    const id = eventId;
+    let stop = false;
+    async function drain() {
+      try {
+        const res = await api.greetings(id, lastSeqRef.current);
+        for (const g of res.greetings) {
+          if (stop || g.seq <= lastSeqRef.current) continue;
+          lastSeqRef.current = Math.max(lastSeqRef.current, g.seq);
+          enqueue({ name: g.name, selfie: g.selfie, seq: g.seq });
+        }
+      } catch {
+        /* offline: the SSE rides us live; this tick retries in a bit */
+      }
     }
+    void drain();
+    const t = setInterval(drain, 6000);
+    return () => {
+      stop = true;
+      clearInterval(t);
+    };
+  }, [eventId]);
+
+  function enqueue(g: Greeting) {
+    // Functional update so the queue actually fills when one card is showing
+    // (the naive `greeting` closure would always overwrite the current card).
+    setGreeting((cur) => {
+      if (cur) {
+        queueRef.current.push(g);
+        return cur;
+      }
+      return g;
+    });
   }
 
   // When a greeting ends, show the next in the queue (if any).

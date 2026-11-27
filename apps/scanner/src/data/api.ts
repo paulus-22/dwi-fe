@@ -29,6 +29,11 @@ export interface ScannerApi {
   photos(eventId: string): Promise<{
     photos: { id: string; url: string; householdName: string | null }[];
   }>;
+  /** Durable greeting queue for the TV: check-ins since `after` (a seq). */
+  greetings(
+    eventId: string,
+    after: number,
+  ): Promise<{ greetings: { seq: number; name: string; selfie: string | null }[]; cursor: number }>;
   sync(batch: {
     checkIns: CheckIn[];
     records: ActivityRecord[];
@@ -104,6 +109,11 @@ function httpApi(base: string): ScannerApi {
 
     photos(eventId) {
       return call(`/v1/events/${eventId}/photos`);
+    },
+
+    /** Durable greeting queue for the TV: check-ins since `after` (a seq). */
+    greetings(eventId, after) {
+      return call(`/v1/events/${eventId}/greetings?after=${after}`);
     },
 
     sync({ checkIns, records, cursor }) {
@@ -186,6 +196,11 @@ const mockApi: ScannerApi = {
   async photos() {
     await sleep(jitter(300));
     return { photos: [] };
+  },
+
+  async greetings() {
+    await sleep(jitter(300));
+    return { greetings: [], cursor: 0 };
   },
 
   async sync({ checkIns, records, cursor }) {
