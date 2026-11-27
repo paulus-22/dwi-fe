@@ -33,7 +33,10 @@ export interface ScannerApi {
   greetings(
     eventId: string,
     after: number,
-  ): Promise<{ greetings: { seq: number; name: string; selfie: string | null }[]; cursor: number }>;
+  ): Promise<{
+    greetings: { seq: number; code: string | null; name: string; selfie: string | null }[];
+    cursor: number;
+  }>;
   sync(batch: {
     checkIns: CheckIn[];
     records: ActivityRecord[];

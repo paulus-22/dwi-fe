@@ -9,6 +9,10 @@ type Slide = { id: string; url: string };
 type Selfie = { id: string; url: string; householdName: string | null };
 type Greeting = { name: string; selfie?: string | null; seq: number };
 
+/** How long the TV waits for a guest's selfie before showing their welcome
+ *  without one. The greeting is meant to land AFTER the picture is done. */
+const PHOTO_WAIT_MS = 15_000;
+
 type LiveMsg = {
   type?: string;
   activity?: string;
@@ -90,6 +94,9 @@ export function GreeterScreen() {
   const selfiesByCodeRef = useRef<Record<string, string>>({});
   /** Highest check-in `seq` already shown/queued — shared dedupe for SSE + poll. */
   const lastSeqRef = useRef(0);
+  /** Check-ins waiting for their selfie (code → greeting), so the welcome card
+   *  shows AFTER the picture, with the guest's photo on it. */
+  const pendingRef = useRef<Map<string, { name: string; seq: number; at: number }>>(new Map());
 
   const eventId = pairing?.event.id;
 
@@ -131,6 +138,7 @@ export function GreeterScreen() {
       }
       if (m.type === "photo" && m.code && m.url) {
         selfiesByCodeRef.current[m.code] = m.url;
+        flushPending(m.code, m.url);
       }
       if (m.type === "scan" && m.activity === "CHECK_IN") {
         // The backend live payload uses snake_case (household_name/member_name);
@@ -140,8 +148,7 @@ export function GreeterScreen() {
         if (!name) return;
         if (m.seq != null && m.seq <= lastSeqRef.current) return; // the poll already handled it
         if (m.seq != null) lastSeqRef.current = Math.max(lastSeqRef.current, m.seq);
-        const selfie = selfiesByCodeRef.current[m.code ?? ""];
-        enqueue({ name, selfie, seq: m.seq ?? 0 });
+        handleGreeting({ code: m.code, name, seq: m.seq ?? 0, selfie: null });
       }
     };
     return () => es.close();
@@ -159,7 +166,7 @@ export function GreeterScreen() {
         for (const g of res.greetings) {
           if (stop || g.seq <= lastSeqRef.current) continue;
           lastSeqRef.current = Math.max(lastSeqRef.current, g.seq);
-          enqueue({ name: g.name, selfie: g.selfie, seq: g.seq });
+          handleGreeting({ code: g.code ?? undefined, name: g.name, seq: g.seq, selfie: g.selfie });
         }
       } catch {
         /* offline: the SSE rides us live; this tick retries in a bit */
@@ -175,7 +182,7 @@ export function GreeterScreen() {
 
   function enqueue(g: Greeting) {
     // Functional update so the queue actually fills when one card is showing
-    // (the naive `greeting` closure would always overwrite the current card).
+    // (a naive `greeting` closure would always overwrite the current card).
     setGreeting((cur) => {
       if (cur) {
         queueRef.current.push(g);
@@ -184,6 +191,60 @@ export function GreeterScreen() {
       return g;
     });
   }
+
+  /**
+   * Land a check-in AFTER its selfie is taken. If we already know the guest's
+   * photo (SSE or the durable queue returned it), queue the card immediately
+   * with the selfie; otherwise hold it until the photo arrives (or a grace
+   * period passes and we show the name alone).
+   */
+  function handleGreeting({
+    code,
+    name,
+    seq,
+    selfie,
+  }: {
+    code?: string;
+    name: string;
+    seq: number;
+    selfie?: string | null;
+  }) {
+    const known = selfie ?? (code ? selfiesByCodeRef.current[code] : undefined) ?? null;
+    if (known) {
+      enqueue({ name, selfie: known, seq });
+      return;
+    }
+    if (code) {
+      pendingRef.current.set(code, { name, seq, at: Date.now() });
+    } else {
+      // No way to wait for a selfie (no code) — show the welcome as-is.
+      enqueue({ name, selfie: null, seq });
+    }
+  }
+
+  function flushPending(code: string, url: string) {
+    const p = pendingRef.current.get(code);
+    if (!p) return;
+    pendingRef.current.delete(code);
+    enqueue({ name: p.name, selfie: url, seq: p.seq });
+  }
+
+  // Safety net: if a guest's selfie never arrives, still greet them (name only)
+  // after the grace period so no welcome is silently lost.
+  useEffect(() => {
+    if (!eventId) return;
+    const t = setInterval(() => {
+      const now = Date.now();
+      for (const [code, p] of pendingRef.current) {
+        if (now - p.at >= PHOTO_WAIT_MS) {
+          pendingRef.current.delete(code);
+          const selfie = selfiesByCodeRef.current[code] ?? null;
+          enqueue({ name: p.name, selfie, seq: p.seq });
+        }
+      }
+    }, 4000);
+    return () => clearInterval(t);
+  }, [eventId]);
 
   // When a greeting ends, show the next in the queue (if any).
   useEffect(() => {

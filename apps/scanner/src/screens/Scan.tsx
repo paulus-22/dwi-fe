@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ActivityRunner } from "./Activities";
 import { IdleSlideshow } from "./Idle";
 import { ResultView } from "./Result";
 import { Button, Header, Icon } from "../components/ui";
 import { checkIn, lookup, type Lookup } from "../data/scanner";
+import { store } from "../data/store";
 import type { ActivityType, CheckIn, SnapshotGuest } from "../domain/types";
 import { useCamera } from "../lib/camera";
 import { cue } from "../lib/cue";
@@ -247,35 +248,115 @@ export function ScanScreen() {
 }
 
 function ManualEntry({ onClose, onSubmit }: { onClose(): void; onSubmit(text: string): void }) {
+  const [mode, setMode] = useState<"code" | "name">("code");
   const [text, setText] = useState("");
+  const [name, setName] = useState("");
+  const [guests, setGuests] = useState<SnapshotGuest[]>([]);
+
+  useEffect(() => {
+    if (mode === "name") void store.guests().then(setGuests);
+  }, [mode]);
+
+  // Case-insensitive substring match over the local guest list — the offline
+  // equivalent of SQL ILIKE, so an usher can find anyone by name (great for
+  // older guests who arrive without their QR).
+  const matches = useMemo(() => {
+    const q = name.trim().toLowerCase();
+    if (!q) return [];
+    return guests
+      .filter((g) => g.householdName.toLowerCase().includes(q) || g.code.toLowerCase().includes(q))
+      .slice(0, 25);
+  }, [name, guests]);
+
   return (
     <div className="absolute inset-0 z-30 flex items-end bg-night/70 backdrop-blur-sm" onClick={onClose}>
-      <form
-        className="rise safe-bottom w-full rounded-t-[32px] bg-panel px-6 pt-6"
+      <div
+        className="rise safe-bottom max-h-[85%] w-full rounded-t-[32px] bg-panel px-6 pt-6"
         onClick={(e) => e.stopPropagation()}
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (text.trim()) onSubmit(text);
-        }}
       >
-        <p className="kicker text-peach">Check-in manual</p>
-        <h2 className="mt-1 font-display text-[length:calc(28px*var(--fs))]">Ketik kode undangan</h2>
-        <input
-          autoFocus
-          value={text}
-          onChange={(e) => setText(e.target.value.toUpperCase())}
-          placeholder="AJ27-FAM-0001-2"
-          className="mt-5 w-full rounded-2xl border border-edge bg-ground px-4 py-4 text-center font-mono text-[length:calc(22px*var(--fs))] tracking-[0.12em] text-cream outline-none placeholder:text-mute/50 focus:border-peach"
-          autoCapitalize="characters"
-          autoComplete="off"
-          spellCheck={false}
-        />
-        <p className="mt-2 text-center text-[length:calc(13px*var(--fs))] text-mute">Huruf terakhir adalah kode cek — salah ketik langsung ditolak.</p>
-        <div className="mt-5 grid grid-cols-2 gap-3 pb-4">
-          <Button tone="ghost" onClick={onClose}>Batal</Button>
-          <Button type="submit">Cari tamu</Button>
-        </div>
-      </form>
+        {mode === "code" ? (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (text.trim()) onSubmit(text);
+            }}
+          >
+            <p className="kicker text-peach">Check-in manual</p>
+            <h2 className="mt-1 font-display text-[length:calc(28px*var(--fs))]">Ketik kode undangan</h2>
+            <input
+              autoFocus
+              value={text}
+              onChange={(e) => setText(e.target.value.toUpperCase())}
+              placeholder="AJ27-FAM-0001-2"
+              className="mt-5 w-full rounded-2xl border border-edge bg-ground px-4 py-4 text-center font-mono text-[length:calc(22px*var(--fs))] tracking-[0.12em] text-cream outline-none placeholder:text-mute/50 focus:border-peach"
+              autoCapitalize="characters"
+              autoComplete="off"
+              spellCheck={false}
+            />
+            <p className="mt-2 text-center text-[length:calc(13px*var(--fs))] text-mute">Huruf terakhir adalah kode cek — salah ketik langsung ditolak.</p>
+            <button
+              type="button"
+              onClick={() => setMode("name")}
+              className="mt-3 block w-full text-center text-[length:calc(13px*var(--fs))] text-peach underline underline-offset-4"
+            >
+              atau cari berdasarkan nama tamu
+            </button>
+            <div className="mt-5 grid grid-cols-2 gap-3 pb-4">
+              <Button tone="ghost" onClick={onClose}>Batal</Button>
+              <Button type="submit">Cari tamu</Button>
+            </div>
+          </form>
+        ) : (
+          <div>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="kicker text-peach">Cari nama</p>
+                <h2 className="mt-1 font-display text-[length:calc(24px*var(--fs))]">Siapa yang datang?</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMode("code")}
+                className="mt-1 shrink-0 text-[length:calc(13px*var(--fs))] text-peach underline underline-offset-4"
+              >
+                Kembali ke kode
+              </button>
+            </div>
+            <input
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Cari nama atau kode…"
+              className="mt-4 w-full rounded-2xl border border-edge bg-ground px-4 py-3.5 text-[length:calc(16px*var(--fs))] text-cream outline-none placeholder:text-mute focus:border-peach"
+              autoComplete="off"
+              spellCheck={false}
+            />
+            <div className="mt-3 max-h-[46vh] overflow-y-auto pb-4">
+              {name.trim() && matches.length === 0 ? (
+                <p className="py-8 text-center text-[length:calc(14px*var(--fs))] text-mute">Tidak ada yang cocok.</p>
+              ) : (
+                <ul className="divide-y divide-edge/60 overflow-hidden rounded-2xl bg-ground">
+                  {matches.map((g) => (
+                    <li key={g.code}>
+                      <button
+                        type="button"
+                        onClick={() => onSubmit(g.code)}
+                        className="flex w-full items-center gap-3 px-4 py-3 text-left active:bg-panel"
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span className="line-clamp-2 block break-words text-[length:calc(15px*var(--fs))] leading-snug text-cream">
+                            {g.householdName}
+                          </span>
+                          <span className="block truncate text-[length:calc(11px*var(--fs))] text-mute">{g.code}</span>
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
