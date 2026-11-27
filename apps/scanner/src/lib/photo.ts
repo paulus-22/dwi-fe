@@ -5,13 +5,14 @@ import type { EventInfo } from "../domain/types";
  *
  * The photo is framed on the device — couple's names, date, hashtag — so what
  * lands on the wall and in the couple's album is already the keepsake. It is
- * resized here too: ~1200×1600 JPEG at 0.85 is 250–450 KB, which uploads over
- * a venue's 4G in a couple of seconds. JPEG rather than WebP because Safari's
+ * resized here too: ~1600×1200 landscape JPEG at 0.85 is 250–450 KB, which
+ * uploads over a venue's 4G in a couple of seconds. Landscape matches the
+ * tablet held horizontally. JPEG rather than WebP because Safari's
  * canvas still cannot encode WebP and silently hands back a PNG.
  */
 
-const OUT_W = 1200;
-const OUT_H = 1600;
+const OUT_W = 1600;
+const OUT_H = 1200;
 
 let fontsReady: Promise<void> | null = null;
 
@@ -61,12 +62,12 @@ export async function framePhoto(
   ctx.fillStyle = "#f5f0e8";
   ctx.fillRect(0, 0, OUT_W, OUT_H);
 
-  // Photo window: cover-fit the source into it.
+  // Photo window: cover-fit the source into it (landscape, ~5:3).
   const pad = 60;
   const winX = pad;
   const winY = pad;
   const winW = OUT_W - pad * 2;
-  const winH = 1180;
+  const winH = 850;
   const { w, h } = sourceSize(source);
   const scale = Math.max(winW / w, winH / h);
   const dw = w * scale;
@@ -90,19 +91,19 @@ export async function framePhoto(
   const cx = OUT_W / 2;
   ctx.textAlign = "center";
   ctx.fillStyle = "#353a20";
-  ctx.font = '92px "Cormorant Upright", Georgia, serif';
-  ctx.fillText(event.coupleLine, cx, 1378);
+  ctx.font = '76px "Cormorant Upright", Georgia, serif';
+  ctx.fillText(event.coupleLine, cx, 985);
 
   ctx.fillStyle = "#876550";
-  ctx.font = '30px "Jost", system-ui, sans-serif';
+  ctx.font = '28px "Jost", system-ui, sans-serif';
   ctx.letterSpacing = "6px";
-  ctx.fillText(event.dateLabel.toUpperCase(), cx, 1440);
+  ctx.fillText(event.dateLabel.toUpperCase(), cx, 1043);
 
   ctx.fillStyle = "#786b5d";
   ctx.letterSpacing = "1px";
-  ctx.font = '32px "Jost", system-ui, sans-serif';
+  ctx.font = '30px "Jost", system-ui, sans-serif';
   const line = [guestName, event.hashtag].filter(Boolean).join("  ·  ");
-  ctx.fillText(truncate(ctx, line, OUT_W - 160), cx, 1512);
+  ctx.fillText(truncate(ctx, line, OUT_W - 160), cx, 1110);
 
   return new Promise((resolve, reject) =>
     canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("encode failed"))), "image/jpeg", 0.85),

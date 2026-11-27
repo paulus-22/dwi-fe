@@ -78,7 +78,6 @@ function SelfieStep({ step, checkIn, guest, onDone, onSkip }: StepProps) {
   const { pairing, facing, setFacing } = useApp();
   const selfie = facing.photo === "user";
   const [stage, setStage] = useState<"handover" | "live" | "review">("handover");
-  const [count, setCount] = useState<number | null>(null);
   const [flash, setFlash] = useState(false);
   const [result, setResult] = useState<{ blob: Blob; url: string } | null>(null);
   const [saving, setSaving] = useState(false);
@@ -88,17 +87,6 @@ function SelfieStep({ step, checkIn, guest, onDone, onSkip }: StepProps) {
   useEffect(() => void loadFrameFonts(), []);
   useEffect(() => () => void (result && URL.revokeObjectURL(result.url)), [result]);
 
-  useEffect(() => {
-    if (count === null) return;
-    if (count === 0) {
-      void capture();
-      return;
-    }
-    cue.tick();
-    const t = setTimeout(() => setCount((c) => (c === null ? null : c - 1)), 900);
-    return () => clearTimeout(t);
-  }, [count]);
-
   async function capture() {
     const video = videoRef.current;
     if (!video) return;
@@ -106,7 +94,6 @@ function SelfieStep({ step, checkIn, guest, onDone, onSkip }: StepProps) {
     setFlash(true);
     setTimeout(() => setFlash(false), 500);
     const blob = await framePhoto(video, pairing!.event, guest.householdName, { mirror: selfie });
-    setCount(null);
     setResult({ blob, url: URL.createObjectURL(blob) });
     setStage("review");
   }
@@ -196,11 +183,6 @@ function SelfieStep({ step, checkIn, guest, onDone, onSkip }: StepProps) {
           <p className="font-display text-[length:calc(30px*var(--fs))] text-cream">{pairing!.event.coupleLine}</p>
           <p className="kicker mt-1 text-gold">{pairing!.event.dateLabel}</p>
         </div>
-        {count !== null && count > 0 ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-night/20">
-            <span key={count} className="pop font-display text-[160px] leading-none text-cream drop-shadow-2xl">{count}</span>
-          </div>
-        ) : null}
         {flash ? <div className="flash absolute inset-0 bg-white" /> : null}
       </div>
 
@@ -226,8 +208,8 @@ function SelfieStep({ step, checkIn, guest, onDone, onSkip }: StepProps) {
         <button
           type="button"
           aria-label="Ambil foto"
-          disabled={camera.status !== "live" || count !== null}
-          onClick={() => setCount(3)}
+          disabled={camera.status !== "live"}
+          onClick={() => void capture()}
           className="flex size-20 items-center justify-center rounded-full border-4 border-cream/90 transition active:scale-95 disabled:opacity-40"
         >
           <span className="size-[60px] rounded-full bg-peach" />
@@ -235,7 +217,6 @@ function SelfieStep({ step, checkIn, guest, onDone, onSkip }: StepProps) {
         <button
           type="button"
           aria-label="Ganti kamera"
-          disabled={count !== null}
           onClick={() => setFacing("photo", selfie ? "environment" : "user")}
           className="flex w-20 flex-col items-end text-[length:calc(13px*var(--fs))] text-cream-dim disabled:opacity-40"
         >
