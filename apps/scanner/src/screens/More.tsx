@@ -162,6 +162,7 @@ export function MoreScreen() {
             value={facing.photo}
             onChange={(f) => setFacing("photo", f)}
           />
+          <PhotoDelaySetting />
         </section>
 
         <StandbySettings
@@ -230,6 +231,47 @@ export function MoreScreen() {
           <Row icon="tv" label="Layar galeri (TV)" sub="Foto tamu terbaru + jumlah hadir" onClick={() => go("wall")} />
           <Button tone="bad" className="w-full" onClick={resetDevice}>Reset perangkat</Button>
         </section>
+      </div>
+    </div>
+  );
+}
+
+/** Selfie countdown options: 0 = instant (Langsung), 1–5 = seconds of timer. */
+const PHOTO_DELAY_OPTIONS: [number, string][] = [
+  [0, "Langsung"],
+  [1, "1"],
+  [2, "2"],
+  [3, "3"],
+  [4, "4"],
+  [5, "5"],
+];
+
+function PhotoDelaySetting() {
+  const { photoDelay, setPhotoDelay } = useApp();
+  return (
+    <div className="mt-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <span>
+          <span className="block text-[length:calc(16px*var(--fs))] text-cream">Timer foto</span>
+          <span className="block text-[length:calc(12px*var(--fs))] text-mute">
+            0 = langsung, 1–5 = jeda hitung mundur sebelum memotret
+          </span>
+        </span>
+        <div className="flex rounded-xl bg-ground p-1">
+          {PHOTO_DELAY_OPTIONS.map(([v, label]) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setPhotoDelay(v)}
+              aria-label={`${label === "Langsung" ? "Langsung" : `${label} detik`}`}
+              className={`whitespace-nowrap rounded-lg px-2.5 py-1.5 text-[length:calc(13px*var(--fs))] ${
+                photoDelay === v ? "bg-peach text-peach-ink" : "text-cream-dim"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -75,27 +75,46 @@ type StepProps = {
 // ------------------------------------------------------------------ selfie
 
 function SelfieStep({ step, checkIn, guest, onDone, onSkip }: StepProps) {
-  const { pairing, facing, setFacing } = useApp();
+  const { pairing, facing, setFacing, photoDelay } = useApp();
   const selfie = facing.photo === "user";
   const [stage, setStage] = useState<"handover" | "live" | "review">("handover");
+  const [count, setCount] = useState<number | null>(null);
   const [flash, setFlash] = useState(false);
   const [result, setResult] = useState<{ blob: Blob; url: string } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [shooting, setShooting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const { videoRef, state: camera } = useCamera(facing.photo, stage === "live");
 
   useEffect(() => void loadFrameFonts(), []);
   useEffect(() => () => void (result && URL.revokeObjectURL(result.url)), [result]);
 
+  useEffect(() => {
+    if (count === null) return;
+    if (count === 0) {
+      void capture();
+      return;
+    }
+    cue.tick();
+    const t = setTimeout(() => setCount((c) => (c === null ? null : c - 1)), 900);
+    return () => clearTimeout(t);
+  }, [count]);
+
   async function capture() {
     const video = videoRef.current;
-    if (!video) return;
-    cue.shutter();
-    setFlash(true);
-    setTimeout(() => setFlash(false), 500);
-    const blob = await framePhoto(video, pairing!.event, guest.householdName, { mirror: selfie });
-    setResult({ blob, url: URL.createObjectURL(blob) });
-    setStage("review");
+    if (!video || shooting) return;
+    setShooting(true);
+    try {
+      cue.shutter();
+      setFlash(true);
+      setTimeout(() => setFlash(false), 500);
+      const blob = await framePhoto(video, pairing!.event, guest.householdName, { mirror: selfie });
+      setCount(null);
+      setResult({ blob, url: URL.createObjectURL(blob) });
+      setStage("review");
+    } finally {
+      setShooting(false);
+    }
   }
 
   async function fromFile(file: File) {
@@ -183,6 +202,11 @@ function SelfieStep({ step, checkIn, guest, onDone, onSkip }: StepProps) {
           <p className="font-display text-[length:calc(30px*var(--fs))] text-cream">{pairing!.event.coupleLine}</p>
           <p className="kicker mt-1 text-gold">{pairing!.event.dateLabel}</p>
         </div>
+        {count !== null && count > 0 ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-night/20">
+            <span key={count} className="pop font-display text-[160px] leading-none text-cream drop-shadow-2xl">{count}</span>
+          </div>
+        ) : null}
         {flash ? <div className="flash absolute inset-0 bg-white" /> : null}
       </div>
 
@@ -208,8 +232,8 @@ function SelfieStep({ step, checkIn, guest, onDone, onSkip }: StepProps) {
         <button
           type="button"
           aria-label="Ambil foto"
-          disabled={camera.status !== "live"}
-          onClick={() => void capture()}
+          disabled={camera.status !== "live" || count !== null || shooting}
+          onClick={() => (photoDelay > 0 ? setCount(photoDelay) : void capture())}
           className="flex size-20 items-center justify-center rounded-full border-4 border-cream/90 transition active:scale-95 disabled:opacity-40"
         >
           <span className="size-[60px] rounded-full bg-peach" />

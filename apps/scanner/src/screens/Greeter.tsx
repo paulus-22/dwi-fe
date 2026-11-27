@@ -18,6 +18,8 @@ type LiveMsg = {
   code?: string;
   householdName?: string | null;
   memberName?: string | null;
+  household_name?: string | null;
+  member_name?: string | null;
   url?: string;
 };
 
@@ -80,7 +82,10 @@ export function GreeterScreen() {
         selfiesByCodeRef.current[m.code] = m.url;
       }
       if (m.type === "scan" && m.activity === "CHECK_IN") {
-        const name = (m.memberName || m.householdName || "").trim();
+        // The backend live payload uses snake_case (household_name/member_name);
+        // accept both cases in case that ever changes.
+        const name =
+          (m.memberName || m.member_name || m.householdName || m.household_name || "").trim();
         if (!name) return;
         const selfie = selfiesByCodeRef.current[m.code ?? ""];
         enqueue({ name, selfie });

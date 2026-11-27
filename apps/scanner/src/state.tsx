@@ -13,6 +13,9 @@ export const FONT_SCALE_MAX = 1.5;
 /** How a group (kelompok) QR's arriving member name is captured. */
 export type GroupNameMode = "usher" | "guest";
 export const DEFAULT_GROUP_NAME_MODE: GroupNameMode = "usher";
+/** Selfie countdown in seconds before capture: 0 = instant, 1–5 = timer. */
+export const DEFAULT_PHOTO_DELAY = 0;
+export const PHOTO_DELAY_MAX = 5;
 
 /** Scanner UI theme. `data-scanner-theme` on <html> re-colours the whole app. */
 export type ScannerTheme = "night" | "day" | "midnight" | "terracotta";
@@ -51,6 +54,9 @@ type AppState = {
   setAuto(patch: Partial<AutoConfig>): void;
   groupNameMode: GroupNameMode;
   setGroupNameMode(mode: GroupNameMode): void;
+  /** Seconds of countdown before a photo is taken: 0 = instant, 1–5 = timer. */
+  photoDelay: number;
+  setPhotoDelay(sec: number): void;
   /** Which UI theme the device renders with; remembered per device. */
   theme: ScannerTheme;
   setTheme(theme: ScannerTheme): void;
@@ -79,6 +85,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [fontScale, setFontScaleState] = useState(DEFAULT_FONT_SCALE);
   const [auto, setAutoState] = useState<AutoConfig>(DEFAULT_AUTO);
   const [groupNameMode, setGroupNameModeState] = useState<GroupNameMode>(DEFAULT_GROUP_NAME_MODE);
+  const [photoDelay, setPhotoDelayState] = useState(DEFAULT_PHOTO_DELAY);
   const [theme, setThemeState] = useState<ScannerTheme>(DEFAULT_SCANNER_THEME);
 
   useEffect(() => {
@@ -90,6 +97,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setIdleState({ ...DEFAULT_IDLE, ...((await store.getPref<IdleConfig>("idle")) ?? {}) });
       setAutoState({ ...DEFAULT_AUTO, ...((await store.getPref<AutoConfig>("auto")) ?? {}) });
       setGroupNameModeState((await store.getPref<GroupNameMode>("groupNameMode")) ?? DEFAULT_GROUP_NAME_MODE);
+      setPhotoDelayState((await store.getPref<number>("photoDelay")) ?? DEFAULT_PHOTO_DELAY);
       const t = (await store.getPref<ScannerTheme>("theme")) ?? DEFAULT_SCANNER_THEME;
       applyTheme(t);
       setThemeState(t);
@@ -148,6 +156,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     void store.setPref("groupNameMode", mode);
   }, []);
 
+  const setPhotoDelay = useCallback((sec: number) => {
+    const clamped = Math.min(PHOTO_DELAY_MAX, Math.max(0, Math.round(sec)));
+    setPhotoDelayState(clamped);
+    void store.setPref("photoDelay", clamped);
+  }, []);
+
   const setTheme = useCallback((t: ScannerTheme) => {
     applyTheme(t);
     setThemeState(t);
@@ -183,6 +197,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setAuto,
         groupNameMode,
         setGroupNameMode,
+        photoDelay,
+        setPhotoDelay,
         theme,
         setTheme,
       }}
