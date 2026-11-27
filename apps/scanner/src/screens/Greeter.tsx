@@ -236,12 +236,14 @@ export function GreeterScreen() {
     return () => clearTimeout(t);
   }, [greeting, tvGreetSec]);
 
-  // Slideshow timer (skips while a greeting is showing).
+  // Slideshow timer (skips while a greeting is showing). Loops over just the
+  // photos (indices 1..end) so the intro never comes back mid-show.
   useEffect(() => {
     if (greeting) return;
-    const t = setInterval(() => setIndex((i) => i + 1), tvSlideSec * 1000);
+    const total = 1 + slides.length + selfies.length; // title + photos
+    const t = setInterval(() => setIndex((i) => (i + 1 >= total ? 1 : i + 1)), tvSlideSec * 1000);
     return () => clearInterval(t);
-  }, [greeting, tvSlideSec]);
+  }, [greeting, tvSlideSec, slides.length, selfies.length]);
 
   // Tap anywhere to skip the current moment: a greeting card ends early, and
   // the intro/title (or any slide) advances immediately. Debounced so rapid
@@ -255,19 +257,19 @@ export function GreeterScreen() {
       const next = queueRef.current.shift();
       setGreeting(next ?? null);
     } else {
-      setIndex((i) => i + 1);
+      setIndex((i) => (i + 1 >= items.length ? 1 : i + 1));
     }
   }
 
   const items = useMemo(() => {
     const photos: Slide[] = [...slides, ...selfies.map((s) => ({ id: `p-${s.id}`, url: s.url }))];
+    // The intro shows once, as the opening card, then the photos loop on their
+    // own — the title is NOT re-inserted every few slides (that read as the TV
+    // "going back to the couple's intro" mid-show).
     const out: ({ kind: "title" } | { kind: "photo"; id: string; url: string; caption: string | null })[] = [
       { kind: "title" },
+      ...photos.map((s) => ({ kind: "photo" as const, id: s.id, url: s.url, caption: null })),
     ];
-    photos.forEach((s, i) => {
-      out.push({ kind: "photo", id: s.id, url: s.url, caption: null });
-      if ((i + 1) % 4 === 0 && i + 1 < photos.length) out.push({ kind: "title" });
-    });
     return out;
   }, [slides, selfies]);
 
