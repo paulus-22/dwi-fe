@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { completeSlide, presignSlide } from "@/app/admin/events/[id]/scanner/slideshow-actions";
 
@@ -26,12 +27,12 @@ export async function toWebp(file: File): Promise<Blob> {
  * to WebP in the browser, uploaded straight to R2 via a presigned URL, then
  * registered. Empties the file input when it's done so re-selecting works.
  */
-export function SlideshowUpload({ eventId, onDone }: { eventId: string; onDone(): void }) {
+export function SlideshowUpload({ eventId }: { eventId: string }) {
+  const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<string>("");
-  const [, startTransition] = useTransition();
 
   async function upload(files: FileList | null) {
     if (!files?.length) return;
@@ -55,7 +56,7 @@ export function SlideshowUpload({ eventId, onDone }: { eventId: string; onDone()
       }
       setProgress("");
       if (fileRef.current) fileRef.current.value = "";
-      startTransition(onDone);
+      router.refresh();
       alert(`${done} slide ditambahkan ke slideshow.`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Upload gagal.");

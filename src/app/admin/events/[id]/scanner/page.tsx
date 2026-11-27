@@ -133,7 +133,7 @@ export default async function ScannerDevicesPage({ params }: PageProps<"/admin/e
         <Card className="lg:col-span-2">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-medium">Slide tampilan (slideshow)</h2>
-            <SlideshowUpload eventId={id} onDone={() => {}} />
+            <SlideshowUpload eventId={id} />
           </div>
           <p className="mb-4 text-sm text-admin-muted">
             Foto akan tampil bergantian di layar semua perangkat scanner. Diubah ke WebP otomatis saat diunggah.
