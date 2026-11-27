@@ -28,7 +28,9 @@ export function KeepsakeCover(
 
   return (
     <div
-      className={`relative isolate flex h-dvh flex-col items-center overflow-hidden bg-olive-deep px-6 pb-7 pt-[max(3rem,9vh)] text-center transition-opacity duration-700 ${
+      className={`relative isolate flex h-dvh flex-col items-center overflow-hidden bg-olive-deep px-6 ${
+        props.voucherHref ? "pb-14" : "pb-7"
+      } pt-[max(2.5rem,7vh)] text-center transition-opacity duration-700 ${
         opening ? "opacity-0" : ""
       }`}
       // Hold the cover while the seal breaks and the photo lifts out.
@@ -99,8 +101,8 @@ export function KeepsakeCover(
       {props.voucherHref && props.voucherLabel ? (
         <Link
           href={props.voucherHref}
-          className="mt-4 inline-flex items-center gap-2 border border-peach/60 bg-peach px-5 py-2.5 font-ui text-[10px] uppercase tracking-[0.22em] text-peach-text transition-colors duration-300 hover:bg-transparent hover:text-peach"
-          style={{ animation: "cover-fade-in 900ms ease-out both 1400ms" }}
+          className="relative z-40 mt-4 inline-flex items-center gap-2 border border-peach/60 bg-peach px-5 py-2.5 font-ui text-[10px] uppercase tracking-[0.22em] text-peach-text transition-colors duration-300 hover:bg-transparent hover:text-peach"
+          style={{ animation: "cover-fade-in 700ms ease-out both 450ms" }}
         >
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <rect x="1.5" y="1.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />

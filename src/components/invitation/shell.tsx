@@ -136,6 +136,27 @@ export function InvitationShell({
         </div>
       ) : null}
 
+      {opened && passReady && quickPass ? (
+        <div className="fixed top-0 left-1/2 z-40 flex w-full max-w-[460px] -translate-x-1/2 items-center justify-between gap-3 border-b border-champagne/30 bg-olive-deep/95 px-4 py-2.5 shadow-md backdrop-blur">
+          <span className="flex min-w-0 items-center gap-2 font-ui text-[10px] uppercase tracking-[0.18em] text-cream/85">
+            <span className="inline-block size-1.5 shrink-0 rounded-full bg-peach" aria-hidden="true" />
+            <span className="truncate">{quickPass.badgeLabel}</span>
+          </span>
+          <Link
+            href={quickPass.href}
+            className="inline-flex shrink-0 items-center gap-1.5 border border-peach bg-peach px-3.5 py-1.5 font-ui text-[10px] uppercase tracking-[0.2em] text-peach-text transition-colors hover:bg-transparent hover:text-peach"
+          >
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <rect x="1.5" y="1.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />
+              <rect x="9.5" y="1.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />
+              <rect x="1.5" y="9.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />
+              <path d="M9.5 9.5h2v2h-2zM12.5 9.5h2v2h-2zM9.5 12.5h2v2h-2zM12.5 12.5h2v2h-2z" fill="currentColor" />
+            </svg>
+            {quickPass.ctaLabel}
+          </Link>
+        </div>
+      ) : null}
+
       {/*
         `inert` is what actually seals the invitation: it removes the subtree
         from the tab order and the accessibility tree together. `aria-hidden`
@@ -145,42 +166,32 @@ export function InvitationShell({
       <div
         className={
           opened
-            ? "animate-[invitation-enter_900ms_cubic-bezier(0.16,1,0.3,1)_both]"
+            ? `${passReady && quickPass ? "pt-11 " : ""}animate-[invitation-enter_900ms_cubic-bezier(0.16,1,0.3,1)_both]`
             : "h-0 overflow-hidden"
         }
         inert={!opened}
       >
-        {opened && passReady && quickPass ? (
-          <div className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-champagne/30 bg-olive-deep/95 px-4 py-2.5 backdrop-blur">
-            <span className="flex min-w-0 items-center gap-2 font-ui text-[10px] uppercase tracking-[0.18em] text-cream/85">
-              <span className="inline-block size-1.5 shrink-0 rounded-full bg-peach" aria-hidden="true" />
-              <span className="truncate">{quickPass.badgeLabel}</span>
-            </span>
-            <Link
-              href={quickPass.href}
-              className="inline-flex shrink-0 items-center gap-1.5 border border-peach bg-peach px-3.5 py-1.5 font-ui text-[10px] uppercase tracking-[0.2em] text-peach-text transition-colors hover:bg-transparent hover:text-peach"
-            >
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <rect x="1.5" y="1.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />
-                <rect x="9.5" y="1.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />
-                <rect x="1.5" y="9.5" width="5" height="5" stroke="currentColor" strokeWidth="1.4" />
-                <path d="M9.5 9.5h2v2h-2zM12.5 9.5h2v2h-2zM9.5 12.5h2v2h-2zM12.5 12.5h2v2h-2z" fill="currentColor" />
-              </svg>
-              {quickPass.ctaLabel}
-            </Link>
-          </div>
-        ) : null}
         {children}
       </div>
 
       {/* Docked controls. Kept outside the gated subtree so they are never
           focusable while hidden, and bottom-anchored so they never collide
-          with a centred section heading. */}
-      <div className="fixed bottom-5 left-1/2 z-30 w-full max-w-[460px] -translate-x-1/2 px-5">
+          with a centred section heading. `pointer-events-none` on the full-width
+          row prevents the empty bar between the corners from blocking taps on
+          centred cover actions underneath. */}
+      <div className="pointer-events-none fixed bottom-5 left-1/2 z-30 w-full max-w-[460px] -translate-x-1/2 px-5">
         <div className="flex items-end justify-between">
-          {showLocaleSwitch ? <LocaleSwitch locale={locale} /> : <span />}
+          {showLocaleSwitch ? (
+            <div className="pointer-events-auto">
+              <LocaleSwitch locale={locale} />
+            </div>
+          ) : (
+            <span />
+          )}
           {opened && musicUrl ? (
-            <MusicButton playing={music.playing} onToggle={music.toggle} labels={musicLabels} />
+            <div className="pointer-events-auto">
+              <MusicButton playing={music.playing} onToggle={music.toggle} labels={musicLabels} />
+            </div>
           ) : (
             <span />
           )}

@@ -63,7 +63,7 @@ function Greeting({
       </button>
 
       {voucherHref && voucherLabel ? (
-        <div className="mt-4">
+        <div className="relative z-40 mt-4">
           <Link
             href={voucherHref}
             className="inline-flex items-center gap-2 rounded-[--radius-control] border border-peach/60 bg-peach px-5 py-2.5 font-ui text-[10px] uppercase tracking-[0.22em] text-peach-text transition-colors duration-300 hover:bg-transparent hover:text-peach"
