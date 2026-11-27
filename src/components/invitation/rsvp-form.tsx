@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { format, type Dictionary } from "@/i18n/dictionaries";
@@ -21,6 +22,7 @@ export function RsvpForm({
   existing,
   group = false,
   dict,
+  voucherHref,
   onDone,
 }: {
   eventSlug: string;
@@ -31,6 +33,8 @@ export function RsvpForm({
   /** Group invitation — no per-person pass, so no QR/ticket link. */
   group?: boolean;
   dict: Dictionary;
+  /** Link to the guest's e-voucher/QR, shown as a button once RSVP is in. */
+  voucherHref?: string;
   /** Fired after a successful submit so a parent can react (e.g. reveal a pass). */
   onDone?: (attending: boolean) => void;
 }) {
@@ -84,6 +88,15 @@ export function RsvpForm({
         <p className="mt-7 font-body text-[18px] italic leading-relaxed text-cream">
           {attending ? dict.rsvp.successAttending : dict.rsvp.successDeclined}
         </p>
+        {/* Right after a confirming RSVP, jump to the QR/voucher without reloading. */}
+        {!group && attending && voucherHref ? (
+          <Link
+            href={voucherHref}
+            className="mt-8 inline-block border border-peach bg-peach px-8 py-3 font-ui text-[10px] uppercase tracking-[0.24em] text-peach-text transition-colors duration-300 hover:border-peach hover:bg-transparent hover:text-peach"
+          >
+            {dict.voucher.fromInviteCta}
+          </Link>
+        ) : null}
         {!group ? (
           <button
             type="button"

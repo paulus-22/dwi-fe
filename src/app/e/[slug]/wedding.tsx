@@ -225,6 +225,7 @@ export async function WeddingInvitation({
                       : null
                   }
                   dict={dict}
+                  voucherHref={`/v/${event.slug}?to=${encodeURIComponent(guest.token)}`}
                 />
               </Section>
             ) : null}
