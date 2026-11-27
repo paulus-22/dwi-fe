@@ -27,18 +27,21 @@ export function uid() {
 // ---------------------------------------------------------------- pairing
 
 export async function pairDevice(code: string, deviceName: string): Promise<Pairing> {
-  const { event, deviceToken } = await api.pair(code, deviceName);
+  const { event, deviceToken, deviceName: serverName } = await api.pair(code, deviceName);
   session.token = deviceToken;
   await store.setPref("deviceToken", deviceToken);
   const snap = await api.snapshot(event.id);
   await store.replaceGuests(snap.guests);
   await storeRemote(snap.remoteCheckIns);
   await store.setPref("cursor", snap.cursor);
+  // The gate is set from the dashboard on the pairing code; the server's name
+  // wins (the device-local door pick is only a fallback for the offline demo).
+  const resolvedName = serverName?.trim() || deviceName.trim() || "Pintu Utama";
   const pairing: Pairing = {
     event,
     source: "code",
     sourceLabel: code.trim(),
-    deviceName,
+    deviceName: resolvedName,
     pairedAt: new Date().toISOString(),
     snapshotAt: snap.at,
   };
@@ -61,7 +64,7 @@ export async function pairFromCsv(
   const previous = await store.getPairing();
   if (previous && previous.event.id !== event.id) {
     throw new Error(
-      `Perangkat ini masih terhubung ke ${previous.event.displayName}. Reset dulu di Lainnya sebelum ganti acara.`,
+      `Perangkat ini masih terhubung ke ${previous.event.coupleLine}. Reset dulu di Lainnya sebelum ganti acara.`,
     );
   }
   await store.replaceGuests(guests);
@@ -108,6 +111,7 @@ export async function checkIn(
   headcount: number,
   deviceName: string,
   override: boolean,
+  memberName?: string,
 ): Promise<CheckIn> {
   const row: CheckIn = {
     id: uid(),
@@ -117,6 +121,7 @@ export async function checkIn(
     deviceName,
     override,
     synced: false,
+    ...(memberName !== undefined ? { memberName } : {}),
   };
   await store.putCheckIn(row);
   void syncNow();

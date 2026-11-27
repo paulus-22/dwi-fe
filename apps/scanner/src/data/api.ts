@@ -19,8 +19,16 @@ export type RemoteCheckIn = Omit<CheckIn, "synced">;
 export interface ScannerApi {
   /** True when talking to a real server (not the built-in demo). */
   readonly live: boolean;
-  pair(code: string, deviceName: string): Promise<{ event: EventInfo; deviceToken: string }>;
+  pair(code: string, deviceName: string): Promise<{ event: EventInfo; deviceToken: string; deviceName: string }>;
   snapshot(eventId: string): Promise<{ guests: SnapshotGuest[]; remoteCheckIns: RemoteCheckIn[]; cursor: number; at: string }>;
+  /** R2-backed slides + all doors' selfies, so one door's slideshow matches every other. */
+  slideshow(eventId: string): Promise<{
+    images: { id: string; url: string; contentType: string }[];
+    greeting: string | null;
+  }>;
+  photos(eventId: string): Promise<{
+    photos: { id: string; url: string; householdName: string | null }[];
+  }>;
   sync(batch: {
     checkIns: CheckIn[];
     records: ActivityRecord[];
@@ -90,6 +98,14 @@ function httpApi(base: string): ScannerApi {
       return call(`/v1/events/${eventId}/snapshot`);
     },
 
+    slideshow(eventId) {
+      return call(`/v1/events/${eventId}/slideshow`);
+    },
+
+    photos(eventId) {
+      return call(`/v1/events/${eventId}/photos`);
+    },
+
     sync({ checkIns, records, cursor }) {
       return call("/v1/sync", { body: { deviceNow: new Date().toISOString(), cursor, checkIns, records } });
     },
@@ -138,7 +154,7 @@ const mockApi: ScannerApi = {
         "Kode acara tidak dikenal. Tanpa server, hanya acara demo yang tersedia — gunakan Impor CSV untuk acara lain.",
       );
     }
-    return { event: found.event, deviceToken: `demo-${deviceName}-${Date.now()}` };
+    return { event: found.event, deviceToken: `demo-${deviceName}-${Date.now()}`, deviceName };
   },
 
   async snapshot(eventId) {
@@ -162,6 +178,16 @@ const mockApi: ScannerApi = {
     };
   },
 
+  async slideshow() {
+    await sleep(jitter(300));
+    return { images: [], greeting: null };
+  },
+
+  async photos() {
+    await sleep(jitter(300));
+    return { photos: [] };
+  },
+
   async sync({ checkIns, records, cursor }) {
     await sleep(jitter(350));
     if (!online()) throw new OfflineError();
@@ -183,3 +209,6 @@ const mockApi: ScannerApi = {
 const API_URL = import.meta.env.VITE_API_URL as string | undefined;
 
 export const api: ScannerApi = API_URL ? httpApi(API_URL) : mockApi;
+
+/** Trailing-slash-free live API root, for the greeter's EventSource. */
+export const API_ROOT: string | null = API_URL ? API_URL.replace(/\/$/, "") : null;

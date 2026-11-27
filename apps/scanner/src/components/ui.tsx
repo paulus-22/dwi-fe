@@ -55,7 +55,7 @@ export function Header({ title, right }: { title?: ReactNode; right?: ReactNode 
       <div className="min-w-0">
         <p className="kicker truncate text-peach">{pairing?.deviceName ?? "Scanner"}</p>
         <h1 className="truncate font-display text-[length:calc(28px*var(--fs))] leading-tight text-cream">
-          {title ?? pairing?.event.displayName}
+          {title ?? pairing?.event.coupleLine}
         </h1>
       </div>
       {right ?? <SyncPill />}
@@ -81,7 +81,7 @@ export function Icon({ name, className = "size-6" }: { name: IconName; className
 
 type IconName =
   | "scan" | "users" | "image" | "menu" | "check" | "x" | "alert" | "camera" | "keyboard"
-  | "gift" | "pen" | "chevron" | "back" | "flip" | "tv" | "qr" | "refresh" | "wifi-off" | "up" | "down";
+  | "gift" | "pen" | "chevron" | "back" | "flip" | "tv" | "qr" | "refresh" | "wifi-off" | "up" | "down" | "expand";
 
 const paths: Record<IconName, ReactNode> = {
   scan: (<><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" /><path d="M7 12h10" /></>),
@@ -104,4 +104,5 @@ const paths: Record<IconName, ReactNode> = {
   "wifi-off": (<><path d="M3 3l18 18M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 5-2.7M14.5 10.4A10 10 0 0 1 19 13M2 9.5a15 15 0 0 1 4.2-2.6M10 6.1A15 15 0 0 1 22 9.5" /><path d="M12 20h.01" /></>),
   up: (<path d="m6 15 6-6 6 6" />),
   down: (<path d="m6 9 6 6 6-6" />),
+  expand: (<><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5" /></>),
 };

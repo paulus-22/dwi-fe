@@ -95,7 +95,7 @@ export function PairScreen({ reimport = false, onClose }: { reimport?: boolean; 
           </div>
         ) : null}
 
-        {!reimport ? (
+        {!reimport && mode === "csv" ? (
           <div className="rise mt-6">
             <span className="kicker text-mute">Posisi perangkat</span>
             <div className="mt-2 grid grid-cols-3 gap-2">
@@ -163,7 +163,8 @@ function CodePairing({ door, onPaired }: { door: string; onPaired(p: Pairing): v
       </Button>
       <p className="text-center text-[length:calc(12px*var(--fs))] leading-relaxed text-mute">
         {api.live ? (
-          <>Minta kode pairing ke admin acara — dibuat di dashboard, menu Perangkat scanner. Satu kode untuk semua pintu.</>
+          <>Minta kode pairing ke admin acara — dibuat di dashboard, menu Perangkat scanner. Pintu perangkat ini sudah
+            diatur admin lewat kodenya, jadi cukup ketik kode di sini.</>
         ) : (
           <>
             Mode demo tanpa server: tersedia acara <span className="font-mono text-cream-dim">alex-ajeng</span>; acara lain
@@ -314,7 +315,7 @@ function CsvPairing({ door, onPaired }: { door: string; onPaired(p: Pairing): vo
 
       {file ? (
         <div className="space-y-3">
-          {field("coupleLine", "Nama mempelai / acara (untuk bingkai foto)", "Tari & Saefulloh")}
+          {field("coupleLine", "Nama mempelai (untuk bingkai foto)", "Tari & Saefulloh")}
           {field("dateLabel", "Tanggal", "Sabtu, 12 Desember 2026")}
           {field("venue", "Tempat", "Nama gedung")}
           {field("hashtag", "Hashtag", "#TariSaefulloh")}

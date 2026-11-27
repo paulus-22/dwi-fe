@@ -15,8 +15,6 @@ export const DEMO_PAIRING_CODE = "alex-ajeng";
 export const demoEvent: EventInfo = {
   id: "demo-alex-ajeng",
   slug: "alex-ajeng",
-  kind: "WEDDING",
-  displayName: "Alex & Ajeng",
   coupleLine: "Alex & Ajeng",
   brideShortName: "Ajeng",
   groomShortName: "Alex",

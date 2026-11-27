@@ -1,5 +1,6 @@
 import { Icon } from "./components/ui";
 import { GalleryScreen } from "./screens/Gallery";
+import { GreeterScreen } from "./screens/Greeter";
 import { GuestsScreen } from "./screens/Guests";
 import { MoreScreen } from "./screens/More";
 import { PairScreen } from "./screens/Pair";
@@ -32,6 +33,7 @@ function Shell() {
   if (route === "passes") return <PassesScreen />;
   if (!pairing) return <PairScreen />;
   if (route === "wall") return <WallScreen />;
+  if (route === "greeter") return <GreeterScreen />;
 
   return (
     <div className="relative h-full">

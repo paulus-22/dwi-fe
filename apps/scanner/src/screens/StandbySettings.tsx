@@ -68,7 +68,7 @@ export function StandbySettings({ onPreview }: { onPreview(): void }) {
         <span className="flex-1">
           <span className="block text-[length:calc(16px*var(--fs))] text-cream">Layar jeda</span>
           <span className="block text-[length:calc(13px*var(--fs))] text-cream-dim">
-            Saat sepi, tampilkan slideshow acara alih-alih kamera.
+            Saat sepi, tampilkan slideshow mempelai alih-alih kamera.
           </span>
         </span>
       </div>
@@ -115,12 +115,12 @@ export function StandbySettings({ onPreview }: { onPreview(): void }) {
 
       <div className="mt-4">
         <div className="flex items-baseline justify-between">
-          <p className="text-[length:calc(15px*var(--fs))] text-cream">Foto acara</p>
+          <p className="text-[length:calc(15px*var(--fs))] text-cream">Foto mempelai</p>
           <p className="text-[length:calc(12px*var(--fs))] text-mute">
             {slides.length}/{MAX_SLIDES}
           </p>
         </div>
-        <p className="mt-0.5 text-[length:calc(12px*var(--fs))] text-cream-dim">Foto sebelum acara, logo, atau materi promosi. Disimpan di perangkat ini.</p>
+        <p className="mt-0.5 text-[length:calc(12px*var(--fs))] text-cream-dim">Prewedding, momen lamaran, dll. Disimpan di perangkat ini.</p>
         <div className="mt-3 grid grid-cols-4 gap-2">
           {slides.map((s) => (
             <div key={s.id} className="relative">

@@ -30,7 +30,7 @@ export function queueIdle() {
 }
 
 export function ScanScreen() {
-  const { pairing, refresh, setImmersive, facing, setFacing, idle, auto } = useApp();
+  const { pairing, refresh, setImmersive, facing, setFacing, idle, auto, groupNameMode } = useApp();
   const [phase, setPhase] = useState<Phase>({ kind: "scanning" });
   const [standby, setStandby] = useState(false);
 
@@ -104,8 +104,8 @@ export function ScanScreen() {
     return scanLoop(video, (text) => void handle(text));
   }, [phase.kind, camera.status, handle, videoRef]);
 
-  async function confirm(guest: SnapshotGuest, headcount: number, override: boolean) {
-    const row = await checkIn(guest, headcount, pairing!.deviceName, override);
+  async function confirm(guest: SnapshotGuest, headcount: number, override: boolean, memberName?: string) {
+    const row = await checkIn(guest, headcount, pairing!.deviceName, override, memberName);
     refresh();
     if (auto.on && auto.skipActivities) {
       cue.ok();
@@ -239,6 +239,7 @@ export function ScanScreen() {
           onCancel={reset}
           onConfirm={confirm}
           autoSec={auto.on ? auto.delaySec : null}
+          groupNameMode={groupNameMode}
         />
       ) : null}
     </div>

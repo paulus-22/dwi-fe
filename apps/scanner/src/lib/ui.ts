@@ -26,3 +26,14 @@ export function agoLabel(iso: string) {
   if (minutes < 60) return `${minutes} menit lalu`;
   return `${Math.floor(minutes / 60)} jam lalu`;
 }
+
+/** Toggle real browser fullscreen (hides the OS/address bar on tablets). */
+export async function toggleFullscreen() {
+  const el = document.documentElement;
+  try {
+    if (!document.fullscreenElement) await el.requestFullscreen();
+    else await document.exitFullscreen();
+  } catch {
+    /* unsupported (e.g. iOS Safari standalone) — silently ignore */
+  }
+}

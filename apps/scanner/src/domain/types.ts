@@ -9,14 +9,9 @@ import type { CategoryCode } from "./codes";
 export type EventInfo = {
   id: string;
   slug: string;
-  kind: "WEDDING" | "GENERIC";
-  /** Couple line for weddings, title for generic events — always safe to show. */
-  displayName: string;
-  coupleLine?: string; // "Alex & Ajeng" — WEDDING only
-  brideShortName?: string;
-  groomShortName?: string;
-  title?: string; // GENERIC only
-  subtitle?: string;
+  coupleLine: string; // "Alex & Ajeng"
+  brideShortName: string;
+  groomShortName: string;
   dateLabel: string; // "Sabtu, 15 Mei 2027"
   venue: string;
   hashtag: string | null;
@@ -32,6 +27,10 @@ export type SnapshotGuest = {
   admits: number;
   table: string | null;
   vip: boolean;
+  /** Group (kelompok) invitation — no per-person pass; the door records a member name. */
+  group?: boolean;
+  /** The group's full headcount cap, when it's a group invite. */
+  groupCap?: number;
 };
 
 export type ActivityType = "PHOTO" | "SOUVENIR" | "GUESTBOOK";
@@ -51,6 +50,8 @@ export type CheckIn = {
   deviceName: string;
   override: boolean;
   synced: boolean;
+  /** GROUP invites: which member arrived (usher-typed name). */
+  memberName?: string;
 };
 
 export type ActivityRecord = {

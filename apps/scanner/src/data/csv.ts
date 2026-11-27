@@ -131,8 +131,6 @@ export function eventFromForm(input: {
   return {
     id: `csv-${slug}`,
     slug,
-    kind: "WEDDING",
-    displayName: input.coupleLine.trim(),
     coupleLine: input.coupleLine.trim(),
     groomShortName: groom,
     brideShortName: bride,

@@ -218,3 +218,97 @@ textarea {
     animation: none;
   }
 }
+
+/*
+ * Scanner UI themes. The default dark palette lives in `@theme` above (Tailwind
+ * emits it into the `theme` layer). These re-colour the same `--color-*` tokens
+ * for the other themes, unlayered so they win. `<html data-scanner-theme="…">`
+ * is set by the theme picker (Lainnya → Tema) and persists per device.
+ * All components keep using `bg-night` / `text-cream` / … unchanged.
+ */
+html[data-scanner-theme="night"] {
+  --color-night: #1b1e14;
+  --color-ground: #23261a;
+  --color-panel: #2d3122;
+  --color-panel-2: #373b2b;
+  --color-edge: #464a37;
+  --color-cream: #f5f0e8;
+  --color-cream-dim: #c9c3b6;
+  --color-mute: #9b9584;
+  --color-peach: #e9af8a;
+  --color-peach-deep: #d8936b;
+  --color-peach-ink: #4a2e1d;
+  --color-gold: #d8c3a5;
+  --color-ok: #7fb069;
+  --color-ok-deep: #2f4a26;
+  --color-warn: #e8b04b;
+  --color-warn-deep: #4d3a16;
+  --color-bad: #e0664f;
+  --color-bad-deep: #4f2219;
+}
+
+/* Siang (terang) — for well-lit venues. Text flips to ink on warm paper. */
+html[data-scanner-theme="day"] {
+  --color-night: #f7f3ea;
+  --color-ground: #efe9da;
+  --color-panel: #e6dfcd;
+  --color-panel-2: #dcd2bd;
+  --color-edge: #c9bfa6;
+  --color-cream: #2e3127;
+  --color-cream-dim: #5d584a;
+  --color-mute: #88816f;
+  --color-peach: #d77b4e;
+  --color-peach-deep: #c1643a;
+  --color-peach-ink: #3b2215;
+  --color-gold: #9a7936;
+  --color-ok: #4b8a3f;
+  --color-ok-deep: #2f5226;
+  --color-warn: #b07d22;
+  --color-warn-deep: #5c4410;
+  --color-bad: #c04934;
+  --color-bad-deep: #6b2a1e;
+}
+
+/* Tengah malam (navy & emas) */
+html[data-scanner-theme="midnight"] {
+  --color-night: #0d1b2a;
+  --color-ground: #122238;
+  --color-panel: #1b263b;
+  --color-panel-2: #223252;
+  --color-edge: #30415f;
+  --color-cream: #e0e1dd;
+  --color-cream-dim: #aab3c0;
+  --color-mute: #778da9;
+  --color-peach: #d4a94e;
+  --color-peach-deep: #b98b34;
+  --color-peach-ink: #2a1f06;
+  --color-gold: #c8a95a;
+  --color-ok: #6fb26b;
+  --color-ok-deep: #2f5226;
+  --color-warn: #e0b64c;
+  --color-warn-deep: #5c4410;
+  --color-bad: #e0664f;
+  --color-bad-deep: #4f2219;
+}
+
+/* Terakota (hangat) */
+html[data-scanner-theme="terracotta"] {
+  --color-night: #24150f;
+  --color-ground: #2e1b12;
+  --color-panel: #3b2317;
+  --color-panel-2: #4a2d1d;
+  --color-edge: #5c3a26;
+  --color-cream: #f6ede2;
+  --color-cream-dim: #d9c4b0;
+  --color-mute: #b5957c;
+  --color-peach: #e0734a;
+  --color-peach-deep: #c65f39;
+  --color-peach-ink: #3a1d10;
+  --color-gold: #dda04a;
+  --color-ok: #7fb069;
+  --color-ok-deep: #2f4a26;
+  --color-warn: #e8b04b;
+  --color-warn-deep: #4d3a16;
+  --color-bad: #e0664f;
+  --color-bad-deep: #4f2219;
+}

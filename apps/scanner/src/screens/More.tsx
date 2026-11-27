@@ -11,7 +11,7 @@ import { DEFAULT_ACTIVITIES, forgetSession, pairDevice, setSimulateOffline, sync
 import { store } from "../data/store";
 import type { ActivityConfig } from "../domain/types";
 import type { Facing } from "../lib/camera";
-import { go, timeLabel } from "../lib/ui";
+import { go, timeLabel, toggleFullscreen } from "../lib/ui";
 import { useApp } from "../state";
 
 /**
@@ -96,11 +96,26 @@ export function MoreScreen() {
     <div className="flex h-full flex-col bg-ground">
       <Header title="Pengaturan" />
       <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-5 pb-28">
+        <section className="space-y-3">
+          <h2 className="kicker text-peach">Tampilan (TV)</h2>
+          <div className="grid grid-cols-2 gap-3">
+            <Button tone="ghost" onClick={() => go("greeter")}>
+              <Icon name="tv" /> Mode TV
+            </Button>
+            <Button tone="ghost" onClick={() => void toggleFullscreen()}>
+              <Icon name="expand" /> Layar penuh
+            </Button>
+          </div>
+          <p className="text-[length:calc(12px*var(--fs))] leading-relaxed text-mute">
+            Mode TV = greeter: slideshow + sambutan tamu saat check-in, tanpa kamera. Layar penuh menyembunyikan bar
+            browser (cocok untuk tablet).
+          </p>
+        </section>
         <section className="rounded-2xl bg-panel p-4">
           <p className="kicker text-mute">Perangkat</p>
           <p className="mt-2 text-[length:calc(17px*var(--fs))] text-cream">{pairing?.deviceName}</p>
           <p className="text-[length:calc(14px*var(--fs))] text-cream-dim">
-            {pairing?.event.displayName}
+            {pairing?.event.coupleLine}
             {pairing?.event.dateLabel ? ` · ${pairing.event.dateLabel}` : ""}
           </p>
           <p className="mt-1 text-[length:calc(13px*var(--fs))] text-mute">
@@ -120,6 +135,10 @@ export function MoreScreen() {
         </section>
 
         <AutoCheckInSettings />
+
+        <GroupMemberNameSettings />
+
+        <ScannerThemeSettings />
 
         <section className="rounded-2xl bg-panel p-4">
           <p className="kicker text-mute">Ukuran teks</p>
@@ -281,6 +300,82 @@ const AUTO_DELAYS: [number, string][] = [
   [2, "2 dtk"],
   [3, "3 dtk"],
 ];
+
+/** Who types the arriving member's name when a group (kelompok) QR is scanned. */
+function GroupMemberNameSettings() {
+  const { groupNameMode, setGroupNameMode } = useApp();
+  return (
+    <section className="rounded-2xl bg-panel p-4">
+      <div>
+        <p className="kicker text-mute">Undangan kelompok</p>
+        <p className="mt-2 text-[length:calc(15px*var(--fs))] text-cream">Nama anggota yang datang diisi oleh</p>
+        <p className="mt-1 text-[length:calc(13px*var(--fs))] text-cream-dim">
+          Saat QR kelompok (mis. satu angkatan) dipindai, scanner menanyakan siapa yang datang.
+        </p>
+      </div>
+      <div className="mt-4 flex rounded-xl bg-ground p-1">
+        {(
+          [
+            ["usher", "Penerima tamu"],
+            ["guest", "Tamu sendiri"],
+          ] as const
+        ).map(([v, label]) => (
+          <button
+            key={v}
+            type="button"
+            onClick={() => setGroupNameMode(v)}
+            className={`flex-1 rounded-lg px-2 py-2 text-[length:calc(13px*var(--fs))] ${
+              groupNameMode === v ? "bg-peach text-peach-ink" : "text-cream-dim"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/** Scanner UI theme picker — the whole app recolours through `data-scanner-theme`. */
+function ScannerThemeSettings() {
+  const { theme, setTheme } = useApp();
+  const options: { key: typeof theme; label: string; hint: string; swatch: [string, string, string, string] }[] = [
+    { key: "night", label: "Malam (sage)", hint: "Gelap, hemat di aula redup", swatch: ["#1b1e14", "#f5f0e8", "#e9af8a", "#7fb069"] },
+    { key: "day", label: "Siang (terang)", hint: "Untuk lokasi terang", swatch: ["#f7f3ea", "#2e3127", "#d77b4e", "#4b8a3f"] },
+    { key: "midnight", label: "Tengah malam", hint: "Navy & emas", swatch: ["#0d1b2a", "#e0e1dd", "#d4a94e", "#6fb26b"] },
+    { key: "terracotta", label: "Terakota", hint: "Hangat", swatch: ["#24150f", "#f6ede2", "#e0734a", "#7fb069"] },
+  ];
+  return (
+    <section className="rounded-2xl bg-panel p-4">
+      <div>
+        <p className="kicker text-mute">Tema scanner</p>
+        <p className="mt-2 text-[length:calc(15px*var(--fs))] text-cream">Warna antarmuka</p>
+      </div>
+      <div className="mt-3 grid grid-cols-1 gap-2">
+        {options.map((o) => (
+          <button
+            key={o.key}
+            type="button"
+            onClick={() => setTheme(o.key)}
+            className={`flex items-center gap-3 rounded-xl border p-2 text-left transition-colors ${
+              theme === o.key ? "border-[var(--color-peach)] bg-[var(--color-panel-2)]" : "border-[var(--color-edge)] bg-transparent"
+            }`}
+          >
+            <span className="flex shrink-0 gap-0.5 rounded-md p-1" style={{ background: o.swatch[0] }}>
+              {o.swatch.map((c) => (
+                <span key={c} className="size-3 rounded-sm" style={{ background: c }} />
+              ))}
+            </span>
+            <span className="min-w-0">
+              <span className="block text-[length:calc(13px*var(--fs))] text-cream">{o.label}</span>
+              <span className="block text-[length:calc(11px*var(--fs))] text-mute">{o.hint}</span>
+            </span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 function AutoCheckInSettings() {
   const { auto, setAuto, activities } = useApp();

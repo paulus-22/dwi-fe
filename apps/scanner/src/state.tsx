@@ -10,9 +10,20 @@ const DEFAULT_FACING: FacingPrefs = { scan: "environment", photo: "user" };
 export const DEFAULT_FONT_SCALE = 1.1;
 export const FONT_SCALE_MIN = 0.9;
 export const FONT_SCALE_MAX = 1.5;
+/** How a group (kelompok) QR's arriving member name is captured. */
+export type GroupNameMode = "usher" | "guest";
+export const DEFAULT_GROUP_NAME_MODE: GroupNameMode = "usher";
+
+/** Scanner UI theme. `data-scanner-theme` on <html> re-colours the whole app. */
+export type ScannerTheme = "night" | "day" | "midnight" | "terracotta";
+export const DEFAULT_SCANNER_THEME: ScannerTheme = "night";
 
 function applyFontScale(scale: number) {
   document.documentElement.style.setProperty("--fs", String(scale));
+}
+
+function applyTheme(theme: ScannerTheme) {
+  document.documentElement.setAttribute("data-scanner-theme", theme);
 }
 
 export const DEFAULT_AUTO: AutoConfig = { on: false, delaySec: 2, skipActivities: false };
@@ -38,6 +49,11 @@ type AppState = {
   setFontScale(scale: number): void;
   auto: AutoConfig;
   setAuto(patch: Partial<AutoConfig>): void;
+  groupNameMode: GroupNameMode;
+  setGroupNameMode(mode: GroupNameMode): void;
+  /** Which UI theme the device renders with; remembered per device. */
+  theme: ScannerTheme;
+  setTheme(theme: ScannerTheme): void;
   refresh(): void;
   setPairing(p: Pairing | null): void;
   setActivities(list: ActivityConfig[]): Promise<void>;
@@ -62,6 +78,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [idle, setIdleState] = useState<IdleConfig>(DEFAULT_IDLE);
   const [fontScale, setFontScaleState] = useState(DEFAULT_FONT_SCALE);
   const [auto, setAutoState] = useState<AutoConfig>(DEFAULT_AUTO);
+  const [groupNameMode, setGroupNameModeState] = useState<GroupNameMode>(DEFAULT_GROUP_NAME_MODE);
+  const [theme, setThemeState] = useState<ScannerTheme>(DEFAULT_SCANNER_THEME);
 
   useEffect(() => {
     void (async () => {
@@ -71,6 +89,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setFacingState({ ...DEFAULT_FACING, ...((await store.getPref<FacingPrefs>("facing")) ?? {}) });
       setIdleState({ ...DEFAULT_IDLE, ...((await store.getPref<IdleConfig>("idle")) ?? {}) });
       setAutoState({ ...DEFAULT_AUTO, ...((await store.getPref<AutoConfig>("auto")) ?? {}) });
+      setGroupNameModeState((await store.getPref<GroupNameMode>("groupNameMode")) ?? DEFAULT_GROUP_NAME_MODE);
+      const t = (await store.getPref<ScannerTheme>("theme")) ?? DEFAULT_SCANNER_THEME;
+      applyTheme(t);
+      setThemeState(t);
       const scale = (await store.getPref<number>("fontScale")) ?? DEFAULT_FONT_SCALE;
       applyFontScale(scale);
       setFontScaleState(scale);
@@ -121,6 +143,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const setGroupNameMode = useCallback((mode: GroupNameMode) => {
+    setGroupNameModeState(mode);
+    void store.setPref("groupNameMode", mode);
+  }, []);
+
+  const setTheme = useCallback((t: ScannerTheme) => {
+    applyTheme(t);
+    setThemeState(t);
+    void store.setPref("theme", t);
+  }, []);
+
   const setActivities = useCallback(async (list: ActivityConfig[]) => {
     setActivitiesState(list);
     await store.setActivities(list);
@@ -129,7 +162,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
   if (!ready) return <div className="h-full bg-night" />;
 
   return (
-    <Ctx.Provider value={{ pairing, activities, sync, version, refresh, setPairing, setActivities, immersive, setImmersive, facing, setFacing, idle, setIdle, fontScale, setFontScale, auto, setAuto }}>
+    <Ctx.Provider
+      value={{
+        pairing,
+        activities,
+        sync,
+        version,
+        refresh,
+        setPairing,
+        setActivities,
+        immersive,
+        setImmersive,
+        facing,
+        setFacing,
+        idle,
+        setIdle,
+        fontScale,
+        setFontScale,
+        auto,
+        setAuto,
+        groupNameMode,
+        setGroupNameMode,
+        theme,
+        setTheme,
+      }}
+    >
       {children}
     </Ctx.Provider>
   );

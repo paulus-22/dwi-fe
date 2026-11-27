@@ -16,12 +16,15 @@ export function ResultView({
   onCancel,
   onConfirm,
   autoSec = null,
+  groupNameMode = "usher",
 }: {
   lookup: Lookup;
   onCancel(): void;
-  onConfirm(guest: SnapshotGuest, headcount: number, override: boolean): void;
+  onConfirm(guest: SnapshotGuest, headcount: number, override: boolean, memberName?: string): void;
   /** Seconds before a green result checks in by itself; null = auto off. */
   autoSec?: number | null;
+  /** 'usher' = the door types the member's name; 'guest' = hand tablet to them. */
+  groupNameMode?: "usher" | "guest";
 }) {
   if (lookup.kind === "invalid" || lookup.kind === "unknown") {
     return (
@@ -45,7 +48,7 @@ export function ResultView({
     );
   }
 
-  return <GuestSheet lookup={lookup} onCancel={onCancel} onConfirm={onConfirm} autoSec={autoSec} />;
+  return <GuestSheet lookup={lookup} onCancel={onCancel} onConfirm={onConfirm} autoSec={autoSec} groupNameMode={groupNameMode} />;
 }
 
 function GuestSheet({
@@ -53,20 +56,29 @@ function GuestSheet({
   onCancel,
   onConfirm,
   autoSec,
+  groupNameMode,
 }: {
   lookup: Extract<Lookup, { guest: SnapshotGuest }>;
   onCancel(): void;
-  onConfirm(guest: SnapshotGuest, headcount: number, override: boolean): void;
+  onConfirm(guest: SnapshotGuest, headcount: number, override: boolean, memberName?: string): void;
   autoSec: number | null;
+  /** 'usher' = the door types the member's name; 'guest' = hand tablet to them. */
+  groupNameMode: "usher" | "guest";
 }) {
   const { guest, previous } = lookup;
   const [count, setCount] = useState(guest.admits);
   const [confirmOverride, setConfirmOverride] = useState(false);
   const over = count > guest.admits;
+  const [memberName, setMemberName] = useState("");
+  const group = guest.group === true;
+  const groupCap = guest.groupCap ?? guest.admits;
+  const nameInputId = "group-member-name";
 
   // Auto check-in only ever fires for a clean green result. Touching the
   // headcount stops it: the usher has taken over.
-  const [autoLeft, setAutoLeft] = useState<number | null>(lookup.kind === "ok" && autoSec !== null ? autoSec : null);
+  const [autoLeft, setAutoLeft] = useState<number | null>(
+    lookup.kind === "ok" && autoSec !== null && !(guest.group === true) ? autoSec : null,
+  );
   const fired = useRef(false);
   const confirmRef = useRef(onConfirm);
   confirmRef.current = onConfirm;
@@ -148,6 +160,28 @@ function GuestSheet({
         ) : null}
       </div>
 
+      {group ? (
+        <div className="mt-4 px-6">
+          <p className="kicker text-mute">
+            {groupNameMode === "usher" ? "Siapa yang datang? (diisi penerima tamu)" : "Siapa Anda? Ketik nama Anda"}
+          </p>
+          <div className="mt-2 flex items-center gap-2 rounded-2xl bg-ground px-4 py-3">
+            <span className="text-cream-dim">&nbsp;</span>
+            <input
+              id={nameInputId}
+              autoFocus
+              value={memberName}
+              placeholder="nama anggota (mis. Paul)"
+              maxLength={80}
+              onChange={(e) => { stopAuto(); setMemberName(e.target.value); }}
+              className="w-full bg-transparent text-[length:calc(18px*var(--fs))] text-cream placeholder:text-mute outline-none"
+              aria-label="Nama anggota kelompok"
+            />
+          </div>
+          <p className="mt-2 text-[length:calc(13px*var(--fs))] text-cream-dim">Cap jatah kelompok: {groupCap} orang</p>
+        </div>
+      ) : null}
+
       {autoLeft !== null && autoSec ? (
         <div className="mx-6 mt-4">
           <div className="h-1.5 overflow-hidden rounded-full bg-ground">
@@ -169,7 +203,8 @@ function GuestSheet({
         ) : (
           <Button
             tone={lookup.kind === "ok" && !over ? "ok" : "warn"}
-            onClick={() => onConfirm(guest, count, lookup.kind !== "ok" || over)}
+            disabled={group && memberName.trim().length === 0}
+            onClick={() => onConfirm(guest, count, lookup.kind !== "ok" || over, group ? memberName.trim() : undefined)}
           >
             <Icon name="check" /> {confirmOverride ? "Ya, izinkan masuk" : "Check-in"}
           </Button>
