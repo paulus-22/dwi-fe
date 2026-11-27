@@ -128,6 +128,20 @@ export function GreeterScreen() {
     };
   }, [eventId]);
 
+  // Warm every slide + selfie image in parallel so none is still downloading
+  // when its turn comes — the slideshow then advances cleanly (no parking on
+  // the intro card, no blank wait) even on a slow media host.
+  useEffect(() => {
+    const imgs = [...slides, ...selfies].map((s) => {
+      const i = new Image();
+      i.src = s.url;
+      return i;
+    });
+    return () => {
+      for (const i of imgs) i.src = "";
+    };
+  }, [slides, selfies]);
+
   // Live stream: remember fresh selfies, and queue a greeting ONLY when `GREET`
   // arrives (emitted strictly after the guest confirms "Pakai foto" or skips).
   useEffect(() => {
