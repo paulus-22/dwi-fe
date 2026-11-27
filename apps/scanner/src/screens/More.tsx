@@ -165,6 +165,14 @@ export function MoreScreen() {
           <PhotoDelaySetting />
         </section>
 
+        <section className="rounded-2xl bg-panel p-4">
+          <p className="kicker text-mute">Mode TV</p>
+          <p className="mt-1 text-[length:calc(12px*var(--fs))] text-mute">
+            Berlaku saat perangkat ini dipakai sebagai monitor TV (mode TV).
+          </p>
+          <TvSettings />
+        </section>
+
         <StandbySettings
           onPreview={() => {
             queueIdle();
@@ -273,6 +281,69 @@ function PhotoDelaySetting() {
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+/** Stepper for one TV-mode duration, e.g. seconds per slide or per greeting. */
+function TvDuration({
+  label,
+  hint,
+  value,
+  onChange,
+}: {
+  label: string;
+  hint: string;
+  value: number;
+  onChange(v: number): void;
+}) {
+  return (
+    <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+      <span>
+        <span className="block text-[length:calc(16px*var(--fs))] text-cream">{label}</span>
+        <span className="block text-[length:calc(12px*var(--fs))] text-mute">{hint}</span>
+      </span>
+      <div className="flex items-center gap-2 rounded-xl bg-ground p-1">
+        <button
+          type="button"
+          aria-label={`Kurangi ${label}`}
+          onClick={() => onChange(value - 1)}
+          className="rounded-lg px-3 py-1.5 text-[length:calc(15px*var(--fs))] text-cream-dim active:bg-panel"
+        >
+          −
+        </button>
+        <span className="min-w-[2.75rem] text-center text-[length:calc(16px*var(--fs))] text-cream">
+          {value}s
+        </span>
+        <button
+          type="button"
+          aria-label={`Tambah ${label}`}
+          onClick={() => onChange(value + 1)}
+          className="rounded-lg px-3 py-1.5 text-[length:calc(15px*var(--fs))] text-cream-dim active:bg-panel"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function TvSettings() {
+  const { tvSlideSec, setTvSlideSec, tvGreetSec, setTvGreetSec } = useApp();
+  return (
+    <div className="mt-3">
+      <TvDuration
+        label="Durasi slide"
+        hint="Lama setiap foto/slide tampil."
+        value={tvSlideSec}
+        onChange={setTvSlideSec}
+      />
+      <TvDuration
+        label="Durasi sapaan"
+        hint={'Lama kartu "Selamat datang" tampil.'}
+        value={tvGreetSec}
+        onChange={setTvGreetSec}
+      />
     </div>
   );
 }

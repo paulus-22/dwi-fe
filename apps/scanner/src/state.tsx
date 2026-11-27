@@ -16,6 +16,11 @@ export const DEFAULT_GROUP_NAME_MODE: GroupNameMode = "usher";
 /** Selfie countdown in seconds before capture: 0 = instant, 1–5 = timer. */
 export const DEFAULT_PHOTO_DELAY = 0;
 export const PHOTO_DELAY_MAX = 5;
+/** TV mode slideshow / greeting durations in seconds (per device). */
+export const DEFAULT_TV_SLIDE_SEC = 8;
+export const TV_SLIDE_SEC_MAX = 20;
+export const DEFAULT_TV_GREET_SEC = 7;
+export const TV_GREET_SEC_MAX = 15;
 
 /** Scanner UI theme. `data-scanner-theme` on <html> re-colours the whole app. */
 export type ScannerTheme = "night" | "day" | "midnight" | "terracotta";
@@ -57,6 +62,11 @@ type AppState = {
   /** Seconds of countdown before a photo is taken: 0 = instant, 1–5 = timer. */
   photoDelay: number;
   setPhotoDelay(sec: number): void;
+  /** TV mode: seconds per slide and seconds a greeting card stays up. */
+  tvSlideSec: number;
+  setTvSlideSec(sec: number): void;
+  tvGreetSec: number;
+  setTvGreetSec(sec: number): void;
   /** Which UI theme the device renders with; remembered per device. */
   theme: ScannerTheme;
   setTheme(theme: ScannerTheme): void;
@@ -86,6 +96,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [auto, setAutoState] = useState<AutoConfig>(DEFAULT_AUTO);
   const [groupNameMode, setGroupNameModeState] = useState<GroupNameMode>(DEFAULT_GROUP_NAME_MODE);
   const [photoDelay, setPhotoDelayState] = useState(DEFAULT_PHOTO_DELAY);
+  const [tvSlideSec, setTvSlideSecState] = useState(DEFAULT_TV_SLIDE_SEC);
+  const [tvGreetSec, setTvGreetSecState] = useState(DEFAULT_TV_GREET_SEC);
   const [theme, setThemeState] = useState<ScannerTheme>(DEFAULT_SCANNER_THEME);
 
   useEffect(() => {
@@ -98,6 +110,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setAutoState({ ...DEFAULT_AUTO, ...((await store.getPref<AutoConfig>("auto")) ?? {}) });
       setGroupNameModeState((await store.getPref<GroupNameMode>("groupNameMode")) ?? DEFAULT_GROUP_NAME_MODE);
       setPhotoDelayState((await store.getPref<number>("photoDelay")) ?? DEFAULT_PHOTO_DELAY);
+      setTvSlideSecState((await store.getPref<number>("tvSlideSec")) ?? DEFAULT_TV_SLIDE_SEC);
+      setTvGreetSecState((await store.getPref<number>("tvGreetSec")) ?? DEFAULT_TV_GREET_SEC);
       const t = (await store.getPref<ScannerTheme>("theme")) ?? DEFAULT_SCANNER_THEME;
       applyTheme(t);
       setThemeState(t);
@@ -162,6 +176,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     void store.setPref("photoDelay", clamped);
   }, []);
 
+  const setTvSlideSec = useCallback((sec: number) => {
+    const clamped = Math.min(TV_SLIDE_SEC_MAX, Math.max(3, Math.round(sec)));
+    setTvSlideSecState(clamped);
+    void store.setPref("tvSlideSec", clamped);
+  }, []);
+
+  const setTvGreetSec = useCallback((sec: number) => {
+    const clamped = Math.min(TV_GREET_SEC_MAX, Math.max(3, Math.round(sec)));
+    setTvGreetSecState(clamped);
+    void store.setPref("tvGreetSec", clamped);
+  }, []);
+
   const setTheme = useCallback((t: ScannerTheme) => {
     applyTheme(t);
     setThemeState(t);
@@ -199,6 +225,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setGroupNameMode,
         photoDelay,
         setPhotoDelay,
+        tvSlideSec,
+        setTvSlideSec,
+        tvGreetSec,
+        setTvGreetSec,
         theme,
         setTheme,
       }}

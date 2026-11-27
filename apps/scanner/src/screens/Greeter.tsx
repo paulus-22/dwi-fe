@@ -9,9 +9,6 @@ type Slide = { id: string; url: string };
 type Selfie = { id: string; url: string; householdName: string | null };
 type Greeting = { name: string; selfie?: string | null; seq: number };
 
-const GREETING_MS = 7000;
-const SLIDE_SEC = 8;
-
 type LiveMsg = {
   type?: string;
   activity?: string;
@@ -32,7 +29,7 @@ type LiveMsg = {
  * selfie — then resumes. It shares the same R2 content as the scanners.
  */
 export function GreeterScreen() {
-  const { pairing } = useApp();
+  const { pairing, tvSlideSec, tvGreetSec } = useApp();
   const [slides, setSlides] = useState<Slide[]>([]);
   const [selfies, setSelfies] = useState<Selfie[]>([]);
   const [backdrop, setBackdrop] = useState<string | null>(null);
@@ -143,16 +140,32 @@ export function GreeterScreen() {
     const t = setTimeout(() => {
       const next = queueRef.current.shift();
       setGreeting(next ?? null);
-    }, GREETING_MS);
+    }, tvGreetSec * 1000);
     return () => clearTimeout(t);
-  }, [greeting]);
+  }, [greeting, tvGreetSec]);
 
   // Slideshow timer (skips while a greeting is showing).
   useEffect(() => {
     if (greeting) return;
-    const t = setInterval(() => setIndex((i) => i + 1), SLIDE_SEC * 1000);
+    const t = setInterval(() => setIndex((i) => i + 1), tvSlideSec * 1000);
     return () => clearInterval(t);
-  }, [greeting]);
+  }, [greeting, tvSlideSec]);
+
+  // Tap anywhere to skip the current moment: a greeting card ends early, and
+  // the intro/title (or any slide) advances immediately. Debounced so rapid
+  // taps don't double-fire.
+  const lastTapRef = useRef(0);
+  function handleTap() {
+    const now = Date.now();
+    if (now - lastTapRef.current < 400) return;
+    lastTapRef.current = now;
+    if (greeting) {
+      const next = queueRef.current.shift();
+      setGreeting(next ?? null);
+    } else {
+      setIndex((i) => i + 1);
+    }
+  }
 
   const items = useMemo(() => {
     const photos: Slide[] = [...slides, ...selfies.map((s) => ({ id: `p-${s.id}`, url: s.url }))];
@@ -171,7 +184,7 @@ export function GreeterScreen() {
   const fsSupported = typeof document !== "undefined" && "requestFullscreen" in document.documentElement;
 
   return (
-    <div className="absolute inset-0 overflow-hidden bg-night">
+    <div className="absolute inset-0 overflow-hidden bg-night" onClick={handleTap}>
       {items.map((item, i) =>
         item.kind === "photo" ? (
           <div
@@ -207,7 +220,7 @@ export function GreeterScreen() {
       ) : null}
 
       {greeting ? (
-        <div className="rise absolute inset-0 z-30 flex flex-col items-center justify-center bg-night/85 px-8 text-center">
+        <div className="rise absolute inset-0 z-30 flex flex-col items-center justify-center bg-night/95 px-8 text-center">
           {backdrop ? (
             <img src={backdrop} alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />
           ) : null}
