@@ -38,6 +38,9 @@ export default async function EventDashboard({ params }: PageProps<"/admin/event
             <LinkButton variant="secondary" href={`/admin/events/${id}/scanner`}>
               Perangkat scanner
             </LinkButton>
+            <LinkButton variant="secondary" href={`/admin/events/${id}/doorprize`}>
+              Doorprize
+            </LinkButton>
             {event.role === "OWNER" ? (
               <>
                 <LinkButton variant="secondary" href={`/admin/events/${id}/edit`}>

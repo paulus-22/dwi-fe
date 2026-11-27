@@ -9,12 +9,13 @@ type Slide = { id: string; url: string };
 type Selfie = { id: string; url: string; householdName: string | null };
 type Greeting = { name: string; selfie?: string | null; seq: number };
 
-/** How long the TV waits for a guest's selfie before showing their welcome
- *  without one. The greeting is meant to land AFTER the picture is done. */
-const PHOTO_WAIT_MS = 15_000;
+/** On first mount, only replay confirmed-photo greetings from the last 2 minutes
+ *  so refreshing the TV mid-wedding does not replay hours-old check-ins. */
+const INITIAL_REPLAY_WINDOW_MS = 120_000;
 
 type LiveMsg = {
   type?: string;
+  id?: string;
   activity?: string;
   code?: string;
   seq?: number;
@@ -94,12 +95,10 @@ export function GreeterScreen() {
   const [readyUrl, setReadyUrl] = useState<string | null>(null);
   const skippedRef = useRef<Set<string>>(new Set());
   const queueRef = useRef<Greeting[]>([]);
-  const selfiesByCodeRef = useRef<Record<string, string>>({});
-  /** Highest check-in `seq` already shown/queued — shared dedupe for SSE + poll. */
+  /** Highest confirmed-photo `seq` already shown/queued — shared dedupe for SSE + poll. */
   const lastSeqRef = useRef(0);
-  /** Check-ins waiting for their selfie (code → greeting), so the welcome card
-   *  shows AFTER the picture, with the guest's photo on it. */
-  const pendingRef = useRef<Map<string, { name: string; seq: number; at: number }>>(new Map());
+  /** True after the initial cursor sync on mount. */
+  const initializedRef = useRef(false);
 
   const eventId = pairing?.event.id;
 
@@ -128,7 +127,8 @@ export function GreeterScreen() {
     };
   }, [eventId]);
 
-  // Live stream: queue a greeting on confirmed check-in; remember selfie URLs.
+  // Live stream: queue a greeting ONLY once the guest has taken a picture and
+  // confirmed it ("Pakai foto" → POST /v1/photos → SSE `photo` event).
   useEffect(() => {
     if (!eventId || !api.live || !API_ROOT || !session.token) return;
     const es = new EventSource(`${API_ROOT}/v1/events/${eventId}/live?access_token=${encodeURIComponent(session.token)}`);
@@ -139,26 +139,31 @@ export function GreeterScreen() {
       } catch {
         return;
       }
-      if (m.type === "photo" && m.code && m.url) {
-        selfiesByCodeRef.current[m.code] = m.url;
-        flushPending(m.code, m.url);
-      }
-      if (m.type === "scan" && m.activity === "CHECK_IN") {
-        // The backend live payload uses snake_case (household_name/member_name);
-        // accept both cases in case that ever changes.
-        const name =
-          (m.memberName || m.member_name || m.householdName || m.household_name || "").trim();
+      if (m.type === "photo" && m.url) {
+        const photoUrl = m.url;
+        const name = (m.memberName || m.member_name || m.householdName || m.household_name || "").trim();
+        // Add fresh confirmed selfie into the slideshow pool immediately too.
+        if (m.id) {
+          const photoId = m.id;
+          setSelfies((prev) =>
+            prev.some((s) => s.id === photoId)
+              ? prev
+              : [...prev, { id: photoId, url: photoUrl, householdName: name || null }],
+          );
+        }
         if (!name) return;
         if (m.seq != null && m.seq <= lastSeqRef.current) return; // the poll already handled it
         if (m.seq != null) lastSeqRef.current = Math.max(lastSeqRef.current, m.seq);
-        handleGreeting({ code: m.code, name, seq: m.seq ?? 0, selfie: null });
+        initializedRef.current = true;
+        enqueue({ name, selfie: photoUrl, seq: m.seq ?? 0 });
       }
     };
     return () => es.close();
   }, [eventId]);
 
-  // Durable backstop: drain any check-in we missed (offline/reconnect) from the
-  // server queue so no welcome is ever dropped. `seq` dedupes with the SSE above.
+  // Durable backstop: drain any confirmed-photo greeting we missed (offline /
+  // reconnect) from the server queue so no welcome is ever dropped. `seq`
+  // dedupes with the SSE `photo` stream above.
   useEffect(() => {
     if (!eventId || !api.live) return;
     const id = eventId;
@@ -166,10 +171,17 @@ export function GreeterScreen() {
     async function drain() {
       try {
         const res = await api.greetings(id, lastSeqRef.current);
+        const firstLoad = !initializedRef.current;
+        initializedRef.current = true;
+        const cutoff = Date.now() - INITIAL_REPLAY_WINDOW_MS;
         for (const g of res.greetings) {
           if (stop || g.seq <= lastSeqRef.current) continue;
           lastSeqRef.current = Math.max(lastSeqRef.current, g.seq);
-          handleGreeting({ code: g.code ?? undefined, name: g.name, seq: g.seq, selfie: g.selfie });
+          if (firstLoad && g.occurredAt) {
+            const ts = Date.parse(g.occurredAt);
+            if (!Number.isNaN(ts) && ts < cutoff) continue;
+          }
+          enqueue({ name: g.name, selfie: g.selfie, seq: g.seq });
         }
       } catch {
         /* offline: the SSE rides us live; this tick retries in a bit */
@@ -194,60 +206,6 @@ export function GreeterScreen() {
       return g;
     });
   }
-
-  /**
-   * Land a check-in AFTER its selfie is taken. If we already know the guest's
-   * photo (SSE or the durable queue returned it), queue the card immediately
-   * with the selfie; otherwise hold it until the photo arrives (or a grace
-   * period passes and we show the name alone).
-   */
-  function handleGreeting({
-    code,
-    name,
-    seq,
-    selfie,
-  }: {
-    code?: string;
-    name: string;
-    seq: number;
-    selfie?: string | null;
-  }) {
-    const known = selfie ?? (code ? selfiesByCodeRef.current[code] : undefined) ?? null;
-    if (known) {
-      enqueue({ name, selfie: known, seq });
-      return;
-    }
-    if (code) {
-      pendingRef.current.set(code, { name, seq, at: Date.now() });
-    } else {
-      // No way to wait for a selfie (no code) — show the welcome as-is.
-      enqueue({ name, selfie: null, seq });
-    }
-  }
-
-  function flushPending(code: string, url: string) {
-    const p = pendingRef.current.get(code);
-    if (!p) return;
-    pendingRef.current.delete(code);
-    enqueue({ name: p.name, selfie: url, seq: p.seq });
-  }
-
-  // Safety net: if a guest's selfie never arrives, still greet them (name only)
-  // after the grace period so no welcome is silently lost.
-  useEffect(() => {
-    if (!eventId) return;
-    const t = setInterval(() => {
-      const now = Date.now();
-      for (const [code, p] of pendingRef.current) {
-        if (now - p.at >= PHOTO_WAIT_MS) {
-          pendingRef.current.delete(code);
-          const selfie = selfiesByCodeRef.current[code] ?? null;
-          enqueue({ name: p.name, selfie, seq: p.seq });
-        }
-      }
-    }, 4000);
-    return () => clearInterval(t);
-  }, [eventId]);
 
   // When a greeting ends, show the next in the queue (if any).
   useEffect(() => {
@@ -380,7 +338,7 @@ export function GreeterScreen() {
               <img
                 src={greeting.selfie}
                 alt={greeting.name}
-                className="mx-auto mt-8 h-56 w-44 rounded-3xl border-4 border-[#bdca9f]/60 object-cover"
+                className="mx-auto mt-8 aspect-[4/3] w-[min(82vw,24rem)] rounded-3xl border-4 border-[#bdca9f]/60 object-cover shadow-2xl shadow-black/40"
               />
             ) : null}
           </div>

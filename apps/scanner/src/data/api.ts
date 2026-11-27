@@ -29,12 +29,12 @@ export interface ScannerApi {
   photos(eventId: string): Promise<{
     photos: { id: string; url: string; householdName: string | null }[];
   }>;
-  /** Durable greeting queue for the TV: check-ins since `after` (a seq). */
+  /** Durable greeting queue for the TV: confirmed guest selfies since `after` (a photo seq). */
   greetings(
     eventId: string,
     after: number,
   ): Promise<{
-    greetings: { seq: number; code: string | null; name: string; selfie: string | null }[];
+    greetings: { seq: number; code: string | null; name: string; selfie: string | null; occurredAt?: string }[];
     cursor: number;
   }>;
   sync(batch: {

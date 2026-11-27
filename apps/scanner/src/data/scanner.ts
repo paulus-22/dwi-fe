@@ -162,7 +162,9 @@ export async function savePhoto(checkIn: CheckIn, guest: SnapshotGuest, blob: Bl
   };
   await store.putPhoto(row);
   await recordActivity(checkIn, "PHOTO", { photoId: row.id, bytes: blob.size });
-  void syncNow();
+  // Flush NOW so the confirmed selfie lands on R2 + POST /v1/photos right away,
+  // triggering the TV greeting immediately after the guest taps "Pakai foto".
+  await syncNow();
   return row;
 }
 
@@ -207,68 +209,78 @@ async function countPending() {
   );
 }
 
-let running = false;
+let activeRun: Promise<void> | null = null;
+let rerunRequested = false;
 
 /**
  * Pushes the outbox and, against a real server, pulls check-ins from the
  * other doors. iOS has no Background Sync, so this runs in the foreground:
  * after every write, on an interval, and when the device comes back online.
- * Safe to call any time; concurrent calls collapse into one.
+ * Safe to call any time; if a write arrives mid-sync, a follow-up pass runs
+ * immediately so confirmed check-ins and selfies never wait for the 5s timer.
  *
  * A device paired by CSV has no server token: its data stays on the device
  * (export it from Lainnya) rather than failing to upload forever.
  */
 export async function syncNow() {
-  if (running) return;
-  running = true;
-  const isOnline = navigator.onLine && !network.simulateOffline;
-  emit({ online: isOnline, pending: await countPending() });
-  if (!isOnline) {
-    running = false;
+  if (activeRun) {
+    rerunRequested = true;
+    await activeRun;
     return;
   }
 
-  if (api.live && !session.token) {
-    running = false;
-    return;
-  }
+  activeRun = (async () => {
+    do {
+      rerunRequested = false;
+      const isOnline = navigator.onLine && !network.simulateOffline;
+      emit({ online: isOnline, pending: await countPending() });
+      if (!isOnline) break;
+      if (api.live && !session.token) break;
 
-  emit({ syncing: true });
-  try {
-    const checkIns = (await store.checkIns()).filter((c) => !c.synced);
-    const records = (await store.records()).filter((r) => !r.synced);
-    if (checkIns.length || records.length || api.live) {
-      let cursor = (await store.getPref<number>("cursor")) ?? 0;
-      let res = await api.sync({ checkIns, records, cursor });
-      const done = new Set(res.acked);
-      for (const c of checkIns) if (done.has(c.id)) await store.putCheckIn({ ...c, synced: true });
-      for (const r of records) if (done.has(r.id)) await store.putRecord({ ...r, synced: true });
-      // Pull: keep paging while the server says there is more.
-      for (;;) {
-        await storeRemote(res.remoteCheckIns);
-        cursor = res.cursor;
-        await store.setPref("cursor", cursor);
-        if (!res.hasMore) break;
-        res = await api.sync({ checkIns: [], records: [], cursor });
+      emit({ syncing: true });
+      try {
+        const checkIns = (await store.checkIns()).filter((c) => !c.synced);
+        const records = (await store.records()).filter((r) => !r.synced);
+        if (checkIns.length || records.length || api.live) {
+          let cursor = (await store.getPref<number>("cursor")) ?? 0;
+          let res = await api.sync({ checkIns, records, cursor });
+          const done = new Set(res.acked);
+          for (const c of checkIns) if (done.has(c.id)) await store.putCheckIn({ ...c, synced: true });
+          for (const r of records) if (done.has(r.id)) await store.putRecord({ ...r, synced: true });
+          // Pull: keep paging while the server says there is more.
+          for (;;) {
+            await storeRemote(res.remoteCheckIns);
+            cursor = res.cursor;
+            await store.setPref("cursor", cursor);
+            if (!res.hasMore) break;
+            res = await api.sync({ checkIns: [], records: [], cursor });
+          }
+        }
+        for (const photo of (await store.photos()).filter((p) => !p.synced)) {
+          await api.uploadPhoto(photo);
+          await store.putPhoto({ ...photo, synced: true });
+        }
+        emit({ lastSyncedAt: new Date().toISOString() });
+      } catch (error) {
+        if (error instanceof DeviceRevokedError) {
+          // Revoked by the admin: stop calling the server, keep everything local.
+          console.warn("[sync]", error.message);
+          await forgetSession();
+        } else if (!(error instanceof OfflineError)) {
+          console.error("[sync]", error);
+        }
+        emit({ online: !(error instanceof OfflineError) });
+        rerunRequested = false;
+      } finally {
+        emit({ syncing: false, pending: await countPending() });
       }
-    }
-    for (const photo of (await store.photos()).filter((p) => !p.synced)) {
-      await api.uploadPhoto(photo);
-      await store.putPhoto({ ...photo, synced: true });
-    }
-    emit({ lastSyncedAt: new Date().toISOString() });
-  } catch (error) {
-    if (error instanceof DeviceRevokedError) {
-      // Revoked by the admin: stop calling the server, keep everything local.
-      console.warn("[sync]", error.message);
-      await forgetSession();
-    } else if (!(error instanceof OfflineError)) {
-      console.error("[sync]", error);
-    }
-    emit({ online: !(error instanceof OfflineError) });
+    } while (rerunRequested);
+  })();
+
+  try {
+    await activeRun;
   } finally {
-    emit({ syncing: false, pending: await countPending() });
-    running = false;
+    activeRun = null;
   }
 }
 
