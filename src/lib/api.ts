@@ -141,6 +141,7 @@ export type PairingCode = {
   id: string;
   code: string;
   label: string | null;
+  gate: string;
   expiresAt: string;
   uses: number;
   lastUsedAt: string | null;

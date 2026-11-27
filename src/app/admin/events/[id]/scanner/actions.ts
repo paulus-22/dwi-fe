@@ -6,7 +6,8 @@ import { api } from "@/lib/api";
 
 export async function createPairingCode(eventId: string, form: FormData) {
   const label = String(form.get("label") ?? "").trim();
-  await api(`/v1/events/${eventId}/pairing-codes`, { method: "POST", body: { label: label || null } });
+  const gate = String(form.get("gate") ?? "Pintu Utama").trim() || "Pintu Utama";
+  await api(`/v1/events/${eventId}/pairing-codes`, { method: "POST", body: { label: label || null, gate } });
   revalidatePath(`/admin/events/${eventId}/scanner`);
 }
 
