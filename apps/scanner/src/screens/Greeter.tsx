@@ -349,30 +349,31 @@ export function GreeterScreen() {
       ) : null}
 
       {greeting ? (
-        <div className="rise absolute inset-0 z-30 flex items-center justify-end pr-[8vw]">
+        <div className="rise absolute inset-0 z-30">
           {backdrop ? (
             <img src={backdrop} alt="" className="absolute inset-0 h-full w-full object-cover" />
           ) : null}
-          {/* Name sits right-aligned in the card's blank cream area (olive ink +
-              gold kicker, matching the rose&sage palette). The backdrop itself
-              carries the photo, so no separate dark overlay. */}
-          <div className="relative z-10 max-w-[46%] text-right">
-            {categoryLabel(greeting.category) ? (
-              <span className="mb-3 inline-flex items-center rounded-full border border-[#c9a54a]/70 px-3 py-1 text-[length:calc(12px*var(--fs))] uppercase tracking-[0.22em] text-[#a47e1e]">
-                {categoryLabel(greeting.category)}
-              </span>
-            ) : null}
-            <p className="kicker text-[#a47e1e]">Selamat datang</p>
-            <h2 className="mt-2 font-display text-[clamp(34px,6vw,74px)] font-medium leading-[1.06] text-[#37412f]">
-              {greeting.name}
-            </h2>
-            {tvShowSelfie && greeting.selfie ? (
-              <img
-                src={greeting.selfie}
-                alt={greeting.name}
-                className="ml-auto mt-6 aspect-[4/3] w-[min(34vw,20rem)] rounded-xl border-2 border-[#c9a54a]/70 object-cover shadow-lg"
-              />
-            ) : null}
+          {/* Name centered in the card's blank right area (left of the photo,
+              clear of the far edge and the bottom-right floral). */}
+          <div className="absolute inset-y-0 left-[52vw] right-[5vw] z-10 flex items-center">
+            <div className="w-full text-center">
+              {categoryLabel(greeting.category) ? (
+                <span className="mb-3 inline-flex items-center rounded-full border border-[#c9a54a]/70 px-3 py-1 text-[length:calc(12px*var(--fs))] uppercase tracking-[0.22em] text-[#a47e1e]">
+                  {categoryLabel(greeting.category)}
+                </span>
+              ) : null}
+              <p className="kicker text-[#a47e1e]">Selamat datang</p>
+              <h2 className="mt-2 font-display text-[clamp(34px,6vw,74px)] font-medium leading-[1.06] text-[#37412f]">
+                {greeting.name}
+              </h2>
+              {tvShowSelfie && greeting.selfie ? (
+                <img
+                  src={greeting.selfie}
+                  alt={greeting.name}
+                  className="mx-auto mt-6 aspect-[4/3] w-[min(30vw,18rem)] rounded-xl border-2 border-[#c9a54a]/70 object-cover shadow-lg"
+                />
+              ) : null}
+            </div>
           </div>
         </div>
       ) : null}
