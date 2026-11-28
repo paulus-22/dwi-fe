@@ -105,6 +105,9 @@ export function GreeterScreen() {
   const [index, setIndex] = useState(0);
   const [greeting, setGreeting] = useState<Greeting | null>(null);
   const skippedRef = useRef<Set<string>>(new Set());
+  /** Top-right controls (fullscreen / exit) auto-hide after idle, reappear on movement. */
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const controlsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const queueRef = useRef<Greeting[]>([]);
   const selfiesByCodeRef = useRef<Record<string, string>>({});
   /** Highest `GREET` `scanner_event.seq` already shown/queued — shared dedupe for SSE + poll. */
@@ -237,6 +240,19 @@ export function GreeterScreen() {
     });
   }
 
+  // Auto-hide the top-right controls after a couple seconds of no pointer motion,
+  // and reappear them the moment the mouse/pointer moves again.
+  useEffect(() => {
+    const initial = setTimeout(() => setControlsVisible(false), 2000);
+    return () => clearTimeout(initial);
+  }, []);
+  useEffect(() => () => { if (controlsTimer.current) clearTimeout(controlsTimer.current); }, []);
+  function pokeControls() {
+    setControlsVisible(true);
+    if (controlsTimer.current) clearTimeout(controlsTimer.current);
+    controlsTimer.current = setTimeout(() => setControlsVisible(false), 2000);
+  }
+
   // When a greeting ends, show the next in the queue (if any).
   useEffect(() => {
     if (!greeting) return;
@@ -289,7 +305,7 @@ export function GreeterScreen() {
   const fsSupported = typeof document !== "undefined" && "requestFullscreen" in document.documentElement;
 
   return (
-    <div className="absolute inset-0 overflow-hidden bg-[#0f140d]" onClick={handleTap}>
+    <div className="absolute inset-0 overflow-hidden bg-[#0f140d]" onClick={handleTap} onPointerMove={pokeControls}>
       {items.map((item, i) =>
         item.kind === "photo" ? (
           <div
@@ -378,26 +394,28 @@ export function GreeterScreen() {
         </div>
       ) : null}
 
-      <div className="absolute right-6 top-[max(env(safe-area-inset-top),20px)] z-40 flex gap-2">
-        {fsSupported ? (
+      {controlsVisible ? (
+        <div className="absolute right-6 top-[max(env(safe-area-inset-top),20px)] z-40 flex gap-2">
+          {fsSupported ? (
+            <button
+              type="button"
+              onClick={() => void toggleFullscreen()}
+              aria-label="Layar penuh"
+              className="rounded-full bg-night/60 p-2 text-cream-dim backdrop-blur"
+            >
+              <Icon name="expand" className="size-5" />
+            </button>
+          ) : null}
           <button
             type="button"
-            onClick={() => void toggleFullscreen()}
-            aria-label="Layar penuh"
+            onClick={() => go("scan")}
+            aria-label="Keluar mode TV"
             className="rounded-full bg-night/60 p-2 text-cream-dim backdrop-blur"
           >
-            <Icon name="expand" className="size-5" />
+            <Icon name="back" className="size-5" />
           </button>
-        ) : null}
-        <button
-          type="button"
-          onClick={() => go("scan")}
-          aria-label="Keluar mode TV"
-          className="rounded-full bg-night/60 p-2 text-cream-dim backdrop-blur"
-        >
-          <Icon name="back" className="size-5" />
-        </button>
-      </div>
+        </div>
+      ) : null}
     </div>
   );
 }
