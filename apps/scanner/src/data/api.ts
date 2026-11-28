@@ -49,6 +49,11 @@ export interface ScannerApi {
     records: ActivityRecord[];
     cursor: number;
   }): Promise<{ acked: string[]; remoteCheckIns: RemoteCheckIn[]; cursor: number; hasMore: boolean }>;
+  /** Add a walk-in guest at the door (flagged isWalkIn + a category). */
+  addGuest(
+    eventId: string,
+    input: { householdName: string; category?: string; headcount?: number },
+  ): Promise<{ id: string; code: string; householdName: string; category: string; isWalkIn: boolean }>;
   uploadPhoto(photo: PhotoRecord): Promise<{ url: string }>;
 }
 
@@ -124,6 +129,10 @@ function httpApi(base: string): ScannerApi {
     /** Durable greeting queue for the TV: check-ins since `after` (a seq). */
     greetings(eventId, after) {
       return call(`/v1/events/${eventId}/greetings?after=${after}`);
+    },
+
+    addGuest(eventId, input) {
+      return call(`/v1/events/${eventId}/walkin-guests`, { body: input });
     },
 
     sync({ checkIns, records, cursor }) {
@@ -211,6 +220,11 @@ const mockApi: ScannerApi = {
   async greetings() {
     await sleep(jitter(300));
     return { greetings: [], cursor: 0 };
+  },
+
+  async addGuest() {
+    await sleep(jitter(300));
+    throw new OfflineError();
   },
 
   async sync({ checkIns, records, cursor }) {

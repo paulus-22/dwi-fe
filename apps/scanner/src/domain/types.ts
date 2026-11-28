@@ -27,6 +27,8 @@ export type SnapshotGuest = {
   admits: number;
   table: string | null;
   vip: boolean;
+  /** Guest added at the scanner door (walk-in), not on the invite list. */
+  isWalkIn?: boolean;
   /** Group (kelompok) invitation — no per-person pass; the door records a member name. */
   group?: boolean;
   /** The group's full headcount cap, when it's a group invite. */

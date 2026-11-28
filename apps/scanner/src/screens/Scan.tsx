@@ -5,6 +5,7 @@ import { IdleSlideshow } from "./Idle";
 import { ResultView } from "./Result";
 import { Button, Header, Icon } from "../components/ui";
 import { checkIn, lookup, sendGreeting, type Lookup } from "../data/scanner";
+import { api } from "../data/api";
 import { store } from "../data/store";
 import type { ActivityType, CheckIn, SnapshotGuest } from "../domain/types";
 import { useCamera } from "../lib/camera";
@@ -251,10 +252,14 @@ export function ScanScreen() {
 }
 
 function ManualEntry({ onClose, onSubmit }: { onClose(): void; onSubmit(text: string): void }) {
+  const { pairing } = useApp();
   const [mode, setMode] = useState<"code" | "name">("name");
   const [text, setText] = useState("");
   const [name, setName] = useState("");
   const [guests, setGuests] = useState<SnapshotGuest[]>([]);
+  const [addCat, setAddCat] = useState("GEN");
+  const [adding, setAdding] = useState(false);
+  const [addErr, setAddErr] = useState<string | null>(null);
 
   useEffect(() => {
     if (mode === "name") void store.guests().then(setGuests);
@@ -270,6 +275,37 @@ function ManualEntry({ onClose, onSubmit }: { onClose(): void; onSubmit(text: st
       .filter((g) => g.householdName.toLowerCase().includes(q) || g.code.toLowerCase().includes(q))
       .slice(0, 25);
   }, [name, guests]);
+
+  async function addGuest() {
+    const nm = name.trim();
+    const eventId = pairing?.event.id;
+    if (!nm || !eventId || adding) return;
+    setAdding(true);
+    setAddErr(null);
+    try {
+      const g = await api.addGuest(eventId, { householdName: nm, category: addCat });
+      // Make the new guest immediately check-in-able from this device.
+      const cur = await store.guests();
+      await store.replaceGuests([
+        ...cur,
+        {
+          code: g.code,
+          householdName: g.householdName,
+          category: g.category as SnapshotGuest["category"],
+          attending: true,
+          admits: 1,
+          table: null,
+          vip: g.category === "VIP",
+          isWalkIn: true,
+        },
+      ]);
+      setAdding(false);
+      onSubmit(g.code); // run the new guest's check-in straight away
+    } catch {
+      setAdding(false);
+      setAddErr("Gagal menambah. Periksa koneksi.");
+    }
+  }
 
   return (
     <div className="absolute inset-0 z-30 flex items-end bg-night/70 backdrop-blur-sm" onClick={onClose}>
@@ -327,7 +363,41 @@ function ManualEntry({ onClose, onSubmit }: { onClose(): void; onSubmit(text: st
                 on-screen keyboard on a tablet. */}
             <div className="mt-3 max-h-[50dvh] overflow-y-auto">
               {name.trim() && matches.length === 0 ? (
-                <p className="py-8 text-center text-[length:calc(14px*var(--fs))] text-mute">Tidak ada yang cocok.</p>
+                <div className="py-6 text-center">
+                  <p className="text-[length:calc(14px*var(--fs))] text-mute">Tidak ada yang cocok.</p>
+                  <p className="mt-1 text-[length:calc(12px*var(--fs))] text-mute/70">Tambahkan sebagai tamu baru (walk-in)?</p>
+                  <div className="mx-auto mt-3 flex max-w-xs flex-wrap justify-center gap-1 rounded-xl bg-ground p-1">
+                    {(
+                      [
+                        ["GEN", "Umum"],
+                        ["VIP", "VIP"],
+                        ["FAM", "Keluarga"],
+                        ["FRN", "Teman"],
+                        ["WRK", "Kolega"],
+                      ] as const
+                    ).map(([c, label]) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setAddCat(c)}
+                        className={`whitespace-nowrap rounded-lg px-2 py-1 text-[length:calc(12px*var(--fs))] ${
+                          addCat === c ? "bg-peach text-peach-ink" : "text-cream-dim"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    disabled={adding}
+                    onClick={() => void addGuest()}
+                    className="mt-3 rounded-full bg-peach px-5 py-2 text-[length:calc(14px*var(--fs))] font-medium text-peach-ink disabled:opacity-50"
+                  >
+                    {adding ? "Menambah…" : "Tambah & check-in"}
+                  </button>
+                  {addErr ? <p className="mt-2 text-[length:calc(12px*var(--fs))] text-bad">{addErr}</p> : null}
+                </div>
               ) : (
                 <ul className="divide-y divide-edge/60 overflow-hidden rounded-2xl bg-ground">
                   {matches.map((g) => (

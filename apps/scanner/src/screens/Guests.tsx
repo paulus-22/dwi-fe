@@ -114,7 +114,14 @@ export function GuestsScreen() {
               >
                 <span className={`size-2.5 shrink-0 rounded-full ${r.checkIn ? "bg-ok" : r.attending === false ? "bg-bad/70" : r.attending === null ? "bg-mute" : "bg-edge"}`} />
                 <span className="min-w-0 flex-1">
-                  <span className="line-clamp-2 block break-words text-[length:calc(16px*var(--fs))] leading-snug text-cream">{r.householdName}</span>
+                  <span className="line-clamp-2 block break-words text-[length:calc(16px*var(--fs))] leading-snug text-cream">
+                    {r.householdName}
+                    {r.isWalkIn ? (
+                      <span className="ml-1.5 inline-block rounded bg-peach/20 px-1.5 py-0.5 align-middle text-[length:calc(10px*var(--fs))] text-peach">
+                        Baru
+                      </span>
+                    ) : null}
+                  </span>
                   <span className="block truncate text-[length:calc(12px*var(--fs))] text-mute">
                     {r.code} · {CATEGORIES[r.category]}
                     {r.table ? ` · Meja ${r.table}` : ""}
