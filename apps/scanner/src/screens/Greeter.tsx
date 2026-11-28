@@ -391,7 +391,7 @@ export function GreeterScreen() {
           <div className="absolute inset-y-0 left-[52vw] right-[5vw] z-10 flex items-center">
             <div className="w-full text-center">
               {categoryLabel(greeting.category) ? (
-                <span className="mb-3 inline-flex items-center rounded-full border border-[#c9a54a]/70 px-3 py-1 text-[length:calc(12px*var(--fs))] uppercase tracking-[0.22em] text-[#a47e1e]">
+                <span className="mb-4 inline-flex items-center rounded-full border border-[#c9a54a]/90 bg-[#c9a54a]/15 px-5 py-1.5 text-[length:calc(15px*var(--fs))] font-semibold uppercase tracking-[0.2em] text-[#a47e1e]">
                   {categoryLabel(greeting.category)}
                 </span>
               ) : null}

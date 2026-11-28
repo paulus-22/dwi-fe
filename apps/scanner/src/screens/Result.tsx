@@ -111,7 +111,9 @@ function GuestSheet({
       <div className="px-6 pt-5">
         <div className="flex flex-wrap items-center gap-2">
           <Chip className="bg-panel-2 text-cream-dim">{CATEGORIES[guest.category]}</Chip>
-          {guest.vip ? <Chip className="bg-gold/20 text-gold">VIP</Chip> : null}
+          {guest.vip ? (
+            <Chip className="bg-gold/30 font-semibold text-gold ring-1 ring-gold/50">✦ VIP</Chip>
+          ) : null}
           {guest.table ? <Chip className="bg-panel-2 text-cream-dim">Meja {guest.table}</Chip> : null}
           <span className="ml-auto font-mono text-[length:calc(12px*var(--fs))] text-mute">{guest.code}</span>
         </div>

@@ -468,6 +468,12 @@ function DoneView({
       <h1 className="mt-2 max-w-[18ch] font-display text-[length:calc(40px*var(--fs))] leading-tight">{guest.householdName}</h1>
       <p className="mt-3 text-[length:calc(16px*var(--fs))] text-cream-dim">{row.headcount} orang · check-in berhasil</p>
 
+      {guest.vip ? (
+        <span className="mt-4 inline-flex items-center gap-2 rounded-full bg-gold px-5 py-1.5 text-[length:calc(16px*var(--fs))] font-semibold tracking-[0.18em] text-night">
+          ✦ Tamu VIP
+        </span>
+      ) : null}
+
       {guest.table ? (
         <div className="mt-8 rounded-3xl border border-gold/40 px-10 py-5">
           <p className="kicker text-mute">Meja</p>
