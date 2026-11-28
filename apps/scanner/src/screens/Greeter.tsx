@@ -336,20 +336,23 @@ export function GreeterScreen() {
       ) : null}
 
       {greeting ? (
-        <div className="rise absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#141a10]/95 px-8 text-center">
+        <div className="rise absolute inset-0 z-30 flex items-center justify-end pr-[8vw]">
           {backdrop ? (
-            <img src={backdrop} alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />
+            <img src={backdrop} alt="" className="absolute inset-0 h-full w-full object-cover" />
           ) : null}
-          <div className="relative">
-            <p className="kicker text-[#bdca9f]">Selamat datang</p>
-            <h2 className="mt-4 font-display text-[clamp(56px,14vw,130px)] font-light leading-none text-cream">
+          {/* Name sits right-aligned in the card's blank cream area (olive ink +
+              gold kicker, matching the rose&sage palette). The backdrop itself
+              carries the photo, so no separate dark overlay. */}
+          <div className="relative z-10 max-w-[46%] text-right">
+            <p className="kicker text-[#a47e1e]">Selamat datang</p>
+            <h2 className="mt-2 font-display text-[clamp(34px,6vw,74px)] font-medium leading-[1.06] text-[#37412f]">
               {greeting.name}
             </h2>
             {tvShowSelfie && greeting.selfie ? (
               <img
                 src={greeting.selfie}
                 alt={greeting.name}
-                className="mx-auto mt-8 aspect-[4/3] w-[min(82vw,24rem)] rounded-3xl border-4 border-[#bdca9f]/60 object-cover shadow-2xl shadow-black/40"
+                className="ml-auto mt-6 aspect-[4/3] w-[min(34vw,20rem)] rounded-xl border-2 border-[#c9a54a]/70 object-cover shadow-lg"
               />
             ) : null}
           </div>
