@@ -2,16 +2,25 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Icon } from "../components/ui";
 import { API_ROOT, api, session } from "../data/api";
+import { CATEGORIES, type CategoryCode } from "../domain/codes";
 import { go, toggleFullscreen } from "../lib/ui";
 import { useApp } from "../state";
 
 type Slide = { id: string; url: string };
 type Selfie = { id: string; url: string; householdName: string | null };
-type Greeting = { name: string; selfie?: string | null; seq: number };
+type Greeting = { name: string; selfie?: string | null; seq: number; code?: string };
 
 /** On first mount, only replay confirmed-photo greetings from the last 2 minutes
  *  so refreshing the TV mid-wedding does not replay hours-old check-ins. */
 const INITIAL_REPLAY_WINDOW_MS = 120_000;
+
+/** Category badge for the greeting card: VIP / Keluarga / Teman / Kolega when
+ *  the code carries one, but nothing for the generic Umum or a bad code. */
+function categoryLabel(code?: string): string | null {
+  const seg = code ? code.split("-")[1] : undefined;
+  if (!seg || !(seg in CATEGORIES) || seg === "GEN") return null;
+  return CATEGORIES[seg as CategoryCode];
+}
 
 type LiveMsg = {
   type?: string;
@@ -172,7 +181,7 @@ export function GreeterScreen() {
         if (m.seq != null) lastSeqRef.current = Math.max(lastSeqRef.current, m.seq);
         initializedRef.current = true;
         const selfie = m.code ? (selfiesByCodeRef.current[m.code] ?? null) : null;
-        enqueue({ name, selfie, seq: m.seq ?? 0 });
+        enqueue({ name, selfie, seq: m.seq ?? 0, code: m.code });
       }
     };
     return () => es.close();
@@ -198,7 +207,7 @@ export function GreeterScreen() {
             const ts = Date.parse(g.occurredAt);
             if (!Number.isNaN(ts) && ts < cutoff) continue;
           }
-          enqueue({ name: g.name, selfie: g.selfie, seq: g.seq });
+          enqueue({ name: g.name, selfie: g.selfie, seq: g.seq, code: g.code ?? undefined });
         }
       } catch {
         /* offline: the SSE rides us live; this tick retries in a bit */
@@ -344,6 +353,11 @@ export function GreeterScreen() {
               gold kicker, matching the rose&sage palette). The backdrop itself
               carries the photo, so no separate dark overlay. */}
           <div className="relative z-10 max-w-[46%] text-right">
+            {categoryLabel(greeting.code) ? (
+              <span className="mb-3 inline-flex items-center rounded-full border border-[#c9a54a]/70 px-3 py-1 text-[length:calc(12px*var(--fs))] uppercase tracking-[0.22em] text-[#a47e1e]">
+                {categoryLabel(greeting.code)}
+              </span>
+            ) : null}
             <p className="kicker text-[#a47e1e]">Selamat datang</p>
             <h2 className="mt-2 font-display text-[clamp(34px,6vw,74px)] font-medium leading-[1.06] text-[#37412f]">
               {greeting.name}
