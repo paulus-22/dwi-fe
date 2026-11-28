@@ -156,12 +156,6 @@ function SelfieStep({ step, checkIn, guest, onDone, onSkip }: StepProps) {
             </span>
           ))}
         </h2>
-        <p className="mt-4 max-w-[32ch] text-[length:calc(16px*var(--fs))] leading-relaxed text-cream-dim">
-          {selfie
-            ? "Serahkan perangkat ke tamu untuk selfie."
-            : "Arahkan kamera belakang ke tamu untuk memotret."}{" "}
-          Foto akan dibingkai dengan nama mempelai dan tampil di layar galeri.
-        </p>
         <div className="mt-10 grid w-full max-w-sm gap-3">
           <Button onClick={() => setStage("live")}>
             <Icon name="camera" /> Mulai foto
