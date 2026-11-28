@@ -13,6 +13,10 @@ type Greeting = { name: string; selfie?: string | null; seq: number; category?: 
  *  so refreshing the TV mid-wedding does not replay hours-old check-ins. */
 const INITIAL_REPLAY_WINDOW_MS = 120_000;
 
+/** Short pause inserted between stacked greetings so rapid check-ins from
+ *  multiple doors don't feel rushed. */
+const GREET_GAP_S = 2;
+
 /** Category badge for the greeting card, from the guest's DB category: VIP,
  *  Keluarga, Teman, Kolega when set — nothing for the generic "umum" or null. */
 const CATEGORY_BADGES: Record<string, string> = {
@@ -262,13 +266,17 @@ export function GreeterScreen() {
     controlsTimer.current = setTimeout(() => setControlsVisible(false), 2000);
   }
 
-  // When a greeting ends, show the next in the queue (if any).
+  // When a greeting ends, show the next in the queue (if any). With two
+  // scanners stacking greetings, add a short breathing pause between cards so
+  // they don't feel rushed.
   useEffect(() => {
     if (!greeting) return;
+    const hasMore = queueRef.current.length > 0;
+    const delay = (tvGreetSec + (hasMore ? GREET_GAP_S : 0)) * 1000;
     const t = setTimeout(() => {
       const next = queueRef.current.shift();
       setGreeting(next ?? null);
-    }, tvGreetSec * 1000);
+    }, delay);
     return () => clearTimeout(t);
   }, [greeting, tvGreetSec]);
 
