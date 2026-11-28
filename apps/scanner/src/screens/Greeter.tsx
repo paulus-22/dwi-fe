@@ -2,24 +2,27 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Icon } from "../components/ui";
 import { API_ROOT, api, session } from "../data/api";
-import { CATEGORIES, type CategoryCode } from "../domain/codes";
 import { go, toggleFullscreen } from "../lib/ui";
 import { useApp } from "../state";
 
 type Slide = { id: string; url: string };
 type Selfie = { id: string; url: string; householdName: string | null };
-type Greeting = { name: string; selfie?: string | null; seq: number; code?: string };
+type Greeting = { name: string; selfie?: string | null; seq: number; category?: string | null };
 
 /** On first mount, only replay confirmed-photo greetings from the last 2 minutes
  *  so refreshing the TV mid-wedding does not replay hours-old check-ins. */
 const INITIAL_REPLAY_WINDOW_MS = 120_000;
 
-/** Category badge for the greeting card: VIP / Keluarga / Teman / Kolega when
- *  the code carries one, but nothing for the generic Umum or a bad code. */
-function categoryLabel(code?: string): string | null {
-  const seg = code ? code.split("-")[1] : undefined;
-  if (!seg || !(seg in CATEGORIES) || seg === "GEN") return null;
-  return CATEGORIES[seg as CategoryCode];
+/** Category badge for the greeting card, from the guest's DB category: VIP,
+ *  Keluarga, Teman, Kolega when set — nothing for the generic "umum" or null. */
+const CATEGORY_BADGES: Record<string, string> = {
+  vip: "VIP",
+  keluarga: "Keluarga",
+  teman: "Teman",
+  kolega: "Kolega",
+};
+function categoryLabel(category?: string | null): string | null {
+  return category ? CATEGORY_BADGES[category] ?? null : null;
 }
 
 type LiveMsg = {
@@ -33,6 +36,7 @@ type LiveMsg = {
   household_name?: string | null;
   member_name?: string | null;
   url?: string;
+  category?: string | null;
 };
 
 /**
@@ -181,7 +185,7 @@ export function GreeterScreen() {
         if (m.seq != null) lastSeqRef.current = Math.max(lastSeqRef.current, m.seq);
         initializedRef.current = true;
         const selfie = m.code ? (selfiesByCodeRef.current[m.code] ?? null) : null;
-        enqueue({ name, selfie, seq: m.seq ?? 0, code: m.code });
+        enqueue({ name, selfie, seq: m.seq ?? 0, category: m.category });
       }
     };
     return () => es.close();
@@ -207,7 +211,7 @@ export function GreeterScreen() {
             const ts = Date.parse(g.occurredAt);
             if (!Number.isNaN(ts) && ts < cutoff) continue;
           }
-          enqueue({ name: g.name, selfie: g.selfie, seq: g.seq, code: g.code ?? undefined });
+          enqueue({ name: g.name, selfie: g.selfie, seq: g.seq, category: g.category ?? undefined });
         }
       } catch {
         /* offline: the SSE rides us live; this tick retries in a bit */
@@ -353,9 +357,9 @@ export function GreeterScreen() {
               gold kicker, matching the rose&sage palette). The backdrop itself
               carries the photo, so no separate dark overlay. */}
           <div className="relative z-10 max-w-[46%] text-right">
-            {categoryLabel(greeting.code) ? (
+            {categoryLabel(greeting.category) ? (
               <span className="mb-3 inline-flex items-center rounded-full border border-[#c9a54a]/70 px-3 py-1 text-[length:calc(12px*var(--fs))] uppercase tracking-[0.22em] text-[#a47e1e]">
-                {categoryLabel(greeting.code)}
+                {categoryLabel(greeting.category)}
               </span>
             ) : null}
             <p className="kicker text-[#a47e1e]">Selamat datang</p>

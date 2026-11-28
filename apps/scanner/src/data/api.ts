@@ -34,7 +34,14 @@ export interface ScannerApi {
     eventId: string,
     after: number,
   ): Promise<{
-    greetings: { seq: number; code: string | null; name: string; selfie: string | null; occurredAt?: string }[];
+    greetings: {
+      seq: number;
+      code: string | null;
+      name: string;
+      selfie: string | null;
+      occurredAt?: string;
+      category: string | null;
+    }[];
     cursor: number;
   }>;
   sync(batch: {
