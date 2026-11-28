@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "../components/ui";
 import { API_ROOT, api, session } from "../data/api";
 import { go, toggleFullscreen } from "../lib/ui";
-import { useApp } from "../state";
+import { useApp, type TvGreetFilter } from "../state";
 
 type Slide = { id: string; url: string };
 type Selfie = { id: string; url: string; householdName: string | null };
@@ -23,6 +23,13 @@ const CATEGORY_BADGES: Record<string, string> = {
 };
 function categoryLabel(category?: string | null): string | null {
   return category ? CATEGORY_BADGES[category] ?? null : null;
+}
+
+/** Whether this guest warrants a greeting, per the TV's "Sasaran sapaan" filter. */
+function shouldGreet(filter: TvGreetFilter, category?: string | null): boolean {
+  if (filter === "all") return true;
+  if (filter === "vip") return category === "vip";
+  return !!category && categoryLabel(category) !== null; // any non-generic category
 }
 
 type LiveMsg = {
@@ -98,7 +105,7 @@ function TVFloral({ className, mirrored = false }: { className?: string; mirrore
  * selfie — then resumes. It shares the same R2 content as the scanners.
  */
 export function GreeterScreen() {
-  const { pairing, tvSlideSec, tvGreetSec, tvShowSelfie } = useApp();
+  const { pairing, tvSlideSec, tvGreetSec, tvShowSelfie, tvGreetFilter } = useApp();
   const [slides, setSlides] = useState<Slide[]>([]);
   const [selfies, setSelfies] = useState<Selfie[]>([]);
   const [backdrop, setBackdrop] = useState<string | null>(null);
@@ -187,6 +194,7 @@ export function GreeterScreen() {
         if (m.seq != null && m.seq <= lastSeqRef.current) return; // the poll already handled it
         if (m.seq != null) lastSeqRef.current = Math.max(lastSeqRef.current, m.seq);
         initializedRef.current = true;
+        if (!shouldGreet(tvGreetFilter, m.category)) return; // filtered out on TV
         const selfie = m.code ? (selfiesByCodeRef.current[m.code] ?? null) : null;
         enqueue({ name, selfie, seq: m.seq ?? 0, category: m.category });
       }
@@ -214,6 +222,7 @@ export function GreeterScreen() {
             const ts = Date.parse(g.occurredAt);
             if (!Number.isNaN(ts) && ts < cutoff) continue;
           }
+          if (!shouldGreet(tvGreetFilter, g.category)) continue; // filtered out on TV
           enqueue({ name: g.name, selfie: g.selfie, seq: g.seq, category: g.category ?? undefined });
         }
       } catch {

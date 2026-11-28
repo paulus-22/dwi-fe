@@ -23,6 +23,9 @@ export const DEFAULT_TV_GREET_SEC = 7;
 export const TV_GREET_SEC_MAX = 15;
 /** By default TV greeting cards show the guest's name ONLY (no picture). */
 export const DEFAULT_TV_SHOW_SELFIE = false;
+/** TV mode: which guests get greeted — all, VIP only, or any non-generic category. */
+export type TvGreetFilter = "all" | "vip" | "nongeneric";
+export const DEFAULT_TV_GREET_FILTER: TvGreetFilter = "all";
 
 /** Scanner UI theme. `data-scanner-theme` on <html> re-colours the whole app. */
 export type ScannerTheme = "night" | "day" | "midnight" | "terracotta";
@@ -72,6 +75,9 @@ type AppState = {
   /** Whether the TV greeting card renders the guest's selfie (default false = name only). */
   tvShowSelfie: boolean;
   setTvShowSelfie(on: boolean): void;
+  /** TV mode: which guest categories get a greeting card. */
+  tvGreetFilter: TvGreetFilter;
+  setTvGreetFilter(filter: TvGreetFilter): void;
   /** Which UI theme the device renders with; remembered per device. */
   theme: ScannerTheme;
   setTheme(theme: ScannerTheme): void;
@@ -104,6 +110,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [tvSlideSec, setTvSlideSecState] = useState(DEFAULT_TV_SLIDE_SEC);
   const [tvGreetSec, setTvGreetSecState] = useState(DEFAULT_TV_GREET_SEC);
   const [tvShowSelfie, setTvShowSelfieState] = useState(DEFAULT_TV_SHOW_SELFIE);
+  const [tvGreetFilter, setTvGreetFilterState] = useState<TvGreetFilter>(DEFAULT_TV_GREET_FILTER);
   const [theme, setThemeState] = useState<ScannerTheme>(DEFAULT_SCANNER_THEME);
 
   useEffect(() => {
@@ -119,6 +126,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setTvSlideSecState((await store.getPref<number>("tvSlideSec")) ?? DEFAULT_TV_SLIDE_SEC);
       setTvGreetSecState((await store.getPref<number>("tvGreetSec")) ?? DEFAULT_TV_GREET_SEC);
       setTvShowSelfieState((await store.getPref<boolean>("tvShowSelfie")) ?? DEFAULT_TV_SHOW_SELFIE);
+      setTvGreetFilterState((await store.getPref<TvGreetFilter>("tvGreetFilter")) ?? DEFAULT_TV_GREET_FILTER);
       const t = (await store.getPref<ScannerTheme>("theme")) ?? DEFAULT_SCANNER_THEME;
       applyTheme(t);
       setThemeState(t);
@@ -200,6 +208,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     void store.setPref("tvShowSelfie", on);
   }, []);
 
+  const setTvGreetFilter = useCallback((filter: TvGreetFilter) => {
+    setTvGreetFilterState(filter);
+    void store.setPref("tvGreetFilter", filter);
+  }, []);
+
   const setTheme = useCallback((t: ScannerTheme) => {
     applyTheme(t);
     setThemeState(t);
@@ -243,6 +256,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setTvGreetSec,
         tvShowSelfie,
         setTvShowSelfie,
+        tvGreetFilter,
+        setTvGreetFilter,
         theme,
         setTheme,
       }}

@@ -329,7 +329,7 @@ function TvDuration({
 }
 
 function TvSettings() {
-  const { tvSlideSec, setTvSlideSec, tvGreetSec, setTvGreetSec, tvShowSelfie, setTvShowSelfie } = useApp();
+  const { tvSlideSec, setTvSlideSec, tvGreetSec, setTvGreetSec, tvShowSelfie, setTvShowSelfie, tvGreetFilter, setTvGreetFilter } = useApp();
   return (
     <div className="mt-3">
       <TvDuration
@@ -344,6 +344,32 @@ function TvSettings() {
         value={tvGreetSec}
         onChange={setTvGreetSec}
       />
+      <div className="mt-3">
+        <span className="block text-[length:calc(16px*var(--fs))] text-cream">Sasaran sapaan</span>
+        <span className="block text-[length:calc(12px*var(--fs))] text-mute">
+          Semua = semua tamu; VIP = hanya VIP; Non-umum = VIP/Keluarga/Teman/Kolega.
+        </span>
+        <div className="mt-2 grid grid-cols-3 gap-1 rounded-xl bg-ground p-1">
+          {(
+            [
+              ["all", "Semua"],
+              ["vip", "VIP saja"],
+              ["nongeneric", "Non-umum"],
+            ] as const
+          ).map(([val, label]) => (
+            <button
+              key={val}
+              type="button"
+              onClick={() => setTvGreetFilter(val)}
+              className={`whitespace-nowrap rounded-lg px-2 py-1.5 text-[length:calc(13px*var(--fs))] ${
+                tvGreetFilter === val ? "bg-peach text-peach-ink" : "text-cream-dim"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="mt-3 flex items-center justify-between gap-3">
         <span>
           <span className="block text-[length:calc(16px*var(--fs))] text-cream">Foto di sapaan</span>
